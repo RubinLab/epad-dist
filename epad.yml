@@ -43,5 +43,5 @@ mariadb:
   rootpass: YOUR_DB_ROOT_PASS
   port: 3306
   log: false
-  backuploc: "..\/epaddb_nodata.sql"
+  backuploc: ".\/epaddb_nodata.sql"
   dblocation: "..\/mariadbloc"

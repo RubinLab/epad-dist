@@ -46,6 +46,7 @@ fi
 
 mkdir $1
 cp -R ./.originals/* ./$1/.
+cp ./epaddb_nodata.sql ./$1/.
 cat ./$1/docker-compose_start.ymlpart > ./$1/docker-compose.yml
 cat ./$1/nginx_start.confpart > ./$1/nginx.conf
 if [ $epadjs_mode != 'external' ]
