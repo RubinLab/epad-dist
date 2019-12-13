@@ -28,8 +28,8 @@ replace_in_files(){
 set -e
 cd "$(dirname "${BASH_SOURCE[0]}")"
 source ./yaml.sh
-parse_yaml ./epad.yml > .env
-create_variables ./epad.yml
+parse_yaml $2 > .env
+create_variables $2
 
 if [ -d "./$1" ]
 then
