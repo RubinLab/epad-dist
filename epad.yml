@@ -1,0 +1,47 @@
+host: YOUR_HOSTNAME
+mode: lite
+keycloak:
+  mode: build
+  dockerfiledir: ".\/keycloak"
+  user: YOUR_KEYCLOAK_ADMIN_USER
+  password: YOUR_KEYCLOAK_ADMIN_PASS
+  email: YOUR_KEYCLOAK_ADMIN_EMAIL
+  port: 8899
+  loc: "keycloak"
+couchdb:
+  mode: image
+  image: latest
+  port: 8888
+  dblocation: "..\/couchdbloc"
+dicomweb:
+  mode: build
+  dockerfiledir: ".\/dicomweb-server"
+  port: 8090
+  dbname: chronicle
+  log: true
+  auth: none
+  loc: "pacs"
+epadlite:
+  mode: build
+  dockerfiledir: ".\/epadlite"
+  port: 8080
+  dbname: epadlite
+  log: true
+  https: false
+  auth: auth
+  loc: "api"
+epadjs:
+  mode: build
+  dockerfiledir: ".\/epadjs"
+  port: 80
+mariadb:
+  mode: image
+  image: latest
+  dbname: epaddb
+  user: YOUR_DB_USER
+  pass: YOUR_DB_PASS
+  rootpass: YOUR_DB_ROOT_PASS
+  port: 3306
+  log: false
+  backuploc: "..\/epaddb_nodata.sql"
+  dblocation: "..\/mariadbloc"
