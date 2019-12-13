@@ -8,7 +8,7 @@
     volumes:
       - "{couchdb_dblocation}:/opt/couchdb/data"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://{host}:{couchdb_port}"]
+      test: ["CMD", "curl", "-f", "http://localhost:5984"]
       interval: 1m30s
       timeout: 1m
       retries: 10
