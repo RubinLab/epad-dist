@@ -1,0 +1,6 @@
+{
+  "mode": "{mode}",
+  "wadoUrl": "wadouri:http://{host}/{dicomweb_loc}",
+  "apiUrl": "http://{host}/{epadlite_loc}",
+  "apiUrlV1": ""
+}

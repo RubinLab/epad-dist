@@ -1,0 +1,8 @@
+
+        location /{epadlite_loc} {                                                                                                                                                                                                                                                    
+                add_header 'Access-Control-Allow-Origin' '*';                                                                                                                                                                                                              
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';      
+                proxy_set_header Host $host; 
+                proxy_pass_request_headers on;
+                proxy_pass http://epad_lite:8080;                                                                                                                                                                                                                             
+        }

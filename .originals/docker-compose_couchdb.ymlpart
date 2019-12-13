@@ -1,0 +1,18 @@
+  mycouchdb:
+    image: apache/couchdb:{couchdb_image}
+    container_name: epad_couchdb
+    # expose:
+    #   - "{couchdb_port}"
+    # ports:
+    #   - "{couchdb_port}:5984"
+    volumes:
+      - "{couchdb_dblocation}:/opt/couchdb/data"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://{host}:{couchdb_port}"]
+      interval: 1m30s
+      timeout: 1m
+      retries: 10
+    depends_on:
+      - mymariadb
+    networks:
+      - epad-network

@@ -1,0 +1,3 @@
+{
+    "baseUrl": "http://epad_dicomweb:8090/{dicomweb_loc}"
+}

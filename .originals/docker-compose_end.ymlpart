@@ -1,0 +1,3 @@
+networks:
+  epad-network:
+    driver: bridge

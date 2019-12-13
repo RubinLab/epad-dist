@@ -1,0 +1,8 @@
+{
+  "realm": "ePad",
+  "auth-server-url": "http://{host}/{keycloak_loc}/auth",
+  "ssl-required": "none",
+  "resource": "epad-auth",
+  "public-client": true,
+  "confidential-port": 0
+}

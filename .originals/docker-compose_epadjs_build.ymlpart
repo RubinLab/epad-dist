@@ -1,0 +1,15 @@
+  myepadjs:
+    build: {epadjs_dockerfiledir}
+    container_name: epad_js
+    expose:
+      - "{epadjs_port}"
+    ports:
+      - "{epadjs_port}:80"
+    volumes:
+      - ./production_epadjs.json:/usr/share/nginx/html/config.json
+      - ./production_keycloak.json:/usr/share/nginx/html/key_cloak.json
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - myepadlite
+    networks:
+      - epad-network

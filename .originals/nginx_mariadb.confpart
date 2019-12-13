@@ -1,0 +1,12 @@
+
+        location /{mariadb_loc} {                                                                                                                                                                                                                                                     
+                add_header 'Access-Control-Allow-Origin' '*';                                                                                                                                                                                                                 
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';                                                                                                                                                                                               
+                proxy_set_header X-Real-IP $remote_addr;                                                                                                                                                                                                                      
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;                                                                                                                                                                                                  
+                proxy_set_header X-Scheme $scheme;                                                                                                                                                                                                                            
+                proxy_set_header X-Forwarded-Proto $scheme;  
+                proxy_set_header Host $host;                                                                                                                                                                                                               
+                proxy_pass http://epad_mariadb:3306/;                                                                                                                                                                                                                   
+        }
+

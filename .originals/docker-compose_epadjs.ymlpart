@@ -1,0 +1,14 @@
+  myepadjs:
+    image: rubinlab/epadjs:{epadjs_image}
+    container_name: epad_js
+    expose:
+      - "{epadjs_port}"
+    ports:
+      - "{epadjs_port}:3000"
+    volumes:
+      - ./production_epadjs.json:/app/pu/config.json
+      - ./production_keycloak.json:/app/public/keycloak.json
+    depends_on:
+      - myepadlite
+    networks:
+      - epad-network
