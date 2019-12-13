@@ -88,7 +88,7 @@ will generate a file structure like following under ../epad_lite_dist
     └── terms.ftl                             # terms and conditions for ePad
 
 
-You can then start ePad with docker-compose up -d in ../epad_lite_dist directory.
+You can then start ePad with `docker-compose up -d in ../epad_lite_dist` directory.
 ePad will be served from the port 80 of the host address specified in epad.yml file
 
 Notes:
