@@ -3,7 +3,7 @@
 ePad is designed in a modular structure which runs six sub-modules (docker containers) which can be plugged and unplugged for specific usecases. Each sub-module has its own setting files that can be edited. This tool enables users to use one yml file to populate all configuration files with specific setting for their system.
 
 Update the epad.yml file according to your needs and run 
-  ./configure_epad.sh PATH
+  ./configure_epad.sh PATH YML_PATH
 for generating the configuration files and docker-compose.yml
 
 # epad.yml file
@@ -62,7 +62,7 @@ for generating the configuration files and docker-compose.yml
 > * external mode requires a uri value to put in the configuration files and excludes component from docker-compose and nginx configuration/
 
 > The command
-  `./configure_epad.sh ../epad_lite_dist`
+  `./configure_epad.sh ../epad_lite_dist ./epad.yml`
 will generate a file structure like following under ../epad_lite_dist
 
 
