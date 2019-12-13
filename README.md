@@ -22,7 +22,7 @@ for generating the configuration files and docker-compose.yml
       mode: image
       image: latest
       port: 8888
-      dblocation: "..\/couchdbloc"
+      dblocation: "..\/couchdbloc"          # define relative location to where you want to put the couchdb files
     dicomweb:
       mode: build
       dockerfiledir: ".\/dicomweb-server"
@@ -53,8 +53,8 @@ for generating the configuration files and docker-compose.yml
       rootpass: YOUR_DB_ROOT_PASS             # define your mariadb root password
       port: 3306
       log: false
-      backuploc: "..\/epaddb_nodata.sql"
-      dblocation: "..\/mariadbloc"
+      backuploc: ".\/epaddb_nodata.sql"
+      dblocation: "..\/mariadbloc"            # define relative location to where you want to put the mariadb files
 
 > **Possible modes for each module are build, image, external*
 > * build mode requires dockerfiledir to fnd to Dockerfile, 
