@@ -42,4 +42,6 @@ For centos:
     <port protocol="tcp" port="80”/>
   restart firewall with: 
     sudo systemctl restart firewalld
+  - There is no upload file size limit, change nginx.conf if you want to put limitation
+  - Access token life span in 5 min, and keycloak ePad realm is configured to run in non ssl mode
   
