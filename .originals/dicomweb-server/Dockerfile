@@ -9,8 +9,9 @@ USER node
 RUN mkdir -p /home/node/app
 WORKDIR /home/node/app
 
-RUN git clone -b dockerization https://github.com/dcmjs-org/dicomweb-server.git /home/node/app/
+RUN git clone https://github.com/dcmjs-org/dicomweb-server.git /home/node/app/
 
+COPY ecosystem.config.js /home/node/app/.
 
 # Install app dependencies
 ENV NPM_CONFIG_LOGLEVEL warn
