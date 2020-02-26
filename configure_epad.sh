@@ -24,6 +24,11 @@ replace_in_files(){
     fi
 }
 
+if [[ $# != 2 ]]
+then
+    echo "Wrong number of parameters. Configuration script needs a folder and a yml file to run. Ex: ./configure_epad.sh ../epad_lite_dist ./epad.yml"
+    exit 1
+fi
 # read yml file and create environment variables
 set -e
 cd "$(dirname "${BASH_SOURCE[0]}")"
@@ -141,6 +146,21 @@ fi
 if [ $epadlite_mode == 'external' ]
 then
    echo "External api is not supported for now"
+fi
+
+if [[ ! -z $epadlite_branch && $epadlite_mode == 'build' ]]
+then
+    replace_in_files "git clone" "git clone -b $epadlite_branch" "$1/epadlite"
+fi
+
+if [[ ! -z $dicomweb_branch && $dicomweb_mode == 'build' ]]
+then
+    replace_in_files "git clone" "git clone -b $dicomweb_branch" "$1/dicomweb-server"
+fi
+
+if [[ ! -z $epadjs_branch && $epadjs_mode == 'build' ]]
+then
+    replace_in_files "git clone" "git clone -b $epadjs_branch" "$1/epadjs"
 fi
 
 while read -r line 

@@ -3,8 +3,6 @@ FROM node:11-alpine as build-stage
 RUN apk update && apk upgrade && \
     apk add --no-cache bash git openssh
 
-RUN npm install pm2 -g
-
 USER node
 RUN mkdir -p /home/node/app
 WORKDIR /home/node/app
