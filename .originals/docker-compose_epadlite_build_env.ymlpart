@@ -1,0 +1,30 @@
+  myepadlite:
+    build: {epadlite_dockerfiledir}
+    container_name: epad_lite
+    # expose:
+    #   - "{epadlite_port}"
+    # ports:
+    #   - "{epadlite_port}:8080"
+    environment:
+      NOSQL_DB_HOST: "http://epad_couchdb"
+      NOSQL_DB_NAME: "{epadlite_dbname}"
+      LOGGER: "{epadlite_log}"
+      HTTPS: "{epadlite_https}"
+      MODE: "{mode}"
+      PREFIX: "{epadlite_loc}"
+      SQL_DB_HOST: "epad_mariadb"
+      SQL_DB_NAME: "{mariadb_dbname}"
+      SQL_USER: "{mariadb_user}"
+      SQL_PASS: "{mariadb_pass}"
+      SQL_LOGGER: "{mariadb_log}"
+      AUTH_URL: "http://{host}/{keycloak_loc}"
+      DICOMWEB_BASEURL: "http://epad_dicomweb:8090/{dicomweb_loc}"
+    depends_on:
+      - mydicomweb
+    healthcheck:
+      test: ["CMD", "pm2", "show", "ePADlite"]
+      interval: 1m30s
+      timeout: 1m
+      retries: 10
+    networks:
+      - epad-network

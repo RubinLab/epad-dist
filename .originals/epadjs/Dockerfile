@@ -7,10 +7,9 @@ USER node
 RUN mkdir -p /home/node/app
 WORKDIR /home/node/app
 
-RUN git clone https://github.com/RubinLab/epadjs.git /home/node/app/
+RUN git clone -b support/environmentVariables https://github.com/RubinLab/epadjs.git /home/node/app/
 
 RUN sed -i 's/react-scripts build/react-scripts --max_old_space_size=4096 build/g' /home/node/app/package.json
-RUN sed -i 's/keycloak.json/key_cloak.json/g' /home/node/app/src/App.js
 
 # Install app dependencies
 ENV NPM_CONFIG_LOGLEVEL warn
@@ -20,5 +19,7 @@ RUN npm run build
 
 FROM nginx:1.15
 COPY --from=build-stage /home/node/app/build/ /usr/share/nginx/html
+COPY entrypoint.sh /usr/local/bin/entrypoint
 EXPOSE 80
+ENTRYPOINT [ "entrypoint" ]
 CMD ["nginx", "-g", "daemon off;"]

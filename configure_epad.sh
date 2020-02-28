@@ -26,7 +26,7 @@ replace_in_files(){
 
 if [[ $# != 2 ]]
 then
-    echo "Wrong number of parameters. Configuration script needs a folder and a yml file to run. Ex: ./configure_epad.sh ../epad_lite_dist ./epad.yml"
+    echo "Wrong number of parameters. $Configuration script needs a folder and a yml file to run. Ex: ./$configure_epad.sh ../epad_lite_dist ./epad.yml"
     exit 1
 fi
 # read yml file and create environment variables
@@ -38,7 +38,7 @@ create_variables $2
 
 if [ -d "./$1" ]
 then
-    echo "$1 folder already exists. Do you want to replace the $1 installation with the new files? This will cause configurations to be resetted. "
+    echo "$1 folder already exists. Do you want to replace the $1 installation with the new files? This will cause $configurations to be resetted. "
     read -p "Are you sure? " -n 1 -r
     echo    # (optional) move to a new line
     if [[ $REPLY =~ ^[Yy]$ ]]
@@ -58,9 +58,19 @@ if [ $epadjs_mode != 'external' ]
 then
     if [[ ! -z $epadjs_dockerfiledir ]]
     then
-        cat ./$1/docker-compose_epadjs_build.ymlpart >> ./$1/docker-compose.yml
-    else        
-        cat ./$1/docker-compose_epadjs.ymlpart >> ./$1/docker-compose.yml
+        if [[ $config == 'environment' ]]
+        then
+            cat ./$1/docker-compose_epadjs_build_env.ymlpart >> ./$1/docker-compose.yml
+        else    
+            cat ./$1/docker-compose_epadjs_build.ymlpart >> ./$1/docker-compose.yml
+        fi
+    else
+        if [[ $config == 'environment' ]]
+        then
+            cat ./$1/docker-compose_epadjs_env.ymlpart >> ./$1/docker-compose.yml
+        else      
+            cat ./$1/docker-compose_epadjs.ymlpart >> ./$1/docker-compose.yml
+        fi
     fi
 fi
 if [ $keycloak_mode != 'external' ]
@@ -100,9 +110,19 @@ then
     fi
     if [[ ! -z $dicomweb_dockerfiledir ]]
     then
-        cat ./$1/docker-compose_dicomweb_build.ymlpart >> ./$1/docker-compose.yml
+        if [[ $config == 'environment' ]]
+        then
+            cat ./$1/docker-compose_dicomweb_build_env.ymlpart >> ./$1/docker-compose.yml 
+        else
+            cat ./$1/docker-compose_dicomweb_build.ymlpart >> ./$1/docker-compose.yml
+        fi
     else        
-        cat ./$1/docker-compose_dicomweb.ymlpart >> ./$1/docker-compose.yml
+        if [[ $config == 'environment' ]]
+        then
+            cat ./$1/docker-compose_dicomweb_env.ymlpart >> ./$1/docker-compose.yml
+        else
+            cat ./$1/docker-compose_dicomweb.ymlpart >> ./$1/docker-compose.yml
+        fi
     fi
 fi
 if [ $epadlite_mode != 'external' ]
@@ -113,9 +133,19 @@ then
     fi
     if [[ ! -z $epadlite_dockerfiledir ]]
     then
-        cat ./$1/docker-compose_epadlite_build.ymlpart >> ./$1/docker-compose.yml
+        if [[ $config == 'environment' ]]
+        then
+            cat ./$1/docker-compose_epadlite_build_env.ymlpart >> ./$1/docker-compose.yml
+        else
+            cat ./$1/docker-compose_epadlite_build.ymlpart >> ./$1/docker-compose.yml
+        fi
     else    
-        cat ./$1/docker-compose_epadlite.ymlpart >> ./$1/docker-compose.yml
+        if [[ $config == 'environment' ]]
+        then
+            cat ./$1/docker-compose_epadlite_env.ymlpart >> ./$1/docker-compose.yml
+        else
+            cat ./$1/docker-compose_epadlite.ymlpart >> ./$1/docker-compose.yml
+        fi
     fi
 fi
 cat ./$1/docker-compose_end.ymlpart >> ./$1/docker-compose.yml
@@ -124,6 +154,11 @@ cat ./$1/nginx_end.confpart >> ./$1/nginx.conf
 rm ./$1/*.ymlpart
 rm ./$1/*.confpart
 
+if [[ $config == 'environment' ]]
+then
+    rm ./$1/production_*.js*
+fi
+            
 
 # update for externals
 if [ $keycloak_mode == 'external' ]
