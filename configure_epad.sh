@@ -207,7 +207,8 @@ do
 done < .env
 IFS=' ' 
 
-
+# support https in hostname
+replace_in_files "http:\/\/https:\/\/" "https:\/\/" $1
 
 
 
