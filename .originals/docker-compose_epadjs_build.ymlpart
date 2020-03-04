@@ -7,7 +7,7 @@
       - "{epadjs_port}:80"
     volumes:
       - ./production_epadjs.json:/usr/share/nginx/html/config.json
-      - ./production_keycloak.json:/usr/share/nginx/html/key_cloak.json
+      - ./production_keycloak.json:/usr/share/nginx/html/keycloak.json
       - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - myepadlite
