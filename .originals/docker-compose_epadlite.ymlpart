@@ -9,6 +9,7 @@
       - ./production_epadlite.js:/home/node/app/config/development.js
       - ./production_epadlite_dicomweb.json:/home/node/app/config/dicomweb.json
       - ./production_epadlite_auth.json:/home/node/app/config/auth.json
+      - ../data:/home/node/app/data
     depends_on:
       - mydicomweb
     healthcheck:
