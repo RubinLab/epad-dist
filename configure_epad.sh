@@ -100,7 +100,12 @@ then
     then 
         cat ./$1/nginx_mariadb.confpart >> ./$1/nginx.conf
     fi
-    cat ./$1/docker-compose_mariadb.ymlpart >> ./$1/docker-compose.yml
+    if [[ ! -z $mariadb_dockerfiledir ]]
+    then
+        cat ./$1/docker-compose_mariadb_build.ymlpart >> ./$1/docker-compose.yml
+    else
+        cat ./$1/docker-compose_mariadb.ymlpart >> ./$1/docker-compose.yml
+    fi
 fi
 if [ $dicomweb_mode != 'external' ]
 then
@@ -210,6 +215,7 @@ IFS=' '
 # support https in hostname
 replace_in_files "http:\/\/https:\/\/" "https:\/\/" $1
 
+cp ./$1/nginx.conf ./$1/epadjs/.
 
 
 

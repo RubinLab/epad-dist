@@ -1,0 +1,23 @@
+  mymariadb:
+    build: {mariadb_dockerfiledir}
+    container_name: epad_mariadb
+    restart: always
+    healthcheck:
+      test: "/usr/bin/mysql --user={mariadb_user} --password={mariadb_pass} --execute \"SHOW DATABASES;\""
+      interval: 3s
+      timeout: 1s
+      retries: 5
+    # expose:
+    #   - "{mariadb_port}"
+    # ports:
+    #   - "{mariadb_port}:3306"
+    command: --init-file /data/application/init.sql
+    volumes:
+      - {mariadb_dblocation}:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: {mariadb_dbname}
+      MYSQL_USER: {mariadb_user}
+      MYSQL_PASSWORD: {mariadb_pass}
+      MYSQL_ROOT_PASSWORD: {mariadb_rootpass}
+    networks:
+      - epad-network
