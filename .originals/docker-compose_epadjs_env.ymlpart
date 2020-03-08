@@ -4,7 +4,7 @@
     expose:
       - "{epadjs_port}"
     ports:
-      - "{epadjs_port}:3000"
+      - "{epadjs_port}:80"
     environment:
       REACT_APP_AUTH_URL: "http://{host}/{keycloak_loc}/auth"
       PUBLIC_URL: "http://{host}"

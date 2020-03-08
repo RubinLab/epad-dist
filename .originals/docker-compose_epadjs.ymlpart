@@ -4,7 +4,7 @@
     expose:
       - "{epadjs_port}"
     ports:
-      - "{epadjs_port}:3000"
+      - "{epadjs_port}:80"
     volumes:
       - ./production_epadjs.json:/app/pu/config.json
       - ./production_keycloak.json:/app/public/keycloak.json
