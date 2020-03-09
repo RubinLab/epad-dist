@@ -214,6 +214,9 @@ IFS=' '
 
 # support https in hostname
 replace_in_files "http:\/\/https:\/\/" "https:\/\/" $1
+# support empty values
+replace_in_files "{epadjs_baseurl}" "" $1
+replace_in_files "{epadjs_authmode}" "" $1
 
 cp ./$1/nginx.conf ./$1/epadjs/.
 cp ./$1/epaddb_nodata.sql ./$1/mariadb/.

@@ -19,6 +19,8 @@
       SQL_LOGGER: "{mariadb_log}"
       AUTH_URL: "http://{host}/{keycloak_loc}"
       DICOMWEB_BASEURL: "http://epad_dicomweb:8090/{dicomweb_loc}"
+      AUTH: "{epadlite_auth}"
+      AUTH_USERINFO_URL: "{epadlite_authuserinfourl}"
     volumes:
       - ../data:/home/node/app/data
     depends_on:
