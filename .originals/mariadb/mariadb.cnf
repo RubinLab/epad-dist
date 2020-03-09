@@ -1,0 +1,3 @@
+[mysqld]
+innodb_flush_method=O_DSYNC
+innodb_data_file_path=ibdata1:10M:autoextend

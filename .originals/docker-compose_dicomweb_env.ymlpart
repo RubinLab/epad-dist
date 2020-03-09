@@ -1,0 +1,22 @@
+  mydicomweb:
+    image: rubinlab/dicomweb-server:{dicomweb_image}
+    container_name: epad_dicomweb
+    # expose:
+    #   - "{dicomweb_port}"
+    # ports:
+    #   - "{dicomweb_port}:8090"
+    environment:
+      DB_SERVER: "http://epad_couchdb"
+      DB_NAME: "{dicomweb_dbname}"
+      AUTH: "{dicomweb_auth}"
+      LOGGER: "{dicomweb_log}"
+      PREFIX: "/{dicomweb_loc}"
+    depends_on:
+      - mykeycloak
+    healthcheck:
+      test: ["CMD", "pm2", "show", "DICOMwebServer"]
+      interval: 1m30s
+      timeout: 1m
+      retries: 10
+    networks:
+      - epad-network

@@ -1,5 +1,5 @@
   mymariadb:
-    image: rubinlab/mariadb:{mariadb_image}
+    build: {mariadb_dockerfiledir}
     container_name: epad_mariadb
     restart: always
     healthcheck:
@@ -14,7 +14,6 @@
     command: --init-file /data/application/init.sql
     volumes:
       - {mariadb_dblocation}:/var/lib/mysql
-      - {mariadb_backuploc}:/data/application/init.sql
     environment:
       MYSQL_DATABASE: {mariadb_dbname}
       MYSQL_USER: {mariadb_user}
