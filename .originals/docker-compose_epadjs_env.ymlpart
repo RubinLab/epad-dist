@@ -10,6 +10,7 @@
       PUBLIC_URL: "http://{host}"
       REACT_APP_API_URL: "http://{host}/{epadlite_loc}"
       REACT_APP_WADO_URL: "wadouri:http://{host}/{dicomweb_loc}"
+      REACT_APP_BASE_URL: "{epadjs_baseurl}"
     depends_on:
       - myepadlite
     networks:
