@@ -1,7 +1,6 @@
 host: YOUR_HOSTNAME
 mode: lite
 config: environment
-version: latest
 keycloak:
   mode: build
   dockerfiledir: ".\/keycloak"
