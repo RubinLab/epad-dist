@@ -8,6 +8,7 @@
     environment:
       PUBLIC_URL: "http://{host}"
       REACT_APP_BASE_URL: "{epadjs_baseurl}"
+      REACT_APP_AUTH_MODE: "{epadjs_authmode}"
     volumes:
       - ./production_epadjs.json:/usr/share/nginx/html/config.json
       - ./production_keycloak.json:/usr/share/nginx/html/keycloak.json
