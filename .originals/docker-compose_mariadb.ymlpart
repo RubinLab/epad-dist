@@ -1,5 +1,5 @@
   mymariadb:
-    image: mariadb:{mariadb_image}
+    image: rubinlab/mariadb:{mariadb_image}
     container_name: epad_mariadb
     restart: always
     healthcheck:

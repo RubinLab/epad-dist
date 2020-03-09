@@ -216,6 +216,6 @@ IFS=' '
 replace_in_files "http:\/\/https:\/\/" "https:\/\/" $1
 
 cp ./$1/nginx.conf ./$1/epadjs/.
-
+cp ./$1/epaddb_nodata.sql ./$1/mariadb/.
 
 
