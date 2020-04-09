@@ -103,6 +103,7 @@ CREATE TABLE IF NOT EXISTS `dbversion` (
 
 LOCK TABLES `dbversion` WRITE;
 /*!40000 ALTER TABLE `dbversion` DISABLE KEYS */;
+DELETE FROM `dbversion`;
 INSERT INTO `dbversion` VALUES ('4.0');
 /*!40000 ALTER TABLE `dbversion` ENABLE KEYS */;
 UNLOCK TABLES;
