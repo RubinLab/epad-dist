@@ -98,17 +98,6 @@ CREATE TABLE IF NOT EXISTS `dbversion` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `dbversion`
---
-
-LOCK TABLES `dbversion` WRITE;
-/*!40000 ALTER TABLE `dbversion` DISABLE KEYS */;
-DELETE FROM `dbversion`;
-INSERT INTO `dbversion` VALUES ('4.0');
-/*!40000 ALTER TABLE `dbversion` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `disabled_template`
 --
 
