@@ -663,41 +663,6 @@ CREATE TABLE IF NOT EXISTS `project_template` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `project_user`
---
-
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE IF NOT EXISTS `project_user` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `project_id` int(10) unsigned DEFAULT NULL,
-  `user_id` int(10) unsigned DEFAULT NULL,
-  `role` varchar(64) DEFAULT NULL,
-  `creator` varchar(128) DEFAULT NULL,
-  `createdtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `updatetime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `updated_by` varchar(64) DEFAULT NULL,
-  `defaulttemplate` varchar(128) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `project_user_ind` (`project_id`,`user_id`),
-  KEY `FK_project_user_user` (`user_id`),
-  KEY `FK_project_user_project` (`project_id`),
-  CONSTRAINT `FK_project_user_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
-  CONSTRAINT `FK_project_user_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Dumping data for table `project_user`
---
-
-LOCK TABLES `project_user` WRITE;
-/*!40000 ALTER TABLE `project_user` DISABLE KEYS */;
-INSERT IGNORE INTO `project_user` VALUES (1,1,1,'Owner','admin','2015-03-09 21:00:21','2015-03-09 21:00:21',NULL,NULL),(2,2,1,'Owner','admin','2015-09-29 19:29:59','2015-09-29 19:29:59',NULL,NULL);
-/*!40000 ALTER TABLE `project_user` ENABLE KEYS */;
-UNLOCK TABLES;
-
---
 -- Table structure for table `remote_pac_query`
 --
 
@@ -917,6 +882,7 @@ INSERT IGNORE INTO user(`username`, `email`, `enabled`, `creator`, `createdtime`
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
+
 --
 -- Table structure for table `user_flaggedimage`
 --
@@ -1024,6 +990,43 @@ CREATE TABLE IF NOT EXISTS `worklist_subject` (
   CONSTRAINT `FK_worklistsubject_worklist` FOREIGN KEY (`worklist_id`) REFERENCES `worklist` (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `project_user`
+--
+
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE IF NOT EXISTS `project_user` (
+  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+  `project_id` int(10) unsigned DEFAULT NULL,
+  `user_id` int(10) unsigned DEFAULT NULL,
+  `role` varchar(64) DEFAULT NULL,
+  `creator` varchar(128) DEFAULT NULL,
+  `createdtime` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `updatetime` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `updated_by` varchar(64) DEFAULT NULL,
+  `defaulttemplate` varchar(128) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `project_user_ind` (`project_id`,`user_id`),
+  KEY `FK_project_user_user` (`user_id`),
+  KEY `FK_project_user_project` (`project_id`),
+  CONSTRAINT `FK_project_user_project` FOREIGN KEY (`project_id`) REFERENCES `project` (`id`),
+  CONSTRAINT `FK_project_user_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=17 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `project_user`
+--
+
+LOCK TABLES `user` READ, `project_user` WRITE;
+/*!40000 ALTER TABLE `project_user` DISABLE KEYS */;
+SELECT id INTO @userId FROM user WHERE username = '{keycloak_user}';
+INSERT IGNORE INTO `project_user` VALUES (1,1,@userId,'Owner','admin','2015-03-09 21:00:21','2015-03-09 21:00:21',NULL,NULL),(2,2,@userId,'Owner','admin','2015-09-29 19:29:59','2015-09-29 19:29:59',NULL,NULL);
+/*!40000 ALTER TABLE `project_user` ENABLE KEYS */;
+UNLOCK TABLES;
+
 
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
