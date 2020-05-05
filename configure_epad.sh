@@ -77,7 +77,12 @@ if [ $keycloak_mode != 'external' ]
 then
     if [[ ! -z $keycloak_loc ]]
     then 
-        cat ./$1/nginx_keycloak.confpart >> ./$1/nginx.conf
+        if [ $epadjs_port != '80' ]
+        then
+            cat ./$1/nginx_keycloak_port.confpart >> ./$1/nginx.conf
+        else
+            cat ./$1/nginx_keycloak.confpart >> ./$1/nginx.conf
+        fi
     fi
     if [[ ! -z $keycloak_dockerfiledir ]]
     then
