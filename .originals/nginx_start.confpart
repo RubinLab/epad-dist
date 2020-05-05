@@ -2,7 +2,7 @@
 #/etc/nginx/conf.d                                                                                                                                                                                                                                                                              
                                                                                                                                                                                                                                                                               
 server {
-        listen       80;
+        listen       {epadjs_port};
         server_name  localhost;
         # means no limit
         client_max_body_size 0;

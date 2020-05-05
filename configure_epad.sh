@@ -163,7 +163,11 @@ if [[ $config == 'environment' ]]
 then
     rm ./$1/production_*.js*
 fi
-            
+
+if [ $epadjs_port != '80' ]
+then
+    replace_in_files "{host}" "{host}:{epadjs_port}" $1
+fi
 
 # update for externals
 if [ $keycloak_mode == 'external' ]
