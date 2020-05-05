@@ -4,7 +4,7 @@
     expose:
       - "{epadjs_port}"
     ports:
-      - "{epadjs_port}:80"
+      - "{epadjs_port}:{epadjs_port}"
     environment:
       PUBLIC_URL: "http://{host}"
       REACT_APP_BASE_URL: "{epadjs_baseurl}"
