@@ -1,6 +1,9 @@
   myepadlite:
-    build: {epadlite_dockerfiledir}
-    container_name: epad_lite
+    build:
+     context: {epadlite_dockerfiledir}
+     dockerfile: Dockerfile
+     args:
+       ARG_EPAD_DOCKER_GID: 999
     # expose:
     #   - "{epadlite_port}"
     # ports:
