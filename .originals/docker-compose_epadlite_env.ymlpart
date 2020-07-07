@@ -23,6 +23,8 @@
       AUTH_USERINFO_URL: "{epadlite_authuserinfourl}"
     volumes:
       - ../data:/home/node/app/data
+      - ../pluginData:/home/node/app/pluginsDataFolder
+      -  /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       - mydicomweb
     healthcheck:

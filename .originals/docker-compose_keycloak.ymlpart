@@ -17,6 +17,7 @@
       - ./realm-export.json:/opt/jboss/keycloak/realm-export.json
       - ./realm-export_epad.json:/opt/jboss/keycloak/realm-export_epad.json
       - ./terms.ftl:/opt/jboss/keycloak/themes/base/login/terms.ftl
+      - ../tmp:/tmp
     depends_on:
       - mycouchdb
     networks:
