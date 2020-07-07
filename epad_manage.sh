@@ -4,6 +4,7 @@
 # sytem configuration variables
 	var_version="master"
 	var_epadDistLocation="./epad-dist"
+	var_epadLiteDistLocation="./epad_lite_dist"
 	var_response=""
 	var_host=""
 	var_mode="lite" # or thick
@@ -49,6 +50,22 @@
 		fi
 	}
 
+	create_epad_lite_dist(){
+		var_response="n"
+		if [ -d "$var_epadLiteDistLocation" ]; then
+                        read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
+                else
+                        ./epad-dist/configure_epad.sh $var_epadLiteDistLocation ./epad-dist/epad.yml
+                fi
+
+                if [ $var_response == "y" ]; then
+                        echo "creating $var_epadLiteDistLocation folder"
+                        rm -rf $var_epadLiteDistLocation
+                        ./epad-dist/configure_epad.sh $var_epadLiteDistLocation ./epad-dist/epad.yml
+                fi
+
+	}
+
 	stop_containers_all (){
 		export_keycloak
 		echo $!
@@ -64,10 +81,9 @@
 		cd ..
 	}
 
-	start_containes_all (){
+	start_containers_all (){
 		cd epad_lite_dist
                 docker-compose start
-                docker stop epad_js
                 cd ..
 		linecount=0
 		counter=0
@@ -89,6 +105,33 @@
 		echo "epad is ready to browse"
 	
 	}
+
+	start_containers_viaCompose_all (){
+                cd epad_lite_dist
+                docker-compose up -d
+                cd ..
+                linecount=0
+                counter=0
+                var_waiting="starting epad"
+                while [[ "$linecount" -ne "4"  ]]; do
+                        counter=$((counter+1))
+                        linecount=$(docker ps -a  | grep healthy | wc -l)
+                        if [[ $counter -ge 0 ]]; then
+                                var_waiting="$var_waiting."
+                                echo -en "$var_waiting\r"
+                                sleep 1
+                        fi
+                        if [[ "$counter" -eq "10" ]]; then
+                                echo -en '                                        \r'
+                                counter=0
+                                var_waiting="starting epad"
+                        fi
+                done
+                echo "epad is ready to browse"
+
+        }
+
+
 	collect_system_configuration(){
 		var_response=""
 		
@@ -246,10 +289,12 @@
 			collect_system_configuration
 			collect_user_credentials
 			edit_epad_yml
+			create_epad_lite_dist
+			start_containers_viaCompose_all
 		fi
 
                 if [[ $1 = "start" ]]; then
-			start_containes_all
+			start_containers_all
                 fi
 
                 if [[ $1 = "stop" ]]; then
