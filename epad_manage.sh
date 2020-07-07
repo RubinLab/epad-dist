@@ -1,12 +1,15 @@
+#!/bin/bash
 # $1 expected install, start, stop, update
 # $2 expected a version master,latest,v0.1, v0.2 
 
+var_path=$(pwd)
+#echo "epad will be installed in : $var_path"
 # sytem configuration variables
 	var_version="master"
-	var_epadDistLocation="./epad-dist"
-	var_epadLiteDistLocation="./epad_lite_dist"
+	var_epadDistLocation="epad-dist"
+	var_epadLiteDistLocation="epad_lite_dist"
 	var_response=""
-	var_host=""
+	var_host="localhost"
 	var_mode="lite" # or thick
 	var_config="environment" # or nothing
 	var_container_mode="image" # or build
@@ -37,54 +40,58 @@
 	copy_epad_dist (){
 		var_response="n"	
 		
-		if [ -d "$var_epadDistLocation" ]; then
+		if [[ -d "$var_path/$var_epadDistLocation" ]]; then
   			read -p  "epad-dist exist already exist do you want to owerwrite ? (y/n) (defult value is n): " var_response
 		else
-  			git clone https://github.com/RubinLab/epad-dist.git
+			cd $var_path
+  			git clone -b script https://github.com/RubinLab/epad-dist.git
 		fi
 
-		if [ $var_response == "y" ]; then
+		if [[ "$var_response" -eq "y" ]]; then
   			echo "copying epad-dist repo from git"
-			rm -rf $var_epadDistLocation
-  			git clone https://github.com/RubinLab/epad-dist.git
+			rm -rf "$var_path/$var_epadDistLocation"
+			cd $var_path
+  			git clone -b script https://github.com/RubinLab/epad-dist.git
 		fi
 	}
 
 	create_epad_lite_dist(){
 		var_response="n"
-		if [ -d "$var_epadLiteDistLocation" ]; then
+		if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
                         read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
                 else
-                        ./epad-dist/configure_epad.sh $var_epadLiteDistLocation ./epad-dist/epad.yml
+			cd "$var_path/$var_epadDistLocation"
+                        ./configure_epad.sh ../$var_epadLiteDistLocation ./epad.yml
+			
                 fi
 
                 if [ $var_response == "y" ]; then
                         echo "creating $var_epadLiteDistLocation folder"
-                        rm -rf $var_epadLiteDistLocation
-                        ./epad-dist/configure_epad.sh $var_epadLiteDistLocation ./epad-dist/epad.yml
+                        rm -rf "$var_path/$var_epadLiteDistLocation"
+			cd "$var_path/$var_epadDistLocation"
+                        ./configure_epad.sh ../$var_epadLiteDistLocation ./epad.yml
                 fi
 
 	}
 
 	stop_containers_all (){
-		export_keycloak
-		echo $!
-		result=""
+		#export_keycloak
+		#echo $!
+		#result=""
 
-		while [[ -z $result  ]]; do
-			result=$(cat exportkeycloak.log | grep "Export finished successfully")
-		done
+		#while [[ -z $result  ]]; do
+		#	result=$(cat exportkeycloak.log | grep "Export finished successfully")
+		#done
 
-		echo $result
-		cd epad_lite_dist
+		#echo $result
+		cd "$var_path/$var_epadLiteDistLocation"
 		docker-compose stop
-		cd ..
+		
 	}
 
 	start_containers_all (){
-		cd epad_lite_dist
+		cd "$var_path/$var_epadLiteDistLocation"
                 docker-compose start
-                cd ..
 		linecount=0
 		counter=0
 		var_waiting="starting epad"
@@ -97,19 +104,19 @@
 				sleep 1
 			fi	
                         if [[ "$counter" -eq "10" ]]; then
-                                echo -en '                                        \r'
+                                echo -en 'starting epad                     \r'
 				counter=0
 				var_waiting="starting epad"
                         fi
                 done
-		echo "epad is ready to browse"
+		echo "epad is ready to browse : $var_host"
 	
 	}
 
 	start_containers_viaCompose_all (){
-                cd epad_lite_dist
+                cd "$var_path/$var_epadLiteDistLocation"
+		ls
                 docker-compose up -d
-                cd ..
                 linecount=0
                 counter=0
                 var_waiting="starting epad"
@@ -127,7 +134,7 @@
                                 var_waiting="starting epad"
                         fi
                 done
-                echo "epad is ready to browse"
+                echo "epad is ready to browse: $var_host"
 
         }
 
@@ -135,7 +142,7 @@
 	collect_system_configuration(){
 		var_response=""
 		
-		read -p "hostname (default value : empty) :" var_response
+		read -p "hostname (default value : localhost) :" var_response
                 if [[ -n "$var_response" ]]
                 then
                         echo "response = $var_response"
@@ -171,7 +178,7 @@
               	if [[ -n "$var_response" ]]
                 then
                         echo "response = $var_response"
-                        var_couchdb_locationn=$var_response
+                        var_couchdb_location=$var_response
                         echo "couchdb location : $var_couchdb_location"
                 fi
 	}
@@ -233,39 +240,62 @@
 	}
 
 	edit_epad_yml (){
-		sed -i -e "0,/host:.*/host: $var_host/g" "$var_epadDistLocation/epad.yml"
-		sed -i -e "0,/mode:.*/mode: $var_mode/g" "$var_epadDistLocation/epad.yml"
-		sed -i -e "0,/config:.*/config: $var_config/g" "$var_epadDistLocation/epad.yml"
-		sed -i -e "0,/user:.*/user: $var_keycloak_user/g" "$var_epadDistLocation/epad.yml"
-		sed -i -e "0,/password:.*/password: $var_keycloak_pass/g" "$var_epadDistLocation/epad.yml"
-                sed -i -e "0,/email:.*/email: $var_keycloak_useremail/g" "$var_epadDistLocation/epad.yml"
-                sed -i -e "1,/user:.*/user: $var_maria_user/g" "$var_epadDistLocation/epad.yml"
-                sed -i -e "0,/pass:.*/pass: $var_maria_pass/g" "$var_epadDistLocation/epad.yml"
-                sed -i -e "0,/rootpass:.*/rootpass: $var_maria_rootpass/g" "$var_epadDistLocation/epad.yml"
+		sed -i -e "s/host:.*/host: $var_host/g" "$var_epadDistLocation/epad.yml"
+		#sed -i -e "s/mode:.*/mode: $var_mode/g" "$var_epadDistLocation/epad.yml"
+		awk -v var_awk="mode: $var_mode" '/mode.*/{c++; if (c==1) { sub("mode.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 
+		sed -i -e "s/config:.*/config: $var_config/g" "$var_epadDistLocation/epad.yml"
+		#sed -i -e "s/user:.*/user: $var_keycloak_user/g" "$var_epadDistLocation/epad.yml"
+	        awk -v var_awk="user: $var_keycloak_user" '/user.*/{c++; if (c==1) { sub("user.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+
+		sed -i -e "s/password:.*/password: $var_keycloak_pass/g" "$var_epadDistLocation/epad.yml"
+                sed -i -e "s/email:.*/email: $var_keycloak_useremail/g" "$var_epadDistLocation/epad.yml"
+                #sed -i -e "s/user:.*/user: $var_maria_user/g" "$var_epadDistLocation/epad.yml"
+                sed -i -e "s/pass:.*/pass: $var_maria_pass/g" "$var_epadDistLocation/epad.yml"
+                sed -i -e "s/rootpass:.*/rootpass: $var_maria_rootpass/g" "$var_epadDistLocation/epad.yml"
+		awk -v var_awk="user: $var_maria_user" '/user.*/{c++; if (c==2) { sub("user.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 	}
 
 	import_keycloak(){
-		
+		echo "importing keycloak users...."		
 		docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
 		-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=import \
 		-Dkeycloak.migration.provider=$var_provider \
 		-Dkeycloak.migration.realmName=$var_realmName \
 		-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
 		-Dkeycloak.migration.file=$var_keycloak_export > importkeycloak.log &
-		echo $! > pid.txt
+		echo $! > "$var_path/pid.txt"
+                echo $!
+                result=""
+
+                while [[ -z $result  ]]; do
+                        result=$(cat $var_path/exportkeycloak.log | grep "Export finished successfully")
+                done
+
+                echo $result
+
 
 	}
 
 	export_keycloak(){
-		
+		echo "eporting keycloak users....\n"
 		docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
 		-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=export \
 		-Dkeycloak.migration.provider=$var_provider \
 		-Dkeycloak.migration.realmName=$var_realmName \
 		-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
 		-Dkeycloak.migration.file=$var_keycloak_export  > exportkeycloak.log &
-		echo $! > pid.txt
+		echo $! > "$var_path/pid.txt"
+		echo $!
+                result=""
+
+                while [[ -z $result  ]]; do
+                        result=$(cat $var_path/exportkeycloak.log | grep "Export finished successfully")
+                done
+
+                echo $result
+
+
 
 	}
 		
@@ -284,13 +314,29 @@
 	if [ "$#" -gt 0 ]; then
 
 		if [[ $1 = "install" ]]; then	
-			stop_containers_all
+			echo "epad will be installed in : $var_path"
+			if [[ -d "$var_path/tmp" ]]; then
+				echo "tmp dir exist already"
+			else
+				mkdir "$var_path/tmp"
+				chmod 777 "$var_path/tmp"	
+			fi
+			#stop_containers_all
 			copy_epad_dist
 			collect_system_configuration
 			collect_user_credentials
 			edit_epad_yml
 			create_epad_lite_dist
 			start_containers_viaCompose_all
+			var_check=0
+			#while [[ "$var_check" -eq "0" ]]
+			#do
+			#	if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+	                #		start_containers_viaCompose_all
+			#		var_check=1
+			#	fi
+			#done
+
 		fi
 
                 if [[ $1 = "start" ]]; then
@@ -304,8 +350,12 @@
 		if [[ $1 = "update" ]]; then
                         if [[ $2 = "epad" ]]; then
 				echo "update epad"
-				#stop_containers_all
-				#export_keycloak
+				export_keycloak
+				stop_containers_all
+				cd "$var_path/$var_epadLiteDistLocation"
+				docker-compose build --no-cache
+				start_containers_viaCompose_all
+				import_keycloak
 			elif [[ $2 = "user" ]]; then
 				echo "update user"
 			else
