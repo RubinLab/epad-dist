@@ -15,7 +15,7 @@ get_react_environment_vars() {
             NEW_OBJ+="$var:\"`printenv $var`\""
         fi
     done
-    NEW_OBJ+='})';
+    # NEW_OBJ+='})';
 
 }
 
@@ -35,9 +35,24 @@ fi
 # make a copy of the mainjs so we can always go back to original
 cp "$MAIN_JS" "$MAIN_JS".original
 
-OLD_OBJ="Object({NODE_ENV:\"production\",PUBLIC_URL:\"\"})"
+OLD_OBJ="Object({NODE_ENV:\"production\",PUBLIC_URL:\"\""
 sed -i -e "s/$OLD_OBJ/$NEW_OBJ/g" "$MAIN_JS"
-echo "Replaced js file environment obj with $NEW_OBJ"
+echo "Replaced main.js file environment $OLD_OBJ with $NEW_OBJ"
+
+MAIN_JS=$(find /usr/share/nginx/html/static/js/2.*js)
+# check if there is an original file and start from that as replace assumes to find the original form of environment variables
+ORG_MAIN_JS=$(find /usr/share/nginx/html/static/js/2.*js.original)
+if [[ ! -z $ORG_MAIN_JS ]]
+then 
+    echo "Getting the original js file"
+    cp "$MAIN_JS".original "$MAIN_JS"
+fi
+# make a copy of the mainjs so we can always go back to original
+cp "$MAIN_JS" "$MAIN_JS".original
+
+OLD_OBJ="Object({NODE_ENV:\"production\",PUBLIC_URL:\"\""
+sed -i -e "s/$OLD_OBJ/$NEW_OBJ/g" "$MAIN_JS"
+echo "Replaced 2.js file environment $OLD_OBJ with $NEW_OBJ"
 
 exec "$@"
 
