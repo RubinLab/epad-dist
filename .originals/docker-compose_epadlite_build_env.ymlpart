@@ -1,4 +1,5 @@
   myepadlite:
+    container_name: epad_lite
     build:
      context: {epadlite_dockerfiledir}
      dockerfile: Dockerfile
