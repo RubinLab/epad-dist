@@ -3,7 +3,7 @@
     <#if section = "header">
         Software License
     <#elseif section = "form">
-    <div id="kc-terms-text">
+    <div id="kc-terms-text" style="overflow-y: scroll; height:400px; line-height:1; font-size:10px;">
         <p><strong>BY CLICKING ON &ldquo;ACCEPT,&rdquo; DOWNLOADING, OR OTHERWISE USING EPAD, YOU AGREE TO THE FOLLOWING TERMS AND CONDITIONS:</strong></p>
         <p><strong>STANFORD ACADEMIC SOFTWARE SOURCE CODE LICENSE FOR</strong></p>
         <p>&ldquo;ePAD Annotation Platform for Radiology Images&rdquo;</p>
