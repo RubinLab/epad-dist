@@ -5,7 +5,7 @@ keycloak:
   mode: build
   dockerfiledir: ".\/keycloak"
   user: YOUR_KEYCLOAK_ADMIN_USER
-  password: YOUR_KEYCLOAK_ADMIN_PASS
+  password: OUR_KEYCLOAK_ADMIN_PASS
   email: YOUR_KEYCLOAK_ADMIN_EMAIL
   port: 8899
   loc: "keycloak"
@@ -13,7 +13,7 @@ couchdb:
   mode: image
   image: "2.3.1"
   port: 8888
-  dblocation: "..\/couchdbloc"
+  dblocation: "..\/couchdbloc" 
 dicomweb:
   mode: build
   dockerfiledir: ".\/dicomweb-server"
@@ -22,6 +22,7 @@ dicomweb:
   log: true
   auth: none
   loc: "pacs"
+  branch: "master" 
 epadlite:
   mode: build
   dockerfiledir: ".\/epadlite"
@@ -31,10 +32,12 @@ epadlite:
   https: false
   auth: auth
   loc: "api"
+  branch: "master"
 epadjs:
   mode: build
   dockerfiledir: ".\/epadjs"
   port: 80
+  branch: "master"
 mariadb:
   mode: image
   image: latest
@@ -45,4 +48,4 @@ mariadb:
   port: 3306
   log: false
   backuploc: ".\/epaddb_nodata.sql"
-  dblocation: "..\/mariadbloc"
+  dblocation: "..\/mariadbloc" 

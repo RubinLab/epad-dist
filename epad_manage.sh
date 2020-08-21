@@ -3,15 +3,16 @@
 # $2 expected a version master,latest,v0.1, v0.2 
 
 var_path=$(pwd)
+var_os_type=""
 #echo "epad will be installed in : $var_path"
 # sytem configuration variables
-	var_ip=0
+	var_ip=""
 	var_local_docker_gid=0
 	var_version="master"
 	var_epadDistLocation="epad-dist"
 	var_epadLiteDistLocation="epad_lite_dist"
 	var_response=""
-	var_host="localhost"
+	var_host=""
 	var_mode="lite" # or thick
 	var_config="environment" # or nothing
 	var_container_mode="image" # or build
@@ -39,6 +40,17 @@ var_path=$(pwd)
 #echo $var_maria_rootpass
 
 # functions
+	find_os_type(){
+                if [[ "$OSTYPE" == "linux"* ]]; then
+                        var_os_type="linux"
+                elif  [[ "$OSTYPE" == "darwin"* ]]; then
+                        var_os_type="mac"
+                else
+                        echo " your operating system is not supported or ostype env. variable is not defined. Only linux and macs are supported "i
+                        exit 1
+                fi
+        }
+
         add_backslash_tofolderpath(){
 		#$1 is the parameter passed to this function
                 #echo "adding backslash"         
@@ -69,8 +81,16 @@ var_path=$(pwd)
 	}
 
 	find_ip(){
-		echo "find ip"
-		var_ip=$(hostname -I | cut -d" " -f1)
+ 		if [[ "$var_os_type" == "linux"* ]]; then
+                        var_ip=$(hostname -I | cut -d" " -f1)
+                else 
+			var_ip=$(ifconfig | grep -w inet | cut -d " "  -f2 | tail -1)
+		fi
+	
+		if [[ "$var_ip" == "" ]]; then
+			echo "we couldn't find an ip please try to may your ip manually in etc/hosts"
+			exit 1
+		fi
 		echo $var_ip
 	}
 	
@@ -100,6 +120,7 @@ var_path=$(pwd)
 		find_ip	
 		edit_hosts_file
 		echo "after fixing etc/hosts $var_host"
+		echo $var_host
 	}
 
 	find_host_info(){
@@ -487,6 +508,15 @@ var_path=$(pwd)
 			#stop_containers_all
 			copy_epad_dist
 			find_host_info
+			var_install_response="n"
+			if [[ "$var_host" == "" ]]; then
+				read -sp " your machine hostname is empty do you want us to fix it ? (y/n default value is n) : " var_install_response
+			 	
+				if [ $var_install_response == "y" ]; then
+					fix_server_via_hosts
+				fi
+
+			fi
 			find_docker_gid
 			collect_system_configuration
 			collect_user_credentials
