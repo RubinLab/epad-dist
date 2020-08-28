@@ -31,7 +31,7 @@ var_os_type=""
 
 # keycloak eport settings
 	# ! keep /tmp/ in case you want to edit the file name epad_realm.josn
-	var_keycloak_export="/tmp/epad_realm.json" 
+	var_keycloak_exportfolder="/tmp/epad_realm.json" 
 	var_realmName="ePad"
 	var_provider="singleFile"
 
@@ -41,6 +41,7 @@ var_os_type=""
 
 # functions
 	find_os_type(){
+	echo "process: finding os type"
                 if [[ $OSTYPE == "linux"* ]]; then
                         var_os_type="linux"
                 elif  [[ $OSTYPE == "darwin"* ]]; then
@@ -81,6 +82,7 @@ var_os_type=""
 	}
 
 	find_ip(){
+	echo "process: finding machine ip"
  		if [[ "$var_os_type" == "linux"* ]]; then
                         var_ip=$(hostname -I | cut -d" " -f1)
                 else 
@@ -95,6 +97,7 @@ var_os_type=""
 	}
 	
 	edit_hosts_file(){
+	echo "process: editing /etc/hosts"
  		
 		var_res=$(cat /etc/hosts | grep $var_ip)
                 if [ -z "$var_res" ]; then
@@ -115,7 +118,7 @@ var_os_type=""
 	}
 
 	fix_server_via_hosts(){
-		echo "fixing server hostname via /etc/hosts "
+		echo "process: fixing server hostname via /etc/hosts "
 		var_host="epadvm"
 		find_ip	
 		edit_hosts_file
@@ -124,10 +127,16 @@ var_os_type=""
 	}
 
 	find_host_info(){
-		var_host=$HOSTNAME
+	echo "process: finding host info"
+		#if [[ $HOSTNAME == "" ]];then
+		#	echo "hostname is empty will check etc/hosts"
+		#else
+			var_host=$HOSTNAME
+		#fi
 	}
 
 	load_credentials_tovar (){
+	echo "process: loading credentials from epad.yml to variables for a new epad.yml"
 		#var to load 
         		#var_host="localhost"
         		#var_mode="lite" # or thick
@@ -157,8 +166,10 @@ var_os_type=""
                         var_config=$( find_val_intext "config" "1")
                         #var_container_mode==$( find_val_intext "host" "1")
                         var_couchdb_location=$( find_val_intext "dblocation" "1")
+			var_couchdb_location=$(echo $var_couchdb_location | sed 's/"//g')
                         var_mariadb_location=$( find_val_intext "dblocation" "2")
-                        #var_branch==$( find_val_intext "host" "1")
+                       	var_mariadb_location=$(echo $var_mariadb_location | sed 's/"//g')
+			#var_branch==$( find_val_intext "host" "1")
 
                         
                         var_keycloak_user=$( find_val_intext "user" "1")
@@ -188,11 +199,13 @@ var_os_type=""
 	} 
 	
 	find_docker_gid(){
+	echo "process: finding docker group id"
 		var_local_docker_gid=$( cat /etc/group | grep docker | cut -d: -f3)
 		echo "gid : $var_local_docker_gid"
 	}
 
 	copy_epad_dist (){
+	echo "process: copying epad-dist from git.."
 		var_response="n"	
 		
 		if [[ -d "$var_path/$var_epadDistLocation" ]]; then
@@ -211,6 +224,7 @@ var_os_type=""
 	}
 
 	create_epad_lite_dist(){
+	echo "process: building epad_lite_dist from epad.yml"
 		var_response="n"
 		if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
                         read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
@@ -230,6 +244,7 @@ var_os_type=""
 	}
 
 	stop_containers_all (){
+	echo "process: stopping all containers..."
 		#export_keycloak
 		#echo $!
 		#result=""
@@ -245,6 +260,7 @@ var_os_type=""
 	}
 
 	start_containers_all (){
+	echo "process: starting all containers..."
 		cd "$var_path/$var_epadLiteDistLocation"
                 docker-compose start
 		linecount=0
@@ -269,6 +285,7 @@ var_os_type=""
 	}
 
 	start_containers_viaCompose_all (){
+	echo "process: starting all containers using docker-compose up -d"
                 cd "$var_path/$var_epadLiteDistLocation"
 		ls
                 docker-compose up -d
@@ -295,6 +312,7 @@ var_os_type=""
 
 
 	collect_system_configuration(){
+	echo "process: collecting system configuration info"
 		var_response=""
 		
 		read -p "hostname (default value : $var_host) :" var_response
@@ -339,6 +357,7 @@ var_os_type=""
 	}
 	
 	collect_user_credentials (){
+	echo "process: collecting user credentials"
 		var_response=""
 		
 		read -p "keycloak user name (default value : $var_keycloak_user) :" var_response
@@ -395,19 +414,20 @@ var_os_type=""
 	}
 
 	edit_epad_yml (){
-		sed -i -e "s/host:.*/host: $var_host/g" "$var_epadDistLocation/epad.yml"
-		#sed -i -e "s/mode:.*/mode: $var_mode/g" "$var_epadDistLocation/epad.yml"
+	echo "process: editing epad.yml file"
+		sed -i -e "s/host:.*/host: $var_host/g" "$var_path/$var_epadDistLocation/epad.yml"
+		#sed -i -e "s/mode:.*/mode: $var_mode/g" "$var_path/$var_epadDistLocation/epad.yml"
 		awk -v var_awk="mode: $var_mode" '/mode.*/{c++; if (c==1) { sub("mode.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 
-		sed -i -e "s/config:.*/config: $var_config/g" "$var_epadDistLocation/epad.yml"
-		#sed -i -e "s/user:.*/user: $var_keycloak_user/g" "$var_epadDistLocation/epad.yml"
+		sed -i -e "s/config:.*/config: $var_config/g" "$var_path/$var_epadDistLocation/epad.yml"
+		#sed -i -e "s/user:.*/user: $var_keycloak_user/g" "$var_path/$var_epadDistLocation/epad.yml"
 	        awk -v var_awk="user: $var_keycloak_user" '/user.*/{c++; if (c==1) { sub("user.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 
-		sed -i -e "s/password:.*/password: $var_keycloak_pass/g" "$var_epadDistLocation/epad.yml"
-                sed -i -e "s/email:.*/email: $var_keycloak_useremail/g" "$var_epadDistLocation/epad.yml"
-                #sed -i -e "s/user:.*/user: $var_maria_user/g" "$var_epadDistLocation/epad.yml"
-                sed -i -e "s/pass:.*/pass: $var_maria_pass/g" "$var_epadDistLocation/epad.yml"
-                sed -i -e "s/rootpass:.*/rootpass: $var_maria_rootpass/g" "$var_epadDistLocation/epad.yml"
+		sed -i -e "s/password:.*/password: $var_keycloak_pass/g" "$var_path/$var_epadDistLocation/epad.yml"
+                sed -i -e "s/email:.*/email: $var_keycloak_useremail/g" "$var_path/$var_epadDistLocation/epad.yml"
+                #sed -i -e "s/user:.*/user: $var_maria_user/g" "$var_path/$var_epadDistLocation/epad.yml"
+                sed -i -e "s/pass:.*/pass: $var_maria_pass/g" "$var_path/$var_epadDistLocation/epad.yml"
+                sed -i -e "s/rootpass:.*/rootpass: $var_maria_rootpass/g" "$var_path/$var_epadDistLocation/epad.yml"
 		awk -v var_awk="user: $var_maria_user" '/user.*/{c++; if (c==2) { sub("user.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 	
 		#sed -i -e "s/ARG_EPAD_DOCKER_GID:.*/ARG_EPAD_DOCKER_GID: $var_local_docker_gid/g" "var_path/$var_epadLiteDistLocation/docker-compose.yml"
@@ -424,19 +444,31 @@ var_os_type=""
 	}
 
 	edit_compose_file(){
+	echo "process: editing docker-compose file for ARG_EPAD_DOCKER_GID"
 		sed -i -e "s/ARG_EPAD_DOCKER_GID:.*/ARG_EPAD_DOCKER_GID: $var_local_docker_gid/g" "$var_path/$var_epadLiteDistLocation/docker-compose.yml"
 	}
 
+
 	import_keycloak(){
-		echo "importing keycloak users...."		
+		echo "process: importing keycloak users...."
+	
+		var_full_keycloak_export_path=$var_path$var_keycloak_exportfolder
+		if [ ! -f "$var_full_keycloak_export_path" ]; then
+			echo "$var_full_keycloak_export_path does not exist. You need to export keycloak users first."
+			exit 1
+		fi
+		echo $var_full_keycloak_export_path
+		#var_import_process=$(docker container top epad_keycloak | grep "keycloak.migration.action" | cut -d" " -f1)
+		#echo "$var_import_process"
+		#echo "importing keycloak users...."		
 		docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
 		-Djboss.socket.binding.port-offset=200 -Dkeycloak.migration.action=import \
 		-Dkeycloak.migration.provider=$var_provider \
 		-Dkeycloak.migration.realmName=$var_realmName \
 		-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
-		-Dkeycloak.migration.file=$var_keycloak_export > importkeycloak.log &
-		echo $! > "$var_path/pid.txt"
-                echo $!
+		-Dkeycloak.migration.file=$var_keycloak_exportfolder > importkeycloak.log &
+		#echo $! > "$var_path/pid.txt"
+                #echo $!
                 result=""
                 resultFail=""
                 while [[ -z $result ]] && [[ -z $resultFail ]]; do
@@ -450,23 +482,26 @@ var_os_type=""
                         echo "$resultFail.  Exiting script...."         
                         exit 1
                 fi
+		echo "restarting keycloak"
+		docker restart epad_keycloak
 
 	}
 
 	export_keycloak(){
-		echo "eporting keycloak users....\n"
+	 
+		echo "process: exporting keycloak users....\n"
 		docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
 		-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=export \
 		-Dkeycloak.migration.provider=$var_provider \
 		-Dkeycloak.migration.realmName=$var_realmName \
 		-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
-		-Dkeycloak.migration.file=$var_keycloak_export  > exportkeycloak.log &
-		echo $! > "$var_path/pid.txt"
-		echo $!
+		-Dkeycloak.migration.file=$var_keycloak_exportfolder  > exportkeycloak.log &
+		#echo $! > "$var_path/pid.txt"
+		#echo $!
                 result=""
                 resultFail=""
                 while [[ -z $result ]] && [[ -z $resultFail ]]; do
-                        result=$(cat $var_path/exportkeycloak.log | grep "Import finished successfully")
+                        result=$(cat $var_path/exportkeycloak.log | grep "Export finished successfully")
 
                         resultFail=$(cat $var_path/exportkeycloak.log | grep "Server boot has failed in an unrecoverable manner")
                 done
@@ -476,6 +511,8 @@ var_os_type=""
                         echo "$resultFail.  Exiting script...."         
                         exit 1
                 fi
+		echo "restarting keycloak"
+                docker restart epad_keycloak
 
 	}
 		
@@ -507,7 +544,9 @@ var_os_type=""
 			#collect_system_configuration
                		#remove_backslah_tofolderpath
 			#load_credentials_tovar
-			fix_server_via_hosts
+			#fix_server_via_hosts
+			#load_credentials_tovar
+			echo $(echo $var_couchdb_location | sed 's/"//g')
 		 fi
 
 		if [[ $1 == "install" ]]; then	
@@ -582,8 +621,8 @@ var_os_type=""
 				echo "updating epad configuration "
 				stop_containers_all
 				load_credentials_tovar
-				find_host_info
-				find_docker_gid
+				#find_host_info
+				#find_docker_gid
                         	collect_system_configuration
                         	collect_user_credentials
                         	edit_epad_yml
@@ -598,7 +637,6 @@ var_os_type=""
 # export import keycloak part
 		if [[ $1 == "export" ]]; then
                         if [[ $2 == "keycloakusers" ]]; then
-                                echo "exporting keycloak users "
                                 export_keycloak
                         fi
 
@@ -606,7 +644,6 @@ var_os_type=""
 
                 if [[ $1 = "import" ]]; then
                         if [[ $2 == "keycloakusers" ]]; then
-                                echo "importing keycloak users "
                                 import_keycloak
                         fi
 
