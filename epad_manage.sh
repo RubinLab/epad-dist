@@ -41,9 +41,9 @@ var_os_type=""
 
 # functions
 	find_os_type(){
-                if [[ "$OSTYPE" == "linux"* ]]; then
+                if [[ $OSTYPE == "linux"* ]]; then
                         var_os_type="linux"
-                elif  [[ "$OSTYPE" == "darwin"* ]]; then
+                elif  [[ $OSTYPE == "darwin"* ]]; then
                         var_os_type="mac"
                 else
                         echo " your operating system is not supported or ostype env. variable is not defined. Only linux and macs are supported "i
@@ -202,7 +202,7 @@ var_os_type=""
   			git clone -b script https://github.com/RubinLab/epad-dist.git
 		fi
 
-		if [[ "$var_response" -eq "y" ]]; then
+		if [[ $var_response == "y" ]]; then
   			echo "copying epad-dist repo from git"
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
@@ -283,7 +283,7 @@ var_os_type=""
                                 echo -en "$var_waiting\r"
                                 sleep 1
                         fi
-                        if [[ "$counter" -eq "10" ]]; then
+                        if [[ $counter == 10 ]]; then
                                 echo -en '                                        \r'
                                 counter=0
                                 var_waiting="starting epad"
@@ -430,7 +430,7 @@ var_os_type=""
 	import_keycloak(){
 		echo "importing keycloak users...."		
 		docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
-		-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=import \
+		-Djboss.socket.binding.port-offset=200 -Dkeycloak.migration.action=import \
 		-Dkeycloak.migration.provider=$var_provider \
 		-Dkeycloak.migration.realmName=$var_realmName \
 		-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
@@ -438,13 +438,18 @@ var_os_type=""
 		echo $! > "$var_path/pid.txt"
                 echo $!
                 result=""
+                resultFail=""
+                while [[ -z $result ]] && [[ -z $resultFail ]]; do
+                        result=$(cat $var_path/importkeycloak.log | grep "Import finished successfully")
 
-                while [[ -z $result  ]]; do
-                        result=$(cat $var_path/exportkeycloak.log | grep "Export finished successfully")
+                        resultFail=$(cat $var_path/importkeycloak.log | grep "Server boot has failed in an unrecoverable manner")
                 done
 
                 echo $result
-
+                if [[ $resultFail == *"Server boot has failed in an unrecoverable manner"* ]]; then
+                        echo "$resultFail.  Exiting script...."         
+                        exit 1
+                fi
 
 	}
 
@@ -459,14 +464,18 @@ var_os_type=""
 		echo $! > "$var_path/pid.txt"
 		echo $!
                 result=""
+                resultFail=""
+                while [[ -z $result ]] && [[ -z $resultFail ]]; do
+                        result=$(cat $var_path/exportkeycloak.log | grep "Import finished successfully")
 
-                while [[ -z $result  ]]; do
-                        result=$(cat $var_path/exportkeycloak.log | grep "Export finished successfully")
+                        resultFail=$(cat $var_path/exportkeycloak.log | grep "Server boot has failed in an unrecoverable manner")
                 done
 
                 echo $result
-
-
+                if [[ $resultFail == *"Server boot has failed in an unrecoverable manner"* ]]; then
+                        echo "$resultFail.  Exiting script...."         
+                        exit 1
+                fi
 
 	}
 		
@@ -480,13 +489,17 @@ var_os_type=""
 
                 echo "epad_manage.sh update epad"
 		echo "epad_manage.sh update config"
+		echo "epad_manage.sh fixip"
+
+		echo "epad_manage.sh export keycloakusers"
+		echo "epad_manage.sh import keycloakusers"
 	}
 
 # main 
 	if [ "$#" -gt 0 ]; then
 
 
-                if [[ $1 = "test" ]]; then
+                if [[ $1 == "test" ]]; then
 			#load_credentials_tovar
 			echo "----------------------------"
 			#find_host_info
@@ -497,7 +510,7 @@ var_os_type=""
 			fix_server_via_hosts
 		 fi
 
-		if [[ $1 = "install" ]]; then	
+		if [[ $1 == "install" ]]; then	
 			echo "epad will be installed in : $var_path"
 			if [[ -d "$var_path/tmp" ]]; then
 				echo "tmp dir exist already"
@@ -509,10 +522,10 @@ var_os_type=""
 			copy_epad_dist
 			find_host_info
 			var_install_response="n"
-			if [[ "$var_host" == "" ]]; then
+			if [[ $var_host == "" ]]; then
 				read -sp " your machine hostname is empty do you want us to fix it ? (y/n default value is n) : " var_install_response
 			 	
-				if [ $var_install_response == "y" ]; then
+				if [[ $var_install_response == "y" ]]; then
 					fix_server_via_hosts
 				fi
 
@@ -535,16 +548,16 @@ var_os_type=""
 
 		fi
 
-                if [[ $1 = "start" ]]; then
-			load_credentials_tovar
+                if [[ $1 == "start" ]]; then
+			#load_credentials_tovar
 			start_containers_all
                 fi
 
-                if [[ $1 = "stop" ]]; then
+                if [[ $1 == "stop" ]]; then
                         stop_containers_all
                 fi
  		
-		if [[ $1 = "fixip" ]]; then
+		if [[ $1 == "fixip" ]]; then
                         stop_containers_all
 			load_credentials_tovar
 			find_host_info
@@ -556,17 +569,17 @@ var_os_type=""
 			start_containers_viaCompose_all
                 fi
 		
-		if [[ $1 = "update" ]]; then
-                        if [[ $2 = "epad" ]]; then
-				echo "update epad"
+		if [[ $1 == "update" ]]; then
+                        if [[ $2 == "epad" ]]; then
+				echo "updating epad"
 				export_keycloak
 				stop_containers_all
 				cd "$var_path/$var_epadLiteDistLocation"
 				docker-compose build --no-cache
 				start_containers_viaCompose_all
 				import_keycloak
-			elif [[ $2 = "config" ]]; then
-				echo "update credentials... "
+			elif [[ $2 == "config" ]]; then
+				echo "updating epad configuration "
 				stop_containers_all
 				load_credentials_tovar
 				find_host_info
@@ -582,6 +595,25 @@ var_os_type=""
 			fi
 			
                 fi
+# export import keycloak part
+		if [[ $1 == "export" ]]; then
+                        if [[ $2 == "keycloakusers" ]]; then
+                                echo "exporting keycloak users "
+                                export_keycloak
+                        fi
+
+                fi
+
+                if [[ $1 = "import" ]]; then
+                        if [[ $2 == "keycloakusers" ]]; then
+                                echo "importing keycloak users "
+                                import_keycloak
+                        fi
+
+                fi
+# epxport import keycloak part end
+
+
 	else
 		show_instructions
 	fi
