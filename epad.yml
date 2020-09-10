@@ -12,6 +12,8 @@ keycloak:
 couchdb:
   mode: image
   image: "2.3.1"
+  user: YOUR_COUCHDB_ADMIN_USER 
+  password: YOUR_COUCHDB_ADMIN_PASS
   port: 8888
   dblocation: "..\/couchdbloc" 
 dicomweb:
@@ -43,7 +45,7 @@ mariadb:
   image: latest
   dbname: epaddb
   user: YOUR_DB_USER
-  pass: YOUR_DB_PASS
+  password: YOUR_DB_PASS
   rootpass: YOUR_DB_ROOT_PASS
   port: 3306
   log: false
