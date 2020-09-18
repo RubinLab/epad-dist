@@ -1,6 +1,6 @@
 module.exports = {
   env: "development",
-  dbServer: "http://epad_couchdb",
+  dbServer: "http://{couchdb_user}:{couchdb_password}@epad_couchdb",
   db: "{epadlite_dbname}",
   dbPort: "5984",
   auth: "{epadlite_auth}",

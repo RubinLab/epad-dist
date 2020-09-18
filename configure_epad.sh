@@ -36,6 +36,13 @@ source ./yaml.sh
 parse_yaml $2 > .env
 create_variables $2
 
+# do it before deleting
+if [[ -z $couchdb_user || -z $couchdb_password ]]
+then
+    echo "yml file doesn't have user and password information for couchdb, please add them to your yml and run again"
+    exit 1
+fi
+
 if [ -d "./$1" ]
 then
     echo "$1 folder already exists. Do you want to replace the $1 installation with the new files? This will cause $configurations to be resetted. "
@@ -97,7 +104,15 @@ then
     then 
         cat ./$1/nginx_couchdb.confpart >> ./$1/nginx.conf
     fi
-    cat ./$1/docker-compose_couchdb.ymlpart >> ./$1/docker-compose.yml
+    if [[ ! -z $couchdb_user && ! -z $couchdb_password ]]
+    then
+        cat ./$1/docker-compose_couchdb.ymlpart >> ./$1/docker-compose.yml
+    else
+        # duplicate check, leaving just in case
+        echo "yml file doesn't have user and password information for couchdb, please add them to your yml and run again"
+        exit 1
+    fi
+    
 fi
 if [ $mariadb_mode != 'external' ]
 then
