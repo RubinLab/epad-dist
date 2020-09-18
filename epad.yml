@@ -1,6 +1,11 @@
 host: YOUR_HOSTNAME
 mode: lite
 config: environment
+cache: 
+  size: "10g"
+  inactivetime: "60m"
+compression:
+  minsize: "20"
 keycloak:
   mode: build
   dockerfiledir: ".\/keycloak"

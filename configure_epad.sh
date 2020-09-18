@@ -53,7 +53,26 @@ mkdir $1
 cp -R ./.originals/* ./$1/.
 cp ./epaddb_nodata.sql ./$1/.
 cat ./$1/docker-compose_start.ymlpart > ./$1/docker-compose.yml
-cat ./$1/nginx_start.confpart > ./$1/nginx.conf
+# both cache and compression
+if [[ ! -z $cache_size && ! -z $cache_inactivetime && ! -z $compression_minsize ]] 
+then
+    cat ./$1/nginx_start_compress_cache.confpart > ./$1/nginx.conf
+else
+    # cache only
+    if [[ ! -z $cache_size && ! -z $cache_inactivetime ]] 
+    then
+        cat ./$1/nginx_start_cache.confpart > ./$1/nginx.conf
+    else 
+        # compress only
+        if [[ ! -z $compression_minsize ]] 
+        then
+            cat ./$1/nginx_start_compress.confpart > ./$1/nginx.conf
+        else
+            cat ./$1/nginx_start.confpart > ./$1/nginx.conf
+        fi
+    fi
+fi
+
 if [ $epadjs_mode != 'external' ]
 then
     if [[ ! -z $epadjs_dockerfiledir ]]
@@ -139,7 +158,12 @@ if [ $epadlite_mode != 'external' ]
 then
     if [[ ! -z $epadlite_loc ]]
     then 
-        cat ./$1/nginx_epadlite.confpart >> ./$1/nginx.conf
+        if [[ ! -z $cache_size && ! -z $cache_inactivetime ]] 
+        then
+            cat ./$1/nginx_epadlite_cache.confpart >> ./$1/nginx.conf
+        else
+            cat ./$1/nginx_epadlite.confpart >> ./$1/nginx.conf
+        fi
     fi
     if [[ ! -z $epadlite_dockerfiledir ]]
     then
