@@ -14,7 +14,7 @@ module.exports = {
     host: "epad_mariadb",
     port: "3306",
     user: "{mariadb_user}",
-    pass: "{mariadb_pass}",
+    pass: "{mariadb_password}",
     logger: {mariadb_log}
   }
 };
