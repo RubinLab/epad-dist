@@ -1,0 +1,20 @@
+#Nginx default.conf                                                                                                                                                                                                                                                           
+#/etc/nginx/conf.d                     
+
+proxy_cache_path /usr/share/nginx/cache levels=1:2 keys_zone=my_cache:10m max_size={cache_size}
+                 inactive={cache_inactivetime} use_temp_path=off;  
+                                                                                                                                                                                                                                                                              
+server {
+        listen       {epadjs_port};  
+        server_name  localhost;
+        # means no limit
+        client_max_body_size 0;
+        proxy_read_timeout 180s;
+  
+        include /etc/nginx/mime.types;
+        
+        location / {
+                root   /usr/share/nginx/html;
+                index  index.html index.htm;
+                try_files $uri $uri/ /index.html;
+        }
