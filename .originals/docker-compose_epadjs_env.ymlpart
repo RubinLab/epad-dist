@@ -12,7 +12,7 @@
       REACT_APP_AUTH_URL: "http://{host}/{keycloak_loc}/auth"
       PUBLIC_URL: "http://{host}"
       REACT_APP_API_URL: "http://{host}/{epadlite_loc}"
-      REACT_APP_WADO_URL: "wadouri:http://{host}/{epadlite_loc}"
+      REACT_APP_WADO_URL: "wadouri:http://{host}/{epadlite_loc}/wado"
       REACT_APP_BASE_URL: "{epadjs_baseurl}"
       REACT_APP_AUTH_MODE: "{epadjs_authmode}"
       REACT_APP_MODE: "{mode}"
