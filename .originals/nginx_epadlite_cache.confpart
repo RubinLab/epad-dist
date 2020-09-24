@@ -1,5 +1,13 @@
 
         location /{epadlite_loc} {             
+                add_header 'Access-Control-Allow-Origin' '*';                                                                                                                                                                                                              
+                add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';      
+                proxy_set_header Host $host; 
+                proxy_pass_request_headers on;
+                proxy_pass http://epad_lite:8080;                                                                                                                                                                                                                             
+        }
+
+        location /{epadlite_loc}/wado {             
                 proxy_cache my_cache;
                 proxy_ignore_headers Cache-Control;
                 proxy_cache_valid any 60m;
@@ -9,5 +17,5 @@
                 add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';      
                 proxy_set_header Host $host; 
                 proxy_pass_request_headers on;
-                proxy_pass http://epad_lite:8080;                                                                                                                                                                                                                             
+                proxy_pass http://epad_lite:8080/{epadlite_loc}/wado;                                                                                                                                                                                                                             
         }
