@@ -16,7 +16,9 @@ keycloak:
   loc: "keycloak"
 couchdb:
   mode: image
-  image: "2.3.1"
+  image: "latest"
+  user: YOUR_COUCH_ADMIN_USER
+  password: YOUR_COUCH_ADMIN_PASS
   port: 8888
   dblocation: "..\/couchdbloc"
 dicomweb:
