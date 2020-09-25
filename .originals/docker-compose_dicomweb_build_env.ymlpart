@@ -6,7 +6,7 @@
     # ports:
     #   - "{dicomweb_port}:8090"
     environment:
-      DB_SERVER: "http://epad_couchdb"
+      DB_SERVER: "http://{couchdb_user}:{couchdb_password}@epad_couchdb"
       DB_NAME: "{dicomweb_dbname}"
       AUTH: "{dicomweb_auth}"
       LOGGER: "{dicomweb_log}"

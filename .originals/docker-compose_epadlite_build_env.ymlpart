@@ -6,7 +6,7 @@
     # ports:
     #   - "{epadlite_port}:8080"
     environment:
-      NOSQL_DB_HOST: "http://epad_couchdb"
+      NOSQL_DB_HOST: "http://{couchdb_user}:{couchdb_password}@epad_couchdb"
       NOSQL_DB_NAME: "{epadlite_dbname}"
       LOGGER: "{epadlite_log}"
       HTTPS: "{epadlite_https}"

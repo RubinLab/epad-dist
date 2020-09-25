@@ -47,8 +47,8 @@ mariadb:
   image: latest
   dbname: epaddb
   user: YOUR_DB_USER
-  pass: YOUR_DB_PASS
-  rootpass: YOUR_DB_ROOT_PASS
+  password: YOUR_DB_PASS
+  rootpassword: YOUR_DB_ROOT_PASS
   port: 3306
   log: false
   backuploc: ".\/epaddb_nodata.sql"
