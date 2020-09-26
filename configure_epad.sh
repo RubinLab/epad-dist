@@ -36,6 +36,13 @@ source ./yaml.sh
 parse_yaml $2 > .env
 create_variables $2
 
+# do it before deleting
+if [[ -z $couchdb_user || -z $couchdb_password ]]
+then
+    echo "yml file doesn't have user and password information for couchdb, please add them to your yml and run again"
+    exit 1
+fi
+
 if [ -d "./$1" ]
 then
     echo "$1 folder already exists. Do you want to replace the $1 installation with the new files? This will cause $configurations to be resetted. "
@@ -53,7 +60,26 @@ mkdir $1
 cp -R ./.originals/* ./$1/.
 cp ./epaddb_nodata.sql ./$1/.
 cat ./$1/docker-compose_start.ymlpart > ./$1/docker-compose.yml
-cat ./$1/nginx_start.confpart > ./$1/nginx.conf
+# both cache and compression
+if [[ ! -z $cache_size && ! -z $cache_inactivetime && ! -z $compression_minsize ]] 
+then
+    cat ./$1/nginx_start_compress_cache.confpart > ./$1/nginx.conf
+else
+    # cache only
+    if [[ ! -z $cache_size && ! -z $cache_inactivetime ]] 
+    then
+        cat ./$1/nginx_start_cache.confpart > ./$1/nginx.conf
+    else 
+        # compress only
+        if [[ ! -z $compression_minsize ]] 
+        then
+            cat ./$1/nginx_start_compress.confpart > ./$1/nginx.conf
+        else
+            cat ./$1/nginx_start.confpart > ./$1/nginx.conf
+        fi
+    fi
+fi
+
 if [ $epadjs_mode != 'external' ]
 then
     if [[ ! -z $epadjs_dockerfiledir ]]
@@ -97,7 +123,15 @@ then
     then 
         cat ./$1/nginx_couchdb.confpart >> ./$1/nginx.conf
     fi
-    cat ./$1/docker-compose_couchdb.ymlpart >> ./$1/docker-compose.yml
+    if [[ ! -z $couchdb_user && ! -z $couchdb_password ]]
+    then
+        cat ./$1/docker-compose_couchdb.ymlpart >> ./$1/docker-compose.yml
+    else
+        # duplicate check, leaving just in case
+        echo "yml file doesn't have user and password information for couchdb, please add them to your yml and run again"
+        exit 1
+    fi
+    
 fi
 if [ $mariadb_mode != 'external' ]
 then
@@ -139,7 +173,12 @@ if [ $epadlite_mode != 'external' ]
 then
     if [[ ! -z $epadlite_loc ]]
     then 
-        cat ./$1/nginx_epadlite.confpart >> ./$1/nginx.conf
+        if [[ ! -z $cache_size && ! -z $cache_inactivetime ]] 
+        then
+            cat ./$1/nginx_epadlite_cache.confpart >> ./$1/nginx.conf
+        else
+            cat ./$1/nginx_epadlite.confpart >> ./$1/nginx.conf
+        fi
     fi
     if [[ ! -z $epadlite_dockerfiledir ]]
     then
@@ -227,7 +266,7 @@ replace_in_files "http:\/\/https:\/\/" "https:\/\/" $1
 replace_in_files "{epadjs_baseurl}" "" $1
 replace_in_files "{epadjs_authmode}" "" $1
 
-cp ./$1/nginx.conf ./$1/epadjs/.
+mv ./$1/nginx.conf ./$1/epadjs/.
 cp ./$1/epaddb_nodata.sql ./$1/mariadb/.
 
 

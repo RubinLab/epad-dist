@@ -7,6 +7,9 @@
     #   - "{couchdb_port}:5984"
     volumes:
       - "{couchdb_dblocation}:/opt/couchdb/data"
+    environment:
+      - COUCHDB_USER={couchdb_user}
+      - COUCHDB_PASSWORD={couchdb_password}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:5984"]
       interval: 1m30s

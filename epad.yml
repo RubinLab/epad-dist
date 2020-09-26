@@ -1,19 +1,24 @@
 host: YOUR_HOSTNAME
 mode: lite
 config: environment
+cache: 
+  size: "10g"
+  inactivetime: "60m"
+compression:
+  minsize: "20"
 keycloak:
   mode: build
   dockerfiledir: ".\/keycloak"
   user: YOUR_KEYCLOAK_ADMIN_USER
-  password: OUR_KEYCLOAK_ADMIN_PASS
+  password: YOUR_KEYCLOAK_ADMIN_PASS
   email: YOUR_KEYCLOAK_ADMIN_EMAIL
   port: 8899
   loc: "keycloak"
 couchdb:
   mode: image
-  image: "2.3.1"
-  user: YOUR_COUCHDB_ADMIN_USER 
-  password: YOUR_COUCHDB_ADMIN_PASS
+  image: "latest"
+  user: YOUR_COUCH_ADMIN_USER
+  password: YOUR_COUCH_ADMIN_PASS
   port: 8888
   dblocation: "..\/couchdbloc" 
 dicomweb:
@@ -46,7 +51,7 @@ mariadb:
   dbname: epaddb
   user: YOUR_DB_USER
   password: YOUR_DB_PASS
-  rootpass: YOUR_DB_ROOT_PASS
+  rootpassword: YOUR_DB_ROOT_PASS
   port: 3306
   log: false
   backuploc: ".\/epaddb_nodata.sql"
