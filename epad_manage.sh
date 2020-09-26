@@ -338,32 +338,32 @@ var_os_type=""
 		#var_host=$( echo $var_tmp_txt | cut -d: -f2)
 		#var_host=$( find_val_intext "host" "1")
 
-		var_mode=$( find_val_intext "mode" "1")
-        var_config=$( find_val_intext "config" "1")
+		var_mode=$( find_val_intext "mode:" "1")
+        var_config=$( find_val_intext "config:" "1")
         #var_container_mode==$( find_val_intext "host" "1")
-        var_couchdb_location=$( find_val_intext "dblocation" "1")
+        var_couchdb_location=$( find_val_intext "dblocation:" "1")
 		var_couchdb_location=$(echo $var_couchdb_location | sed 's/"//g')
-        var_mariadb_location=$( find_val_intext "dblocation" "2")
+        var_mariadb_location=$( find_val_intext "dblocation:" "2")
         var_mariadb_location=$(echo $var_mariadb_location | sed 's/"//g')
         
-        var_keycloak_user=$( find_val_intext "user" "1")
-        var_keycloak_pass=$( find_val_intext "password" "1")
-        var_keycloak_useremail=$( find_val_intext "email" "1")
+        var_keycloak_user=$( find_val_intext "user:" "1")
+        var_keycloak_pass=$( find_val_intext "password:" "1")
+        var_keycloak_useremail=$( find_val_intext "email:" "1")
 
-        var_couchdb_user=$( find_val_intext "user" "2")
-        var_couchdb_pass=$( find_val_intext "password" "2")
+        var_couchdb_user=$( find_val_intext "user:" "2")
+        var_couchdb_pass=$( find_val_intext "password:" "2")
 
-        var_maria_user=$( find_val_intext "user" "3")
-        var_maria_pass=$( find_val_intext "password" "3")
-        var_maria_rootpass=$( find_val_intext "rootpass" "1")
+        var_maria_user=$( find_val_intext "user:" "3")
+        var_maria_pass=$( find_val_intext "password:" "3")
+        var_maria_rootpass=$( find_val_intext "rootpassword:" "1")
 
-        var_branch_dicomweb=$( find_val_intext "branch" "1")
+        var_branch_dicomweb=$( find_val_intext "branch:" "1")
         var_branch_dicomweb=$(echo $var_branch_dicomweb | sed 's/"//g')
 
-        var_branch_epadlite=$( find_val_intext "branch" "2")
+        var_branch_epadlite=$( find_val_intext "branch:" "2")
         var_branch_epadlite=$(echo $var_branch_epadlite | sed 's/"//g')
 
-        var_branch_epadjs=$( find_val_intext "branch" "3")
+        var_branch_epadjs=$( find_val_intext "branch:" "3")
         var_branch_epadjs=$(echo $var_branch_epadjs | sed 's/"//g')
 
 		# echo "loaded variables from epad.yml : ++++++++++++++++ "
@@ -404,7 +404,7 @@ var_os_type=""
   			read -p  "epad-dist folder exist already. Do you want to owerwrite ? (y/n) (defult value is n): " var_response
 		else
 			cd $var_path
-  			git clone -b script https://github.com/RubinLab/epad-dist.git
+  			git clone -b script_merge https://github.com/RubinLab/epad-dist.git
 		fi
 
 		if [[ $var_response == "y" ]]; then
@@ -677,7 +677,7 @@ var_os_type=""
 	echo "process: editing epad.yml file"
 		sed -i -e "s/host:.*/host: $var_host/g" "$var_path/$var_epadDistLocation/epad.yml"
 		#sed -i -e "s/mode:.*/mode: $var_mode/g" "$var_path/$var_epadDistLocation/epad.yml"
-		awk -v var_awk="mode: $var_mode" '/mode.*/{c++; if (c==1) { sub("mode.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		awk -v var_awk="mode: $var_mode" '/mode:.*/{c++; if (c==1) { sub("mode:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 
 		sed -i -e "s/config:.*/config: $var_config/g" "$var_path/$var_epadDistLocation/epad.yml"
 		#sed -i -e "s/user:.*/user: $var_keycloak_user/g" "$var_path/$var_epadDistLocation/epad.yml"
@@ -691,34 +691,34 @@ var_os_type=""
 		# keycloak end
 
         #couch db 
-        		awk -v var_awk="user: $var_couchdb_user" '/user.*/{c++; if (c==2) { sub("user.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-        		awk -v var_awk="password: $var_couchdb_pass" '/password.*/{c++; if (c==2) { sub("password.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+        		awk -v var_awk="user: $var_couchdb_user" '/user:.*/{c++; if (c==2) { sub("user:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+        		awk -v var_awk="password: $var_couchdb_pass" '/password:.*/{c++; if (c==2) { sub("password:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 		        temp_var_couchdb_location=$( add_backslash_tofolderpath $var_couchdb_location)
 		                
-		        awk -v var_awk="dblocation: \"$temp_var_couchdb_location\" " '/dblocation.*/{c++; if (c==1) { sub("dblocation.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="dblocation: \"$temp_var_couchdb_location\" " '/dblocation:.*/{c++; if (c==1) { sub("dblocation:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 			
 		# couch db end
 
         # maria db
 		        #sed -i -e "s/pass:.*/pass: $var_maria_pass/g" "$var_path/$var_epadDistLocation/epad.yml"
-		        sed -i -e "s/rootpass:.*/rootpass: $var_maria_rootpass/g" "$var_path/$var_epadDistLocation/epad.yml"
-				awk -v var_awk="user: $var_maria_user" '/user.*/{c++; if (c==3) { sub("user.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-				awk -v var_awk="password: $var_maria_pass" '/password.*/{c++; if (c==3) { sub("password.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        sed -i -e "s/rootpassword:.*/rootpassword: $var_maria_rootpass/g" "$var_path/$var_epadDistLocation/epad.yml"
+				awk -v var_awk="user: $var_maria_user" '/user:.*/{c++; if (c==3) { sub("user:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+				awk -v var_awk="password: $var_maria_pass" '/password:.*/{c++; if (c==3) { sub("password:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 				#sed -i -e "s/ARG_EPAD_DOCKER_GID:.*/ARG_EPAD_DOCKER_GID: $var_local_docker_gid/g" "var_path/$var_epadLiteDistLocation/docker-compose.yml"
 				
 				#setup dblocations
 				
 				temp_var_mariadb_location=$( add_backslash_tofolderpath $var_mariadb_location) 
 				
-		        awk -v var_awk="dblocation: \"$temp_var_mariadb_location\" " '/dblocation.*/{c++; if (c==2) { sub("dblocation.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="dblocation: \"$temp_var_mariadb_location\" " '/dblocation:.*/{c++; if (c==2) { sub("dblocation:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
         # maria db end
 
 
 			
         # edit branch part
-		        awk -v var_awk="branch: \"$var_branch_dicomweb\"" '/branch.*/{c++; if (c==1) { sub("branch.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="branch: \"$var_branch_epadlite\"" '/branch.*/{c++; if (c==2) { sub("branch.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="branch: \"$var_branch_epadjs\"" '/branch.*/{c++; if (c==3) { sub("branch.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="branch: \"$var_branch_dicomweb\"" '/branch:.*/{c++; if (c==1) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="branch: \"$var_branch_epadlite\"" '/branch:.*/{c++; if (c==2) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="branch: \"$var_branch_epadjs\"" '/branch:.*/{c++; if (c==3) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 		        
         #edit branch part end
 	}
