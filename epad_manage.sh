@@ -1,4 +1,4 @@
-#!/bin/bash
+t#!/bin/bash
 # $1 expected install, start, stop, update
 # $2 expected a version master,latest,v0.1, v0.2 
 
@@ -411,7 +411,7 @@ var_os_type=""
   			echo "copying epad-dist repo from git"
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
-  			git clone -b script https://github.com/RubinLab/epad-dist.git
+  			git clone -b script_merge https://github.com/RubinLab/epad-dist.git
 		fi
 	}
 
@@ -684,8 +684,8 @@ var_os_type=""
 	    
 	    # keycloak 
 
-			    awk -v var_awk="user: $var_keycloak_user" '/user.*/{c++; if (c==1) { sub("user.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-			    awk -v var_awk="password: $var_keycloak_pass" '/password.*/{c++; if (c==1) { sub("password.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+			    awk -v var_awk="user: $var_keycloak_user" '/user:.*/{c++; if (c==1) { sub("user:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+			    awk -v var_awk="password: $var_keycloak_pass" '/password:.*/{c++; if (c==1) { sub("password:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 				#sed -i -e "s/password:.*/password: $var_keycloak_pass/g" "$var_path/$var_epadDistLocation/epad.yml"
 		        sed -i -e "s/email:.*/email: $var_keycloak_useremail/g" "$var_path/$var_epadDistLocation/epad.yml"
 		# keycloak end
@@ -820,7 +820,7 @@ var_os_type=""
          if [[ $1 == "test" ]]; then
 			#var_couchdb_lineno=0
 			echo "test started ----------------------------"
-			check_existance_couchdb_usercred
+			# check_existance_couchdb_usercred
 			#sed '/couchdb/a\new line' "$var_path/$var_epadDistLocation/epad.yml"
 			#sed '3iline 3' $var_path/$var_epadDistLocation/epad.yml > $var_path/$var_epadDistLocation/epad.yml
 			# var_couchdb_lineno=$(grep -n 'couchdb:' "$var_path/$var_epadDistLocation/epad.yml"  | cut -d":" -f1 )
@@ -851,7 +851,7 @@ var_os_type=""
 				# fi
 			#stop_containers_all
 			copy_epad_dist
-			check_existance_couchdb_usercred
+			# check_existance_couchdb_usercred
 			find_host_info
 			# commented section below is for fixing ip automatically 
 			# var_install_response="n"
