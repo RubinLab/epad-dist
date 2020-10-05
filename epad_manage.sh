@@ -1,9 +1,10 @@
-t#!/bin/bash
+#!/bin/bash
 # $1 expected install, start, stop, update
 # $2 expected a version master,latest,v0.1, v0.2 
 
 var_path=$(pwd)
 var_os_type=""
+global_var_return=""
 #echo "epad will be installed in : $var_path"
 # sytem configuration variables
 	var_ip=""
@@ -48,6 +49,46 @@ var_os_type=""
 #echo $var_maria_rootpass
 
 # functions
+
+		delete_dangling_images(){
+			docker rmi -f $(docker images -f "dangling=true" -q)
+		}
+		check_ifallcontainers_created(){
+			local var_counter=0
+			local var_result=""
+			var_result=$(docker ps -a | grep "\bepad_js\b")
+			if [[ ! -z $var_result ]]; then
+				var_counter=$(($var_counter + 1))
+			fi
+			var_result=$(docker ps -a | grep "\bepad_lite\b")
+			if [[ ! -z $var_result ]]; then
+				var_counter=$(($var_counter + 1))
+			fi
+			var_result=$(docker ps -a | grep "\bepad_dicomweb\b")
+			if [[ ! -z $var_result ]]; then
+				var_counter=$(($var_counter + 1))
+			fi
+			var_result=$(docker ps -a | grep "\bepad_keycloak\b")
+			if [[ ! -z $var_result ]]; then
+				var_counter=$(($var_counter + 1))
+			fi
+			var_result=$(docker ps -a | grep "\bepad_couchdb\b")
+			if [[ ! -z $var_result ]]; then
+				var_counter=$(($var_counter + 1))
+			fi
+
+			var_result=$(docker ps -a | grep "\bepad_mariadb\b")
+			if [[ ! -z $var_result ]]; then
+				var_counter=$(($var_counter + 1))
+			fi
+
+			if [[ $var_counter < 6 ]]; then
+				global_var_return="doesnt"
+			else
+				global_var_return="exist"
+			fi
+		}
+
 		check_existance_couchdb_usercred(){
 			local var_couchdb_lineno=0
 			local var_string=""
@@ -157,9 +198,9 @@ var_os_type=""
 				if [[ $var_counter > 1 ]]; then
 					docker ps -a -f 'status=exited'
 				fi
-				echo "Please contact epad team!"
+				# echo "Please contact epad team!"
 				if [[ "$var_failed_container_names" != "" ]]; then
-					echo "ePad couldn't find following containers : $var_failed_container_names "
+					echo "ePad couldn't find following containers : $var_failed_container_names . Please install ePad or contact ePad team"
 				fi
 				exit 1
 			fi
@@ -241,7 +282,7 @@ var_os_type=""
 		local var_hostname_from_epadyml=""
 		local var_ip_frometc=""
 		local var_fresh_ip=""
-		var_hostname_from_epadyml=$( find_val_intext "host" "1")
+		var_hostname_from_epadyml=$( find_val_intext "host:" "1")
 		var_ip_frometc=$( cat /etc/hosts | grep "\b$var_hostname_from_epadyml\b" | awk '{print $1}' )
 		# echo $var_ip_frometc
 		if [[ ! -z $var_ip_frometc ]]; then
@@ -318,10 +359,11 @@ var_os_type=""
 				echo "hostname is empty checking etc/hosts file to find server name"
 				find_hostname_from_hostsfile
 			else
-				echo "if you used epad_fixmyip.sh script to fix your server name answer 2 fot he following question!"
-				read -p " you have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp
+				echo "If you used epad_fixmyip.sh script to fix your server name answer 2 for the following question!"
+				read -p "Yyou have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp
                 if [[ $var_resp == 1 ]]; then
-					var_host=$HOSTNAME
+					#var_host=$HOSTNAME
+					var_host=$(echo "$HOSTNAME" | tr '[:upper:]' '[:lower:]')
 				else
 					find_hostname_from_hostsfile
 				fi
@@ -336,7 +378,7 @@ var_os_type=""
 		#var_tmp_txt=""
 		#var_tmp_txt=$( awk '/host/{i++}i==1{print; exit}'  "$var_path/$var_epadDistLocation/epad.yml")
 		#var_host=$( echo $var_tmp_txt | cut -d: -f2)
-		#var_host=$( find_val_intext "host" "1")
+		var_host=$( find_val_intext "host:" "1")
 
 		var_mode=$( find_val_intext "mode:" "1")
         var_config=$( find_val_intext "config:" "1")
@@ -418,18 +460,18 @@ var_os_type=""
 	create_epad_lite_dist(){
 	echo "process: building epad_lite_dist from epad.yml"
 		var_response="n"
-		if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+				if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
                         read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
                 else
-			cd "$var_path/$var_epadDistLocation"
+						cd "$var_path/$var_epadDistLocation"
                         ./configure_epad.sh ../$var_epadLiteDistLocation ./epad.yml
 			
                 fi
 
-                if [ $var_response == "y" ]; then
+                if [[ $var_response == "y" ]]; then
                         echo "creating $var_epadLiteDistLocation folder"
                         rm -rf "$var_path/$var_epadLiteDistLocation"
-			cd "$var_path/$var_epadDistLocation"
+						cd "$var_path/$var_epadDistLocation"
                         ./configure_epad.sh ../$var_epadLiteDistLocation ./epad.yml
                 fi
 
@@ -454,15 +496,16 @@ var_os_type=""
 	start_containers_all (){
 	echo "process: starting all containers..."
 
-	local var_start=$(date +%s)
-	local var_end=$(($var_start + 300))
+	
 	#echo $var_start
 	#echo $var_end
 		cd "$var_path/$var_epadLiteDistLocation"
         docker-compose start
-		linecount=0
-		counter=0
-		var_waiting="starting epad"
+        local var_start=$(date +%s)
+		local var_end=$(($var_start + 300))
+		local linecount=0
+		local counter=0
+		local var_waiting="starting epad"
 		while [[ $linecount -lt 4 && $var_start -lt $var_end ]]; do
 			var_start=$(date +%s)
 				counter=$((counter+1))
@@ -490,32 +533,41 @@ var_os_type=""
 	start_containers_viaCompose_all (){
 	echo "process: starting all containers using docker-compose up -d"
 
-	local var_start=$(date +%s)
-	local var_end=$(($var_start + 300))
-	#echo $var_start
-	#echo $var_end
+	
+	
            		cd "$var_path/$var_epadLiteDistLocation"
                 docker-compose up -d
-                linecount=0
-                counter=0
-                var_waiting="starting epad"
-                while [[ $linecount -lt 4 && $var_start -lt $var_end ]]; do
-                	var_start=$(date +%s)
-                        counter=$((counter+1))
-                        linecount=$(docker ps -a  | grep healthy | wc -l)
-                        if [[ $counter > 0 ]]; then
-                                var_waiting="$var_waiting."
-                                echo -en "$var_waiting\r"
+                local var_start_st=$(date +%s)
+				local var_end_st=$(($var_start_st + 300))
+				#echo "init : $var_start_st "
+				#echo "init : $var_end_st "	
+                local linecount_st=0
+                local counter_st=0
+                local var_waiting_st="starting epad"
+                while [[ $linecount_st -lt 4 ]] && [[ $var_start_st -lt $var_end_st ]]; do
+                	#echo "loop started "
+                	var_start_st=$(date +%s)
+                	#echo "starting time :  $var_start_st " 
+                	#echo "end time :  $var_end_st " 
+                        counter_st=$(($counter_st + 1))
+                        #echo "cntr $counter_st"
+                        linecount_st=$(docker ps -a  | grep healthy | wc -l)
+
+                        #echo "line count : $linecount_st "
+                        if [[ $counter_st > 0 ]]; then
+                                var_waiting_st="$var_waiting_st."
+                                echo -en "$var_waiting_st\r"
                                 sleep 1
                         fi
-                        if [[ $counter == 10 ]]; then
+                        if [[ $counter_st == 10 ]]; then
                                 echo -en '                                        \r'
-                                counter=0
-                                var_waiting="starting epad"
+                                counter_st=0
+                                var_waiting_st="starting epad"
                         fi
+                        #echo "in loop"
                 done
-                linecount=$(docker ps -a  | grep healthy | wc -l)
-                if [[ $linecount -lt 4 ]]; then
+                # linecount=$(docker ps -a  | grep healthy | wc -l)
+                if [[ $linecount_st -lt 4 ]]; then
                 	echo "one or more container have issues. ePad couldn't start"
                 else
                 	echo "epad is ready to browse: $var_host"
@@ -532,6 +584,7 @@ var_os_type=""
                 if [[ -n "$var_response" ]]
                 then
                         echo "response = $var_response"
+                        #var_host=$var_response
                         var_host=$var_response
                         echo "host name : $var_host"
                 fi
@@ -732,25 +785,26 @@ var_os_type=""
 	import_keycloak(){
 		echo "process: importing keycloak users...."
 		check_keycloak_container_situation
-		var_full_keycloak_export_path=$var_path$var_keycloak_exportfolder
+		local var_full_keycloak_export_path=$var_path$var_keycloak_exportfolder
 		if [ ! -f "$var_full_keycloak_export_path" ]; then
 			echo "$var_full_keycloak_export_path does not exist. You need to export keycloak users first."
 			exit 1
 		fi
 		echo $var_full_keycloak_export_path
+		# touch "$var_path/importkeycloak.log"
 		#var_import_process=$(docker container top epad_keycloak | grep "keycloak.migration.action" | cut -d" " -f1)
 		#echo "$var_import_process"
 		#echo "importing keycloak users...."		
 		docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
-		-Djboss.socket.binding.port-offset=200 -Dkeycloak.migration.action=import \
+		-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=import \
 		-Dkeycloak.migration.provider=$var_provider \
 		-Dkeycloak.migration.realmName=$var_realmName \
 		-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
-		-Dkeycloak.migration.file=$var_keycloak_exportfolder > importkeycloak.log &
+		-Dkeycloak.migration.file=$var_keycloak_exportfolder > $var_path/importkeycloak.log &
 		#echo $! > "$var_path/pid.txt"
                 #echo $!
-                result=""
-                resultFail=""
+               local result=""
+               local resultFail=""
                 while [[ -z $result ]] && [[ -z $resultFail ]]; do
                         result=$(cat $var_path/importkeycloak.log | grep "Import finished successfully")
 
@@ -769,29 +823,39 @@ var_os_type=""
 
 	export_keycloak(){
 	 
-		echo "process: exporting keycloak users....\n"
+		echo "process: exporting keycloak users...."
 		check_keycloak_container_situation
 		docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
 		-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=export \
 		-Dkeycloak.migration.provider=$var_provider \
 		-Dkeycloak.migration.realmName=$var_realmName \
 		-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
-		-Dkeycloak.migration.file=$var_keycloak_exportfolder  > exportkeycloak.log &
+		-Dkeycloak.migration.file=$var_keycloak_exportfolder > exportkeycloak.log  &
 		#echo $! > "$var_path/pid.txt"
 		#echo $!
-                result=""
-                resultFail=""
+                local result=""
+                local resultFail=""
+                local resultOtherErrors=""
                 while [[ -z $result ]] && [[ -z $resultFail ]]; do
                         result=$(cat $var_path/exportkeycloak.log | grep "Export finished successfully")
 
                         resultFail=$(cat $var_path/exportkeycloak.log | grep "Server boot has failed in an unrecoverable manner")
+
+                        # resultOtherErrors=$(cat $var_path/exportkeycloak.log | grep "Error")
                 done
 
-                echo $result
+                
                 if [[ $resultFail == *"Server boot has failed in an unrecoverable manner"* ]]; then
                         echo "$resultFail.  Exiting script...."         
                         exit 1
                 fi
+                if  [[ $resultOtherErrors == *"Error"* ]]; then
+                	echo "$resultOtherErrors.  Exiting script...."         
+                        exit 1
+                fi
+
+                echo $result
+
 		echo "restarting keycloak"
                 docker restart epad_keycloak
 
@@ -820,6 +884,7 @@ var_os_type=""
          if [[ $1 == "test" ]]; then
 			#var_couchdb_lineno=0
 			echo "test started ----------------------------"
+			start_containers_viaCompose_all
 			# check_existance_couchdb_usercred
 			#sed '/couchdb/a\new line' "$var_path/$var_epadDistLocation/epad.yml"
 			#sed '3iline 3' $var_path/$var_epadDistLocation/epad.yml > $var_path/$var_epadDistLocation/epad.yml
@@ -839,8 +904,21 @@ var_os_type=""
 
 		 fi
 
-		if [[ $1 == "install" ]]; then	
-			
+		if [[ $1 == "install" ]]; then
+
+			var_install_result_r=""
+			check_ifallcontainers_created
+			echo $global_var_return
+			if [[  $global_var_return == "exist" ]]; then
+				read -p "ePad installed already. Reinstalling ePad will erase keycloak users. Do you want to reinstall ePad? (y/n : default response is n) :" var_install_result_r
+				 echo $var_install_result_r
+				 if [[ -z $var_install_result_r  ||   "$var_install_result_r" != "y" ]]; then
+                		echo "exiting ePad installation."
+                        exit 1
+               	else 
+               		echo "installing epad"
+               	fi
+			fi
 			echo "epad will be installed in : $var_path"
 				# below commented section is for creation of tmp folder to inport/export keycloak users 
 				# if [[ -d "$var_path/tmp" ]]; then
@@ -876,13 +954,23 @@ var_os_type=""
 
         if [[ $1 == "start" ]]; then
 			#load_credentials_tovar
-			var_host=$( find_val_intext "host" "1")
+			var_host=$( find_val_intext "host:" "1")
 			doublecheck_ipmapping_onstart
+			check_ifallcontainers_created
+			if [[ ! $global_var_return=="exist" ]]; then
+				echo "you have missing containers. Please reinstall ePad."
+				exit 1
+			fi
 			start_containers_all
 			check_container_situation
         fi
 
         if [[ $1 == "stop" ]]; then
+        	check_ifallcontainers_created
+        	if [[ ! $global_var_return=="exist" ]]; then
+				echo "you have missing containers. Please reinstall ePad."
+				exit 1
+			fi
             stop_containers_all
         fi
  		
