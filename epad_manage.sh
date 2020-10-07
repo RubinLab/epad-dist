@@ -164,7 +164,7 @@ global_var_return=""
 				var_total_fail=$(( $var_total_fail + 1))
 				var_failed_container_names="$var_failed_container_names epad_lite"
 			else
-				var_container_situation=$(docker ps -a --filter "name=\bepad_lite\b" --format "table {{.Status}}" | grep Exited )
+				var_container_situation=$(docker ps -a --filter "name=\bepad_lite\b" --format "table {{.Status}}" | grep 'Exited\|unhealthy' )
 				if [[ ! -z $var_container_situation ]]; then
 					var_total_fail=$(( $var_total_fail + 1))
 				fi
@@ -176,7 +176,7 @@ global_var_return=""
 				var_total_fail=$(( $var_total_fail + 1))
 				var_failed_container_names="$var_failed_container_names epad_js"
 			else
-				var_container_situation=$(docker ps -a --filter "name=\bepad_js\b" --format "table {{.Status}}" | grep Exited )
+				var_container_situation=$(docker ps -a --filter "name=\bepad_js\b" --format "table {{.Status}}" | grep 'Exited\|unhealthy')
 				if [[ ! -z $var_container_situation ]]; then
 					var_total_fail=$(( $var_total_fail + 1))
 				fi
@@ -187,7 +187,7 @@ global_var_return=""
 				var_total_fail=$(( $var_total_fail + 1))
 				var_failed_container_names="$var_failed_container_names epad_dicomweb"
 			else
-				var_container_situation=$(docker ps -a --filter "name=\bepad_dicomweb\b" --format "table {{.Status}}" | grep Exited )
+				var_container_situation=$(docker ps -a --filter "name=\bepad_dicomweb\b" --format "table {{.Status}}" | grep 'Exited\|unhealthy' )
 				if [[ ! -z $var_container_situation ]]; then
 					var_total_fail=$(( $var_total_fail + 1))
 				fi
@@ -198,7 +198,7 @@ global_var_return=""
 				var_total_fail=$(( $var_total_fail + 1))
 				var_failed_container_names="$var_failed_container_names epad_keycloak"
 			else
-				var_container_situation=$(docker ps -a --filter "name=\bepad_keycloak\b" --format "table {{.Status}}" | grep Exited )
+				var_container_situation=$(docker ps -a --filter "name=\bepad_keycloak\b" --format "table {{.Status}}" | grep 'Exited\|unhealthy' )
 				if [[ ! -z $var_container_situation ]]; then
 					var_total_fail=$(( $var_total_fail + 1))
 				fi
@@ -209,7 +209,7 @@ global_var_return=""
 				var_total_fail=$(( $var_total_fail + 1))
 				var_failed_container_names="$var_failed_container_names epad_couchdb"
 			else
-				var_container_situation=$(docker ps -a --filter "name=\bepad_couchdb\b" --format "table {{.Status}}" | grep Exited )
+				var_container_situation=$(docker ps -a --filter "name=\bepad_couchdb\b" --format "table {{.Status}}" | grep 'Exited\|unhealthy' )
 				if [[ ! -z $var_container_situation ]]; then
 					var_total_fail=$(( $var_total_fail + 1))
 				fi
@@ -220,7 +220,7 @@ global_var_return=""
 				var_total_fail=$(( $var_total_fail + 1))
 				var_failed_container_names="$var_failed_container_names epad_mariadb"
 			else
-				var_container_situation=$(docker ps -a --filter "name=\bepad_mariadb\b" --format "table {{.Status}}" | grep Exited )
+				var_container_situation=$(docker ps -a --filter "name=\bepad_mariadb\b" --format "table {{.Status}}" | grep 'Exited\|unhealthy' )
 				if [[ ! -z $var_container_situation ]]; then
 					var_total_fail=$(( $var_total_fail + 1))
 				fi
@@ -231,9 +231,16 @@ global_var_return=""
 
 			if [[ $var_total_fail > 0 ]]; then
 				echo "there are failed containers"
-				var_counter=$(docker ps -a -f 'status=exited' |  wc -l)
-				if [[ $var_counter > 1 ]]; then
+				# docker ps -a -f 'health=unhealthy'
+				# health=unhealthy
+				var_counter=$(docker ps -a -f 'status=exited' |  wc -l | awk ' {print $1}')
+				echo "var_counter $var_counter"
+				if [[ $var_counter == 0 ]]; then
+					var_counter=$(docker ps -a -f 'health=unhealthy' |  wc -l | awk ' {print $1}')
+				fi
+				if [[ $var_counter > 0 ]]; then
 					docker ps -a -f 'status=exited'
+					docker ps -a -f 'health=unhealthy'
 				fi
 				# echo "Please contact epad team!"
 				if [[ "$var_failed_container_names" != "" ]]; then
@@ -593,7 +600,7 @@ global_var_return=""
 		while [[ $linecount -lt 4 && $var_start -lt $var_end ]]; do
 			var_start=$(date +%s)
 				counter=$((counter+1))
-	            linecount=$(docker ps -a  | grep healthy | wc -l)
+	            linecount=$(docker ps -a  | grep '\bhealthy\b' | wc -l | awk ' {print $1}')
 				if [[ $counter > 0 ]]; then
 					var_waiting="$var_waiting."
 					echo -en "$var_waiting\r"
@@ -605,7 +612,7 @@ global_var_return=""
 					var_waiting="starting epad"
 	            fi
         done
-        linecount=$(docker ps -a  | grep healthy | wc -l)
+        linecount=$(docker ps -a  | grep '\bhealthy\b' | wc -l | awk ' {print $1}')
         if [[ $linecount -lt 4 ]]; then
         	echo "one or more container have issues. ePad couldn't start"
         else
@@ -636,7 +643,7 @@ global_var_return=""
                 	#echo "end time :  $var_end_st " 
                         counter_st=$(($counter_st + 1))
                         #echo "cntr $counter_st"
-                        linecount_st=$(docker ps -a  | grep healthy | wc -l)
+                        linecount_st=$(docker ps -a  | grep '\bhealthy\b' | wc -l | awk ' {print $1}')
 
                         #echo "line count : $linecount_st "
                         if [[ $counter_st > 0 ]]; then
@@ -1002,7 +1009,7 @@ global_var_return=""
          if [[ $1 == "test" ]]; then
 			#var_couchdb_lineno=0
 			echo "test started ----------------------------"
-			start_containers_viaCompose_all
+			check_container_situation
 			# check_existance_couchdb_usercred
 			#sed '/couchdb/a\new line' "$var_path/$var_epadDistLocation/epad.yml"
 			#sed '3iline 3' $var_path/$var_epadDistLocation/epad.yml > $var_path/$var_epadDistLocation/epad.yml
