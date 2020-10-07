@@ -1,6 +1,15 @@
 #!/bin/bash
 # $1 expected install, start, stop, update
 # $2 expected a version master,latest,v0.1, v0.2 
+Black='\033[0;30m'        # Black
+Red='\033[0;31m'          # Red
+Green='\033[0;32m'        # Green
+Yellow='\033[0;33m'       # Yellow
+Blue='\033[0;34m'         # Blue
+Purple='\033[0;35m'       # Purple
+Cyan='\033[0;36m'         # Cyan
+White='\033[0;37m'        # White
+Color_Off='\033[0m'
 
 var_path=$(pwd)
 var_os_type=""
@@ -51,8 +60,36 @@ global_var_return=""
 # functions
 
 		delete_dangling_images(){
+			echo -e "${Yellow}process: deleting dangling images"
+			echo -e "${Color_Off}"
 			docker rmi -f $(docker images -f "dangling=true" -q)
 		}
+
+		remove_epad_images(){
+			local arrayImages=()
+			echo -e "${Yellow}process: deleting ePad images"
+			echo -e "${Color_Off}"
+			arrayImages+=($(docker ps -a --filter "name=\bepad_js\b" --format "table {{.Image}}" | awk '{ getline; print $0;}'))
+			arrayImages+=($(docker ps -a --filter "name=\bepad_lite\b" --format "table {{.Image}}" | awk '{ getline; print $0;}'))
+			arrayImages+=($(docker ps -a --filter "name=\bepad_dicomweb\b" --format "table {{.Image}}" | awk '{ getline; print $0;}'))
+			arrayImages+=($(docker ps -a --filter "name=\bepad_keycloak\b" --format "table {{.Image}}" | awk '{ getline; print $0;}'))
+			arrayImages+=($(docker ps -a --filter "name=\bepad_couchdb\b" --format "table {{.Image}}" | awk '{ getline; print $0;}'))
+			arrayImages+=($(docker ps -a --filter "name=\bepad_mariadb\b" --format "table {{.Image}}" | awk '{ getline; print $0;}'))
+			echo "arrayImages : ${arrayImages[@]}"
+			stop_containers_all
+			remove_containers_all
+			for i in ${!arrayImages[@]}; do
+  				docker rmi  ${arrayImages[$i]}
+			done
+			# docker rmi $("${arrayImages[@]}") 
+			#docker rmi $(docker ps -a --filter "name=\bepad_js\b" --format "table {{.Image}}" | awk '{ getline; print $0;}')
+			#docker rmi $(docker ps -a --filter "name=\bepad_lite\b" --format "table {{.Image}}" | awk '{ getline; print $0;}')
+			#docker rmi $(docker ps -a --filter "name=\bepad_dicomweb\b" --format "table {{.Image}}" | awk '{ getline; print $0;}')
+			#docker rmi $(docker ps -a --filter "name=\bepad_couchdb\b" --format "table {{.Image}}" | awk '{ getline; print $0;}')
+			#docker rmi $(docker ps -a --filter "name=\bepad_couchdb\b" --format "table {{.Image}}" | awk '{ getline; print $0;}')
+			#docker rmi $(docker ps -a --filter "name=\bepad_couchdb\b" --format "table {{.Image}}" | awk '{ getline; print $0;}')
+		}
+
 		check_ifallcontainers_created(){
 			local var_counter=0
 			local var_result=""
@@ -223,7 +260,8 @@ global_var_return=""
 		}
 
 		find_os_type(){
-		echo "process: finding os type"
+		echo -e "${Yellow}process: finding os type"
+		echo -e "${Color_Off}"
                 if [[ $OSTYPE == "linux"* ]]; then
                         var_os_type="linux"
                 elif  [[ $OSTYPE == "darwin"* ]]; then
@@ -282,48 +320,69 @@ global_var_return=""
 		local var_hostname_from_epadyml=""
 		local var_ip_frometc=""
 		local var_fresh_ip=""
-		var_hostname_from_epadyml=$( find_val_intext "host:" "1")
-		var_ip_frometc=$( cat /etc/hosts | grep "\b$var_hostname_from_epadyml\b" | awk '{print $1}' )
-		# echo $var_ip_frometc
-		if [[ ! -z $var_ip_frometc ]]; then
-			var_fresh_ip=$(find_ip)
-			if [[ $var_ip_frometc != $var_fresh_ip ]]; then
-				echo "you need to refresh the ip in /etc/hosts file. Please run the script epad_fixmyip.sh which is located in epad-dist folder. This operation requires sudo right"
-				exit 1
+		local iffixed_hostname_etchosts="epadvm"
+		var_hostname_from_epadyml=$(find_val_intext "host:" "1")
+		echo "host name from epad.yml :  $var_hostname_from_epadyml"
+		if [[ "$iffixed_hostname_etchosts" == "$var_hostname_from_epadyml" ]]; then
+			echo "checking ip mapping..."
+			var_ip_frometc=$( cat /etc/hosts | grep "\b$var_hostname_from_epadyml\b" | awk '{print $1}' )
+			# echo $var_ip_frometc
+			if [[ ! -z $var_ip_frometc ]]; then
+				echo "there is an ip found : $var_ip_frometc "
+				var_fresh_ip=$(find_ip)
+				echo "mapped ip needs to be : $var_fresh_ip"
+				if [[ $var_ip_frometc != $var_fresh_ip ]]; then
+					echo "you need to refresh the ip in /etc/hosts file. Please run the script epad_fixmyip.sh which is located in epad-dist folder. This operation requires sudo right"
+					exit 1
+				else
+					echo "your ip : $var_ip_frometcis a valid ip."
+				fi
 			fi
 		fi
 
 	}
 
 	find_hostname_from_hostsfile(){
-	echo "process: finding machine name from etc/hosts"
-		local var_local_servername=""
-		var_res=$(find_ip)
-		echo $var_res
-		var_local_servername=$( cat /etc/hosts | grep $var_res )
-		if [ -z "$var_local_servername" ]; then
-            echo "could not find your ip in your /etc/hosts file please fix your ip manually or use epad_fixmyip.sh script which is located in your epad-dist folder"
+	echo -e "${Yellow}process: finding machine name from etc/hosts"
+	echo -e "${Color_Off}"
+		# local var_local_servername=""
+		# var_res=$(find_ip)
+		local var_server_name="epadvm" # this is the server name required to be in the /etc/hosts file
+		local var_ip=$(find_ip)
+		local var_return=""
+		echo "your actual ip : $var_ip"
+		#var_local_servername=$( cat /etc/hosts | grep $var_res )
+		var_return=$( cat /etc/hosts | grep $var_server_name )
+		if [ -z "$var_return" ]; then
+            echo "could not find your hostname : $var_server_name in your /etc/hosts file please fix your ip manually or use epad_fixmyip.sh script which is located in your epad-dist folder"
             exit 1
         else
-            echo "your ip $var_res found in /etc/hosts file. Collecting server name"
-			var_local_servername=$( cat /etc/hosts | grep $var_res | awk '{print $2}' )
-			echo $var_local_servername
-			if [ -z "$var_local_servername" ]; then
-				echo "$var_res ip is not mapped to a name in /etc/hosts file. Your ip will be used as your host name or please fix manually to map your ip to a name or use epad_fixmyip.sh script which is located in epad-dist folder"
-				var_host=$var_res
-				echo "your host name for epad is set to $var_host"
+            echo "your hostname : $var_server_name found in /etc/hosts file. verifiying if it has a vlid ip"
+			var_return=$( cat /etc/hosts | grep $var_server_name | awk '{print $1}' )
+			
+			if [[ -z "$var_return" ]]; then
+				echo "no valid ip found for $var_server_name please fix your ip manually or use epad_fixmyip.sh script which is located in your epad-dist folder"
+				echo "exiting ..."
+				exit 1
+				#var_host=$var_res
+				#echo "your host name for epad is set to $var_host"
 				
 			else
-
-				var_host=$var_local_servername
-				echo "$var_res ip is  mapped to $var_host in /etc/hosts file.  ePad will use $var_host "
+				echo "ip collected from /etc/hosts for $var_server_name is : $var_return and needs to match with : $var_ip"
+				if [[ "$var_return" == "$var_ip" ]]; then
+					var_host=$var_server_name
+				else
+					echo "You have an old ip mapped to $var_server_name. Please update your ip manually in /etc/hhosts file or use epad_fixmyip.sh script which is located in your epad-dist folder to updated your ip automatically."
+					echo "exiting ..."
+					exit 1
+				fi
 			fi
         fi
 	}
 	
 	edit_hosts_file(){
-	echo "process: editing /etc/hosts"
- 		
+	echo -e "${Yellow}process: editing /etc/hosts"
+ 	echo -e "${Color_Off}"
 		var_res=$(cat /etc/hosts | grep $var_ip)
         if [ -z "$var_res" ]; then
             echo "ip not found"
@@ -352,28 +411,31 @@ global_var_return=""
 	}
 
 	find_host_info(){
-	#echo "process: finding host info"
-	local var_resp
-		if [[ $var_host == "" ]];then
-			if [[ $HOSTNAME == "" ]];then
-				echo "hostname is empty checking etc/hosts file to find server name"
-				find_hostname_from_hostsfile
-			else
-				echo "If you used epad_fixmyip.sh script to fix your server name answer 2 for the following question!"
-				read -p "Yyou have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp
-                if [[ $var_resp == 1 ]]; then
-					#var_host=$HOSTNAME
-					var_host=$(echo "$HOSTNAME" | tr '[:upper:]' '[:lower:]')
-				else
+		#echo "process: finding host info"
+		local var_resp
+		# if [[ -z $var_install_result_r  ||   "$var_install_result_r" != "y" ]]; then
+		
+			#if [[ $var_host == "" || $var_host == "YOUR_HOSTNAME" ]];then
+				if [[ $HOSTNAME == "" ]]; then
+					echo "hostname : $HOSTNAME is empty checking etc/hosts file to find server name"
 					find_hostname_from_hostsfile
+				else
+					echo "If you used epad_fixmyip.sh script to fix your server name answer 2 for the following question!"
+					read -p "You have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp
+	                if [[ $var_resp == 1 ]]; then
+						#var_host=$HOSTNAME
+						var_host=$(echo "$HOSTNAME" | tr '[:upper:]' '[:lower:]')
+					else
+						find_hostname_from_hostsfile
+					fi
 				fi
-			fi
-		fi
+			#fi
+		#fi
 	}
 
 	load_credentials_tovar (){
-	echo "process: loading credentials from epad.yml to variables for a new epad.yml"
-
+	echo -e "${Yellow}process: loading credentials from epad.yml to variables for a new epad.yml"
+	echo -e "${Color_Off}"
 		echo $var_path
 		#var_tmp_txt=""
 		#var_tmp_txt=$( awk '/host/{i++}i==1{print; exit}'  "$var_path/$var_epadDistLocation/epad.yml")
@@ -432,13 +494,15 @@ global_var_return=""
 	} 
 	
 	find_docker_gid(){
-	echo "process: finding docker group id"
+	echo -e "${Yellow}process: finding docker group id"
+	echo -e "${Color_Off}"
 		var_local_docker_gid=$( cat /etc/group | grep docker | cut -d: -f3)
 		echo "gid : $var_local_docker_gid"
 	}
 
 	copy_epad_dist (){
-	echo "process: copying epad-dist from git.."
+	echo -e "${Yellow}process: copying epad-dist from git.."
+	echo -e "${Color_Off}"
 		var_response="n"	
 		
 		if [[ -d "$var_path/$var_epadDistLocation" ]]; then
@@ -458,7 +522,8 @@ global_var_return=""
 	}
 
 	create_epad_lite_dist(){
-	echo "process: building epad_lite_dist from epad.yml"
+	echo -e "${Yellow}process: building epad_lite_dist from epad.yml"
+	echo -e "${Color_Off}"
 		var_response="n"
 				if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
                         read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
@@ -478,7 +543,8 @@ global_var_return=""
 	}
 
 	stop_containers_all (){
-	echo "process: stopping all containers..."
+	echo -e "${Yellow}process: stopping ePad containers..."
+	echo -e "${Color_Off}"
 		#export_keycloak
 		#echo $!
 		#result=""
@@ -493,8 +559,26 @@ global_var_return=""
 		
 	}
 
+	remove_containers_all (){
+		echo -e "${Yellow}process: removing ePad containers..."
+		echo -e "${Color_Off}"
+		#export_keycloak
+		#echo $!
+		#result=""
+
+		#while [[ -z $result  ]]; do
+		#	result=$(cat exportkeycloak.log | grep "Export finished successfully")
+		#done
+
+		#echo $result
+		cd "$var_path/$var_epadLiteDistLocation"
+		docker-compose rm
+		
+	}
+
 	start_containers_all (){
-	echo "process: starting all containers..."
+	echo -e "${Yellow}process: starting ePad containers..."
+	echo -e "${Color_Off}"
 
 	
 	#echo $var_start
@@ -525,13 +609,14 @@ global_var_return=""
         if [[ $linecount -lt 4 ]]; then
         	echo "one or more container have issues. ePad couldn't start"
         else
-        	echo "epad is ready to browse: $var_host"
+        	echo "epad is ready to browse: http://$var_host"
         fi
 	
 	}
 
 	start_containers_viaCompose_all (){
-	echo "process: starting all containers using docker-compose up -d"
+	echo -e "${Yellow}process: starting ePad containers using docker-compose up -d"
+	echo -e "${Color_Off}"
 
 	
 	
@@ -570,14 +655,15 @@ global_var_return=""
                 if [[ $linecount_st -lt 4 ]]; then
                 	echo "one or more container have issues. ePad couldn't start"
                 else
-                	echo "epad is ready to browse: $var_host"
+                	echo "epad is ready to browse: http://$var_host"
                 fi
 
         }
 
 
 	collect_system_configuration(){
-	echo "process: collecting system configuration info"
+	echo -e "${Yellow}process: collecting system configuration info"
+	echo -e "${Color_Off}"
 		var_response=""
 		
 		read -p "hostname (default value : $var_host) :" var_response
@@ -623,7 +709,7 @@ global_var_return=""
                 fi
         # branch section
                 
-		read -p "confiduration (default value : $var_config) :" var_response
+		read -p "configuration (environment (1) or local files (2)) (default value : $var_config) :" var_response
                 if [[ -n "$var_response" ]]
                 then
                         echo "response = $var_response"
@@ -649,9 +735,13 @@ global_var_return=""
 	}
 	
 	collect_user_credentials (){
-	echo "process: collecting user credentials"
+	echo -e "${Yellow}process: collecting user credentials"
+	echo -e "${Color_Off}"
 		var_response=""
 		
+		 if [[ $var_keycloak_user == "YOUR_KEYCLOAK_ADMIN_USER" ]]; then
+        	var_keycloak_user="admin"
+        fi
 		read -p "keycloak user name (default value : $var_keycloak_user) :" var_response
                 if [[ -n "$var_response" ]]
                 then
@@ -659,6 +749,10 @@ global_var_return=""
                         var_keycloak_user=$var_response
                         echo "var_keycloak_user : $var_keycloak_user"
                 fi
+
+        if [[ $var_keycloak_pass == "YOUR_KEYCLOAK_ADMIN_PASS" ]]; then
+        	var_keycloak_pass="admin"
+        fi
 		read -sp "keycloak user password (default value : $var_keycloak_pass) :" var_response
 				if [[ -n "$var_response" ]]
                 then
@@ -669,6 +763,9 @@ global_var_return=""
                 fi
 		printf '\n'
 
+		if [[ $var_keycloak_useremail == "YOUR_KEYCLOAK_ADMIN_EMAIL" ]]; then
+        	var_keycloak_useremail="admin@gmail.com"
+        fi
 		read -p "keycloak user email (default value : $var_keycloak_useremail) :" var_response
         		if [[ -n "$var_response" ]]
                 then
@@ -678,6 +775,9 @@ global_var_return=""
 
                 fi
 
+		if [[ $var_couchdb_user == "YOUR_COUCH_ADMIN_USER" ]]; then
+        	var_couchdb_user="admin"
+        fi
 		read -p "couchdb user name (default value : $var_couchdb_user) :" var_response
                 if [[ -n "$var_response" ]]
                 then
@@ -686,6 +786,9 @@ global_var_return=""
                         echo "var_couchdb_user : $var_couchdb_user"
                 fi
 
+		if [[ $var_couchdb_pass == "YOUR_COUCH_ADMIN_PASS" ]]; then
+        	var_couchdb_pass="admin"
+        fi
 		read -sp "couchdb user password (default value : $var_couchdb_pass) :" var_response
 				if [[ -n "$var_response" ]]
                 then
@@ -697,6 +800,9 @@ global_var_return=""
 		printf '\n'
 
 
+		if [[ $var_maria_user == "YOUR_DB_USER" ]]; then
+        	var_maria_user="admin"
+        fi
 		read -p "maria db user name (default value : $var_maria_user) :" var_response
                 if [[ -n "$var_response" ]]
                 then
@@ -705,6 +811,10 @@ global_var_return=""
                         echo "var_maria_user : $var_maria_user"
 
                 fi
+
+		if [[ $var_maria_pass == "YOUR_DB_PASS" ]]; then
+        	var_maria_pass="admin"
+        fi                
 		read -sp "maria db user password (default value : $var_maria_pass) :" var_response
                 if [[ -n "$var_response" ]]
                 then
@@ -715,6 +825,10 @@ global_var_return=""
                 fi
 		printf '\n'
 		echo $var_response
+
+		if [[ $var_maria_rootpass == "YOUR_DB_ROOT_PASS" ]]; then
+        	var_maria_rootpass="admin"
+        fi
 		read -sp "maria db root password (default value : $var_maria_rootpass) :" var_response
                 if [[ -n "$var_response" ]]
 				then
@@ -727,7 +841,8 @@ global_var_return=""
 	}
 
 	edit_epad_yml (){
-	echo "process: editing epad.yml file"
+	echo -e "${Yellow}process: editing epad.yml file"
+	echo -e "${Color_Off}"
 		sed -i -e "s/host:.*/host: $var_host/g" "$var_path/$var_epadDistLocation/epad.yml"
 		#sed -i -e "s/mode:.*/mode: $var_mode/g" "$var_path/$var_epadDistLocation/epad.yml"
 		awk -v var_awk="mode: $var_mode" '/mode:.*/{c++; if (c==1) { sub("mode:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
@@ -777,13 +892,15 @@ global_var_return=""
 	}
 
 	edit_compose_file(){
-	echo "process: editing docker-compose file for ARG_EPAD_DOCKER_GID"
+	echo -e "${Yellow}process: editing docker-compose file for ARG_EPAD_DOCKER_GID"
+	echo -e "${Color_Off}"
 		sed -i -e "s/ARG_EPAD_DOCKER_GID:.*/ARG_EPAD_DOCKER_GID: $var_local_docker_gid/g" "$var_path/$var_epadLiteDistLocation/docker-compose.yml"
 	}
 
 
 	import_keycloak(){
-		echo "process: importing keycloak users...."
+		echo -e "${Yellow}process: importing keycloak users...."
+		echo -e "${Color_Off}"
 		check_keycloak_container_situation
 		local var_full_keycloak_export_path=$var_path$var_keycloak_exportfolder
 		if [ ! -f "$var_full_keycloak_export_path" ]; then
@@ -823,7 +940,8 @@ global_var_return=""
 
 	export_keycloak(){
 	 
-		echo "process: exporting keycloak users...."
+		echo -e "${Yellow}process: exporting keycloak users...."
+		echo -e "${Color_Off}"
 		check_keycloak_container_situation
 		docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
 		-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=export \
@@ -908,14 +1026,18 @@ global_var_return=""
 
 			var_install_result_r=""
 			check_ifallcontainers_created
-			echo $global_var_return
+			# echo $global_var_return
 			if [[  $global_var_return == "exist" ]]; then
-				read -p "ePad installed already. Reinstalling ePad will erase keycloak users. Do you want to reinstall ePad? (y/n : default response is n) :" var_install_result_r
+				read -p "ePad installed already. Reinstalling ePad will erase keycloak users, remove all images and containers. Do you want to reinstall ePad? (y/n : default response is n) :" var_install_result_r
 				 echo $var_install_result_r
 				 if [[ -z $var_install_result_r  ||   "$var_install_result_r" != "y" ]]; then
                 		echo "exiting ePad installation."
                         exit 1
                	else 
+               		cd "$var_path/$var_epadLiteDistLocation"
+					#docker-compose down
+					remove_epad_images
+               		#delete_dangling_images
                		echo "installing epad"
                	fi
 			fi
@@ -953,8 +1075,8 @@ global_var_return=""
 		fi
 
         if [[ $1 == "start" ]]; then
-			#load_credentials_tovar
-			var_host=$( find_val_intext "host:" "1")
+			load_credentials_tovar
+			#var_host=$( find_val_intext "host:" "1")
 			doublecheck_ipmapping_onstart
 			check_ifallcontainers_created
 			if [[ ! $global_var_return=="exist" ]]; then
@@ -993,6 +1115,7 @@ global_var_return=""
 				echo "updating epad"
 				export_keycloak
 				stop_containers_all
+				remove_containers_all
 				cd "$var_path/$var_epadLiteDistLocation"
 				docker-compose build --no-cache
 				start_containers_viaCompose_all
@@ -1000,6 +1123,7 @@ global_var_return=""
 				check_container_situation
 			elif [[ $2 == "config" ]]; then
 				echo "updating epad configuration "
+				#export_keycloak
 				stop_containers_all
 				load_credentials_tovar
 				#find_host_info
@@ -1010,6 +1134,7 @@ global_var_return=""
                 create_epad_lite_dist
 				edit_compose_file
 				start_containers_viaCompose_all
+				#import_keycloak
 				check_container_situation
 			else
 				show_instructions
