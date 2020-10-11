@@ -36,7 +36,10 @@ var_backup=0
 	edit_hosts_file(){
 	echo "process: editing /etc/hosts"
 	echo "backing up /etc/hosts file"
- 		cp /etc/hosts /etc/hosts_epad_backup_1
+ 		local totalfiles=0
+ 		totalfiles=$(ls /etc/hosts* | wc -l | awk ' {print $1}')
+ 		totalfiles=$(($totalfiles + 1))
+ 		cp /etc/hosts /etc/hosts_epad_backup_$totalfiles
 		local var_res=$(cat /etc/hosts | grep "\b$var_ip\b")
 		local var_res_host=$(cat /etc/hosts | grep "\b$var_host\b")
 		# echo $var_res

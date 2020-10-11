@@ -13,7 +13,8 @@ Color_Off='\033[0m'
 
 var_path=$(pwd)
 var_os_type=""
-global_var_return=""
+global_var_container_exist=""
+
 #echo "epad will be installed in : $var_path"
 # sytem configuration variables
 	var_ip=""
@@ -43,6 +44,10 @@ global_var_return=""
 	var_maria_pass="admin"
 	var_maria_rootpass="admin"
 
+	var_maria_rootpass_old=""
+	var_maria_user_old=""
+	var_maria_user_pass_old=""
+
 # keycloak eport settings
 	# ! keep /tmp/ in case you want to edit the file name epad_realm.josn
 	var_keycloak_exportfolder="/tmp/epad_realm.json" 
@@ -53,11 +58,73 @@ global_var_return=""
 	var_couchdb_user="admin"
 	var_couchdb_pass="admin"
 
-#echo "\$1:$1"
-#read -p 'maria pass ? : ' var_response
-#echo $var_maria_rootpass
+
 
 # functions
+		update_mariadb_usersandpass(){
+			# new : need testing
+			local edited=0
+			local maria_container_exist=""
+
+
+			echo -e "${Yellow}process: updating  mariadb users and passwords"
+			echo -e "${Color_Off}"
+			echo "old root pass:$var_maria_rootpass_old"
+			echo "new root pass:$var_maria_rootpass"
+			echo "old user:$var_maria_user_old"
+			echo "new user:$var_maria_user"
+
+			maria_container_exist=$(docker ps -a --filter "name=\bepad_mariadb\b" --format "table {{.Status}}" | grep Up)
+			if [[ ! -z $maria_container_exist ]]; then
+				if [[ $var_maria_rootpass_old != $var_maria_rootpass ]]; then
+					echo -e "${Yellow}process: editing root password in epad_mariadb container"
+					echo -e "${Color_Off}"
+					docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass_old <<< "use mysql; ALTER USER 'root'@'localhost' IDENTIFIED BY '"$var_maria_rootpass"';"
+					docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER 'root'@'%' IDENTIFIED BY '"$var_maria_rootpass"';"
+					edited=1
+				else
+					echo "no need to update root password in mariadb"
+				fi
+
+				if [[ $var_maria_user != $var_maria_user_old ]] || [[ $var_maria_pass != $var_maria_user_pass_old ]] ; then
+					echo -e "${Yellow}process: editing mariadb user and password in epad_mariadb container"
+					echo -e "${Color_Off}"
+					docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; update user set User = '"$var_maria_user"' where User='"$var_maria_user_old="' ;"
+					docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER '"$var_maria_user"'@'%' IDENTIFIED BY '"$var_maria_pass"';"
+					edited=2
+				else
+					echo "no need to update user name or password in mariadb"
+				fi
+
+				if [[ $edited > 0 ]]; then
+					echo -e "${Yellow}process: restarting epad_mariadb container "
+					echo -e "${Color_Off}"
+					docker restart epad_mariadb
+				fi
+			else
+				echo "could not locate epad_mariadb container"
+				exit 1
+			fi
+		}
+
+		delete_epad_data(){
+		# new : need testing
+			# this section will delete couchdb and maria db folders
+			echo -e "${Yellow}process: deleting epad data"
+			echo -e "${Color_Off}"
+
+			local var_resp_delete="n"
+			read -p " Your couchdb and mariadb data will be erased. Do you want to proceed (y/n) default answer is (n) : " var_resp_delete
+			if [[ -z $var_resp_delete ]]; then
+				echo "empty"
+				echo "var_resp_delete:$var_resp_delete"
+			else
+				echo "not empty"
+				echo "var_resp_delete:$var_resp_delete"
+			fi
+
+		}
+
 
 		delete_dangling_images(){
 			echo -e "${Yellow}process: deleting dangling images"
@@ -75,7 +142,7 @@ global_var_return=""
 			arrayImages+=($(docker ps -a --filter "name=\bepad_keycloak\b" --format "table {{.Image}}" | awk '{ getline; print $0;}'))
 			arrayImages+=($(docker ps -a --filter "name=\bepad_couchdb\b" --format "table {{.Image}}" | awk '{ getline; print $0;}'))
 			arrayImages+=($(docker ps -a --filter "name=\bepad_mariadb\b" --format "table {{.Image}}" | awk '{ getline; print $0;}'))
-			echo "arrayImages : ${arrayImages[@]}"
+			echo "removing epad images : ${arrayImages[@]}"
 			stop_containers_all
 			remove_containers_all
 			for i in ${!arrayImages[@]}; do
@@ -120,9 +187,9 @@ global_var_return=""
 			fi
 
 			if [[ $var_counter < 6 ]]; then
-				global_var_return="doesnt"
+				global_var_container_exist="doesnt"
 			else
-				global_var_return="exist"
+				global_var_container_exist="exist"
 			fi
 		}
 
@@ -234,7 +301,7 @@ global_var_return=""
 				# docker ps -a -f 'health=unhealthy'
 				# health=unhealthy
 				var_counter=$(docker ps -a -f 'status=exited' |  wc -l | awk ' {print $1}')
-				echo "var_counter $var_counter"
+				# echo "var_counter $var_counter"
 				if [[ $var_counter == 0 ]]; then
 					var_counter=$(docker ps -a -f 'health=unhealthy' |  wc -l | awk ' {print $1}')
 				fi
@@ -390,6 +457,10 @@ global_var_return=""
 	edit_hosts_file(){
 	echo -e "${Yellow}process: editing /etc/hosts"
  	echo -e "${Color_Off}"
+ 	local totalfiles=0
+ 	totalfiles=$(ls /etc/hosts* | wc -l | awk ' {print $1}')
+ 	totalfiles=$(($totalfiles + 1))
+ 	cp /etc/hosts /etc/hosts_epad_backup_$totalfiles
 		var_res=$(cat /etc/hosts | grep $var_ip)
         if [ -z "$var_res" ]; then
             echo "ip not found"
@@ -467,6 +538,11 @@ global_var_return=""
         var_maria_user=$( find_val_intext "user:" "3")
         var_maria_pass=$( find_val_intext "password:" "3")
         var_maria_rootpass=$( find_val_intext "rootpassword:" "1")
+        
+        var_maria_rootpass_old=$var_maria_rootpass
+		var_maria_user_old=$var_maria_user
+		var_maria_user_pass_old=$var_maria_pass
+		
 
         var_branch_dicomweb=$( find_val_intext "branch:" "1")
         var_branch_dicomweb=$(echo $var_branch_dicomweb | sed 's/"//g')
@@ -550,8 +626,8 @@ global_var_return=""
 	}
 
 	stop_containers_all (){
-	echo -e "${Yellow}process: stopping ePad containers..."
-	echo -e "${Color_Off}"
+		echo -e "${Yellow}process: stopping ePad containers..."
+		echo -e "${Color_Off}"
 		#export_keycloak
 		#echo $!
 		#result=""
@@ -584,12 +660,12 @@ global_var_return=""
 	}
 
 	start_containers_all (){
-	echo -e "${Yellow}process: starting ePad containers..."
-	echo -e "${Color_Off}"
+		echo -e "${Yellow}process: starting ePad containers..."
+		echo -e "${Color_Off}"
 
 	
-	#echo $var_start
-	#echo $var_end
+		#echo $var_start
+		#echo $var_end
 		cd "$var_path/$var_epadLiteDistLocation"
         docker-compose start
         local var_start=$(date +%s)
@@ -622,14 +698,53 @@ global_var_return=""
 	}
 
 	start_containers_viaCompose_all (){
-	echo -e "${Yellow}process: starting ePad containers using docker-compose up -d"
-	echo -e "${Color_Off}"
+		echo -e "${Yellow}process: starting ePad containers using docker-compose up -d"
+		echo -e "${Color_Off}"
 
 	
 	
            		cd "$var_path/$var_epadLiteDistLocation"
                 docker-compose up -d
-                local var_start_st=$(date +%s)
+    #             local var_start_st=$(date +%s)
+				# local var_end_st=$(($var_start_st + 300))
+				# #echo "init : $var_start_st "
+				# #echo "init : $var_end_st "	
+    #             local linecount_st=0
+    #             local counter_st=0
+    #             local var_waiting_st="starting epad"
+    #             while [[ $linecount_st -lt 4 ]] && [[ $var_start_st -lt $var_end_st ]]; do
+    #             	#echo "loop started "
+    #             	var_start_st=$(date +%s)
+    #             	#echo "starting time :  $var_start_st " 
+    #             	#echo "end time :  $var_end_st " 
+    #                     counter_st=$(($counter_st + 1))
+    #                     #echo "cntr $counter_st"
+    #                     linecount_st=$(docker ps -a  | grep '\bhealthy\b' | wc -l | awk ' {print $1}')
+
+    #                     #echo "line count : $linecount_st "
+    #                     if [[ $counter_st > 0 ]]; then
+    #                             var_waiting_st="$var_waiting_st."
+    #                             echo -en "$var_waiting_st\r"
+    #                             sleep 1
+    #                     fi
+    #                     if [[ $counter_st == 10 ]]; then
+    #                             echo -en '                                        \r'
+    #                             counter_st=0
+    #                             var_waiting_st="starting epad"
+    #                     fi
+    #                     #echo "in loop"
+    #             done
+    #             # linecount=$(docker ps -a  | grep healthy | wc -l)
+    #             if [[ $linecount_st -lt 4 ]]; then
+    #             	echo "one or more container have issues. ePad couldn't start"
+    #             else
+    #             	echo "epad is ready to browse: http://$var_host"
+    #             fi
+
+        }
+
+    wait_for_containers_tobehealthy(){
+    	        local var_start_st=$(date +%s)
 				local var_end_st=$(($var_start_st + 300))
 				#echo "init : $var_start_st "
 				#echo "init : $var_end_st "	
@@ -664,13 +779,11 @@ global_var_return=""
                 else
                 	echo "epad is ready to browse: http://$var_host"
                 fi
-
-        }
-
+    }
 
 	collect_system_configuration(){
-	echo -e "${Yellow}process: collecting system configuration info"
-	echo -e "${Color_Off}"
+		echo -e "${Yellow}process: collecting system configuration info"
+		echo -e "${Color_Off}"
 		var_response=""
 		
 		read -p "hostname (default value : $var_host) :" var_response
@@ -742,8 +855,8 @@ global_var_return=""
 	}
 	
 	collect_user_credentials (){
-	echo -e "${Yellow}process: collecting user credentials"
-	echo -e "${Color_Off}"
+		echo -e "${Yellow}process: collecting user credentials"
+		echo -e "${Color_Off}"
 		var_response=""
 		
 		 if [[ $var_keycloak_user == "YOUR_KEYCLOAK_ADMIN_USER" ]]; then
@@ -848,8 +961,8 @@ global_var_return=""
 	}
 
 	edit_epad_yml (){
-	echo -e "${Yellow}process: editing epad.yml file"
-	echo -e "${Color_Off}"
+		echo -e "${Yellow}process: editing epad.yml file"
+		echo -e "${Color_Off}"
 		sed -i -e "s/host:.*/host: $var_host/g" "$var_path/$var_epadDistLocation/epad.yml"
 		#sed -i -e "s/mode:.*/mode: $var_mode/g" "$var_path/$var_epadDistLocation/epad.yml"
 		awk -v var_awk="mode: $var_mode" '/mode:.*/{c++; if (c==1) { sub("mode:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
@@ -899,8 +1012,8 @@ global_var_return=""
 	}
 
 	edit_compose_file(){
-	echo -e "${Yellow}process: editing docker-compose file for ARG_EPAD_DOCKER_GID"
-	echo -e "${Color_Off}"
+		echo -e "${Yellow}process: editing docker-compose file for ARG_EPAD_DOCKER_GID"
+		echo -e "${Color_Off}"
 		sed -i -e "s/ARG_EPAD_DOCKER_GID:.*/ARG_EPAD_DOCKER_GID: $var_local_docker_gid/g" "$var_path/$var_epadLiteDistLocation/docker-compose.yml"
 	}
 
@@ -1007,36 +1120,26 @@ global_var_return=""
 
 
          if [[ $1 == "test" ]]; then
-			#var_couchdb_lineno=0
+			
 			echo "test started ----------------------------"
-			check_container_situation
-			# check_existance_couchdb_usercred
-			#sed '/couchdb/a\new line' "$var_path/$var_epadDistLocation/epad.yml"
-			#sed '3iline 3' $var_path/$var_epadDistLocation/epad.yml > $var_path/$var_epadDistLocation/epad.yml
-			# var_couchdb_lineno=$(grep -n 'couchdb:' "$var_path/$var_epadDistLocation/epad.yml"  | cut -d":" -f1 )
-			# var_couchdb_lineno=$(($var_couchdb_lineno + 3))
-			#sed -i "3i\\ 
-			#text to insert"  "$var_path/$var_epadDistLocation/epad.yml"
-			 
-			#NL=$'\\\n'
-			#sed "$var_couchdb_lineno i\\
-			#text to insert  ${NL}"  "$var_path/$var_epadDistLocation/epad.yml"
-			# awk 'NR=='$var_couchdb_lineno'{print "  couchuser: \"'$var_couchuser'\" " }1' "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml" "$var_path/$var_epadDistLocation/epad.yml"
-			# var_couchdb_lineno=$(($var_couchdb_lineno + 1))
-			# awk 'NR=='$var_couchdb_lineno'{print "  couchpassword: \"'$var_couchpassword'\" " }1' "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml" "$var_path/$var_epadDistLocation/epad.yml"
-			# #awk '{if ($1 == "couchdb:") { print NR } }' "$var_path/$var_epadDistLocation/epad.yml"
+			#delete_epad_data
+
+			#update_mariadb_usersandpass
 			echo "test ended ----------------------------"
 
 		 fi
 
 		if [[ $1 == "install" ]]; then
-
+			echo -e "${Yellow}process: Installing ePad"
+    		echo -e "${Color_Off}"
 			var_install_result_r=""
 			check_ifallcontainers_created
-			# echo $global_var_return
-			if [[  $global_var_return == "exist" ]]; then
-				read -p "ePad installed already. Reinstalling ePad will erase keycloak users, remove all images and containers. Do you want to reinstall ePad? (y/n : default response is n) :" var_install_result_r
-				 echo $var_install_result_r
+			# echo $global_var_container_exist
+			if [[  $global_var_container_exist == "exist" ]]; then
+				echo -e "ePad installed already.\nReinstalling ePad will erase keycloak users, couchdb data and mariadb data and will remove all images and containers."
+				read -p "Do you want to reinstall ePad? (y/n : default response is n) :"  var_install_result_r 
+				
+				echo $var_install_result_r
 				 if [[ -z $var_install_result_r  ||   "$var_install_result_r" != "y" ]]; then
                 		echo "exiting ePad installation."
                         exit 1
@@ -1049,27 +1152,8 @@ global_var_return=""
                	fi
 			fi
 			echo "epad will be installed in : $var_path"
-				# below commented section is for creation of tmp folder to inport/export keycloak users 
-				# if [[ -d "$var_path/tmp" ]]; then
-				# 	echo "tmp dir exist already"
-				# else
-				# 	mkdir "$var_path/tmp"
-				# 	chmod 777 "$var_path/tmp"	
-				# fi
-			#stop_containers_all
 			copy_epad_dist
-			# check_existance_couchdb_usercred
 			find_host_info
-			# commented section below is for fixing ip automatically 
-			# var_install_response="n"
-			# if [[ $var_host == "" ]]; then
-			# 	read -p " your machine hostname is empty do you want us to fix it ? (y/n default value is n) : " var_install_response
-			 	
-			# 	if [[ $var_install_response == "y" ]]; then
-			# 		fix_server_via_hosts
-			# 	fi
-
-			# fi
 			find_docker_gid
 			collect_system_configuration
 			collect_user_credentials
@@ -1077,71 +1161,96 @@ global_var_return=""
 			create_epad_lite_dist
 			edit_compose_file
 			start_containers_viaCompose_all
+			if [[  $global_var_container_exist == "exist" ]]; then
+				update_mariadb_usersandpass
+			fi
+			wait_for_containers_tobehealthy
 			check_container_situation
+
+			# reset global variables
+			global_var_container_exist=""
 
 		fi
 
         if [[ $1 == "start" ]]; then
+        	echo -e "${Yellow}process: Starting ePad"
+    		echo -e "${Color_Off}"
 			load_credentials_tovar
 			#var_host=$( find_val_intext "host:" "1")
 			doublecheck_ipmapping_onstart
 			check_ifallcontainers_created
-			if [[ ! $global_var_return=="exist" ]]; then
+			if [[ ! $global_var_container_exist=="exist" ]]; then
 				echo "you have missing containers. Please reinstall ePad."
 				exit 1
 			fi
 			start_containers_all
 			check_container_situation
+			# reset global variables
+			global_var_container_exist=""
         fi
 
         if [[ $1 == "stop" ]]; then
+        	echo -e "${Yellow}process: Stopping ePad"
+    		echo -e "${Color_Off}"
         	check_ifallcontainers_created
-        	if [[ ! $global_var_return=="exist" ]]; then
+        	if [[ ! $global_var_container_exist=="exist" ]]; then
 				echo "you have missing containers. Please reinstall ePad."
 				exit 1
 			fi
             stop_containers_all
+			# reset global variables
+			global_var_container_exist=""
         fi
  		
 		if [[ $1 == "fixip" ]]; then
-    		
-		    		stop_containers_all
-					load_credentials_tovar
-					find_host_info
-					find_docker_gid
-					fix_server_via_hosts
-					edit_epad_yml
-					create_epad_lite_dist
-					edit_compose_file
-					start_containers_viaCompose_all
+    			echo -e "${Yellow}process: fixing your computer ip"
+    			echo -e "${Color_Off}"
+    			echo "Please use epad_fixmyip.sh script whcih is located in epad-dist folder."
+		    		#stop_containers_all
+					#load_credentials_tovar
+					#find_host_info
+					#find_docker_gid
+					#fix_server_via_hosts
+					#edit_epad_yml
+					#create_epad_lite_dist
+					#edit_compose_file
+					#start_containers_viaCompose_all
         fi
 		
 		if [[ $1 == "update" ]]; then
             
             if [[ $2 == "epad" ]]; then
-				echo "updating epad"
+				echo -e "${Yellow}process: updating epad"
+				echo -e "${Color_Off}"
 				export_keycloak
 				stop_containers_all
 				remove_containers_all
-				cd "$var_path/$var_epadLiteDistLocation"
-				docker-compose build --no-cache
+				remove_epad_images
+				#cd "$var_path/$var_epadLiteDistLocation"
+				#docker-compose build --no-cache
 				start_containers_viaCompose_all
+				wait_for_containers_tobehealthy
 				import_keycloak
 				check_container_situation
 			elif [[ $2 == "config" ]]; then
-				echo "updating epad configuration "
-				#export_keycloak
+				echo -e "${Yellow}process: updating epad configuration "
+				echo -e "${Color_Off}"
+				export_keycloak
 				stop_containers_all
+				remove_containers_all
+				remove_epad_images
+				#cd "$var_path/$var_epadLiteDistLocation"
+				#docker-compose build --no-cache
 				load_credentials_tovar
-				#find_host_info
-				#find_docker_gid
                 collect_system_configuration
                 collect_user_credentials
                 edit_epad_yml
                 create_epad_lite_dist
 				edit_compose_file
 				start_containers_viaCompose_all
-				#import_keycloak
+				update_mariadb_usersandpass
+				wait_for_containers_tobehealthy
+				import_keycloak
 				check_container_situation
 			else
 				show_instructions
@@ -1152,6 +1261,8 @@ global_var_return=""
 		if [[ $1 == "export" ]]; then
                
                 if [[ $2 == "keycloakusers" ]]; then
+                	echo -e "${Yellow}process: exporting keycloak users "
+                	echo -e "${Color_Off}"
                         export_keycloak
                 fi
 
@@ -1160,6 +1271,8 @@ global_var_return=""
         if [[ $1 = "import" ]]; then
                     
                 if [[ $2 == "keycloakusers" ]]; then
+                	echo -e "${Yellow}process: importing keycloak users "
+					echo -e "${Color_Off}"
                         import_keycloak
                 fi
 
