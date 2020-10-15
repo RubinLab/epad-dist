@@ -14,7 +14,9 @@ Color_Off='\033[0m'
 var_path=$(pwd)
 var_os_type=""
 global_var_container_exist=""
-
+var_reinstalling="false"
+dokcerprocessrsult_formariacredentials=()
+var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak epad_couchdb epad_mariadb)
 #echo "epad will be installed in : $var_path"
 # sytem configuration variables
 	var_ip=""
@@ -61,11 +63,75 @@ global_var_container_exist=""
 
 
 # functions
+		rollback_epadyml_formariadb_credentials(){
+				local var_check_failed=""
+				local var_check_success=""
+
+				# needs to check if user credentials failed for mariadb?
+				#check the array if contains fails. 
+				#${dokcerprocessrsult_formariacredentials[@]}
+				var_check_failed=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "FAILED")
+				var_check_success=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "SUCCESS")
+				echo "check failed : $var_check_failed"
+				if [[ ! -z $var_check_failed ]]; then
+					for i in ${!arrayImages[@]}; do
+  						
+  						if [[ ${arrayImages[$i]} == "updaterootpassLocalhostFAILED" ]] || [[ ${arrayImages[$i]} == "updaterootpassFAILED" ]]; then
+  							# edit epad.yml
+  							sed -i -e "s/rootpassword:.*/rootpassword: $var_maria_rootpass_old/g" "$var_path/$var_epadDistLocation/epad.yml"
+  							echo -e "${Yellow}process: Rolled back mariadb root pass from ->$var_maria_rootpass to -> $var_maria_rootpass_old for epad.yml"
+							echo -e "${Color_Off}"
+							# edit the compose file also
+							sed -i -e "s/ARG_EPAD_DOCKER_GID:.*/ARG_EPAD_DOCKER_GID: $var_local_docker_gid/g" "$var_path/$var_epadLiteDistLocation/docker-compose.yml"
+  						fi
+  						
+  						if [[ ${arrayImages[$i]} == "updateuserFAILED" ]]; then
+  							awk -v var_awk="user: $var_maria_user_old" '/user:.*/{c++; if (c==3) { sub("user:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+  							echo -e "${Yellow}process: Rolled back mariadb user from ->$var_maria_user to -> $var_maria_user_old for epad.yml"
+  							echo -e "${Color_Off}"
+  						fi
+
+  						if [[ ${arrayImages[$i]} == "updateuserpassFAILED" ]]; then
+  							awk -v var_awk="password: $var_maria_user_pass_old" '/password:.*/{c++; if (c==3) { sub("password:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+  							echo -e "${Yellow}process: Rolled back mariadb user password from ->$var_maria_pass to -> $var_maria_user_pass_old for epad.yml"
+  							echo -e "${Color_Off}"
+  						fi
+					done
+					#	updaterootpassLocalhostFAILED updaterootpassFAILED updateuserFAILED updateuserpassFAILED
+			 		
+					echo "ROOLBACK mariadb credential update check :  ${dokcerprocessrsult_formariacredentials[@]}"
+					echo -e "${Yellow}process: Rolling back epad.yml finished. Recreating epad_lite_dist"
+					echo -e "${Color_Off}"
+					create_epad_lite_dist
+					if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+						cd "$var_path/$var_epadLiteDistLocation"
+						docker-compose up -d 
+					else
+						echo -e "${Yellow}process: Could not locate epad_lite_dist folder at location : $var_path/$var_epadLiteDistLocation to restart containers with rolled back mariadb credentials"
+						echo -e "${Color_Off}"
+					fi
+					
+                	
+					# docker restart epad_lite
+					
+				fi
+
+				if [[ ! -z $var_check_success ]]; then
+					docker restart epad_mariadb
+				fi
+
+				
+
+		}
+
 		update_mariadb_usersandpass(){
 			# new : need testing
 			local edited=0
 			local maria_container_exist=""
-
+			
+			local result=""
+			local verifyfirst=""
+			local var_sql_socket_ready=""
 
 			echo -e "${Yellow}process: updating  mariadb users and passwords"
 			echo -e "${Color_Off}"
@@ -73,38 +139,153 @@ global_var_container_exist=""
 			echo "new root pass:$var_maria_rootpass"
 			echo "old user:$var_maria_user_old"
 			echo "new user:$var_maria_user"
+			echo "old user pass : $var_maria_user_pass_old"
+			echo "new user pass : $var_maria_pass"
+			
+			#if [[ $var_reinstalling == "true" ]]; then
+				maria_container_exist=$(docker ps -a --filter "name=\bepad_mariadb\b" --format "table {{.Status}}" | grep Up)
+				if [[ ! -z $maria_container_exist ]]; then
+					if [[ ! -z $var_maria_rootpass ]] && [[ ! -z $var_maria_rootpass_old ]] && [[ ! -z $var_maria_pass ]] && [[ ! -z $var_maria_user_pass_old ]] && [[ ! -z $var_maria_user ]] && [[ ! -z $var_maria_user_old ]]; then
+									# docker exec --user root  -it epad_mariadb  apt-get update
+									if [[ $var_maria_rootpass_old != $var_maria_rootpass ]]; then
 
-			maria_container_exist=$(docker ps -a --filter "name=\bepad_mariadb\b" --format "table {{.Status}}" | grep Up)
-			if [[ ! -z $maria_container_exist ]]; then
-				if [[ $var_maria_rootpass_old != $var_maria_rootpass ]]; then
-					echo -e "${Yellow}process: editing root password in epad_mariadb container"
-					echo -e "${Color_Off}"
-					docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass_old <<< "use mysql; ALTER USER 'root'@'localhost' IDENTIFIED BY '"$var_maria_rootpass"';"
-					docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER 'root'@'%' IDENTIFIED BY '"$var_maria_rootpass"';"
-					edited=1
+										echo -e "${Yellow}process: editing root password in epad_mariadb container"
+										echo -e "${Color_Off}"
+										
+										# we need to wait for the sockek to be ready
+
+										var_sql_socket_ready="socket"
+										while [[ ! -z $var_sql_socket_ready ]]; do
+											
+										    echo "waiting for sql socket"
+										    
+										   
+										    var_sql_socket_ready=$(docker exec -it  epad_mariadb  mysql -uroot -p$var_maria_rootpass -e  "use mysql;show databases;")
+										    var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
+										    echo "1 var_sql_socket_ready : $var_sql_socket_ready"
+										    
+
+										    if [[ -z $var_sql_socket_ready ]]; then
+										    	var_sql_socket_ready=$(docker exec -i epad_mariadb  mysql -uroot -p$var_maria_rootpass_old -e "use mysql;show databases;" )
+										    	var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
+										    	 echo "2 in var_sql_socket_ready : $var_sql_socket_ready"
+										    	 #var_sql_socket_ready="socket"
+										    fi
+										    
+										     sleep 5
+										done
+										
+										
+										echo -e "${Yellow}process: mariadb socket ready for the root credentials update..."
+										echo -e "${Color_Off}"
+
+										verifyfirst=$(docker exec  -it  epad_mariadb  mysql -uroot -p$var_maria_rootpass -e "use mysql;show databases;" || echo "failed")
+										echo "root user verifyfirst :$verifyfirst"
+										if [[ $verifyfirst == "failed" ]]; then
+											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass_old <<< "use mysql; ALTER USER 'root'@'localhost' IDENTIFIED BY '"$var_maria_rootpass"';FLUSH PRIVILEGES;"  && echo "updaterootpasslocalhostSUCCESS" || echo "updaterootpassLocalhostFAILED") # > result
+											dokcerprocessrsult_formariacredentials+=($result)
+											echo "a1 : $result"
+											
+											#result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER 'root'@'%' IDENTIFIED BY '"$var_maria_rootpass"';FLUSH PRIVILEGES;" && echo "updaterootpassSUCCESS" || echo "updaterootpassFAILED") # > result
+											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass_old <<< "use mysql; ALTER USER 'root'@'%' IDENTIFIED BY '"$var_maria_rootpass"';FLUSH PRIVILEGES;" && echo "updaterootpassSUCCESS" || echo "updaterootpassFAILED") # > result
+											dokcerprocessrsult_formariacredentials+=($result)
+											echo "a2 : $result"
+											edited=1
+
+										fi
+									else
+										echo "no need to update root password in mariadb"
+									fi
+
+
+
+
+									if [[ $var_maria_user != $var_maria_user_old ]]  || [[ $var_maria_pass != $var_maria_user_pass_old ]]; then
+										echo -e "${Yellow}process: editing mariadb user and password in epad_mariadb container"
+										echo -e "${Color_Off}"
+
+										# we need to wait for the sockek to be ready
+
+										var_sql_socket_ready="socket"
+										while [[ ! -z $var_sql_socket_ready ]]; do
+											
+										    echo "waiting for sql socket"
+										    
+										   
+										    var_sql_socket_ready=$(docker exec -it  epad_mariadb  -u$var_maria_user -p$var_maria_pass  -e   "use epaddb;show tables;" )
+										    var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
+										    echo "3 var_sql_socket_ready : $var_sql_socket_ready"
+										    
+
+										    if [[ -z $var_sql_socket_ready ]]; then
+										    	var_sql_socket_ready=$(docker exec -i epad_mariadb  mysql -u$var_maria_user_old -p$var_maria_user_pass_old  -e   "use epaddb;show tables;"  )
+										    	var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
+										    	 echo "4 var_sql_socket_ready : $var_sql_socket_ready"
+										    	 #var_sql_socket_ready="socket"
+										    fi
+										    
+										     sleep 5
+										done
+
+										# var_sql_socket_ready="socket"
+										# while [[ -z $var_sql_socket_ready ]]; do
+											
+										#     echo "waiting for sql socket"
+										    
+										   
+										#     var_sql_socket_ready=$(docker exec  -it epad_mariadb  mysqladmin -u$var_maria_user -p$var_maria_pass  -e  "use mysql;show databases;" )
+										#     echo "var_sql_socket_ready : $var_sql_socket_ready"
+
+										#     if [[ -z $var_sql_socket_ready ]]; then
+										#     	var_sql_socket_ready=$(docker exec  -it epad_mariadb  mysqladmin -u$var_maria_user_old -p$var_maria_user_pass_old  -e  "use mysql;show databases;" )
+										#     fi
+										    
+										#      sleep 5
+										# done
+										echo -e "${Yellow}process: mariadb socket ready for the user credentials update..."
+										echo -e "${Color_Off}"
+
+										verifyfirst=$(docker exec  -it  epad_mariadb  mysql -u$var_maria_user -p$var_maria_pass -e "use epaddb;show tables;" || echo "failed")
+										echo "regular user verifyfirst :$verifyfirst"
+										if [[ $verifyfirst == "failed" ]]; then
+											#dokcerprocessrsult_formariacredentials+=($())
+											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; update user set User = '"$var_maria_user"' where User='"$var_maria_user_old"' ;FLUSH PRIVILEGES;" && echo "updateuserSUCCESS" || echo "updateuserFAILED")
+											dokcerprocessrsult_formariacredentials+=($result)
+											echo "a3 : $result"
+											
+											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER '"$var_maria_user"'@'%' IDENTIFIED BY '"$var_maria_pass"';FLUSH PRIVILEGES;" && echo "updateuserpassSUCCESS" || echo "updateuserpassFAILED")
+											dokcerprocessrsult_formariacredentials+=($result)
+											echo "a4 : $result"
+											edited=2
+										
+										fi
+									else
+										echo "no need to update user name or password in mariadb"
+									fi
+
+									if [[ $edited > 0 ]]; then
+										echo -e "${Yellow}process: restarting epad_mariadb container "
+										echo -e "${Color_Off}"
+										rollback_epadyml_formariadb_credentials
+										
+										# if credentials update fails need to rollback epad.yml for mariadb user credentials .Same for docker-compose.yml
+									fi
+					else
+						echo "user or password is empty for user or root"
+						rollback_epadyml_formariadb_credentials
+					fi
 				else
-					echo "no need to update root password in mariadb"
+					echo "could not locate epad_mariadb container"
+					echo "rolling back epad.yml with old mariadb credentials"
+					rollback_epadyml_formariadb_credentials
+					
 				fi
-
-				if [[ $var_maria_user != $var_maria_user_old ]] || [[ $var_maria_pass != $var_maria_user_pass_old ]] ; then
-					echo -e "${Yellow}process: editing mariadb user and password in epad_mariadb container"
-					echo -e "${Color_Off}"
-					docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; update user set User = '"$var_maria_user"' where User='"$var_maria_user_old="' ;"
-					docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER '"$var_maria_user"'@'%' IDENTIFIED BY '"$var_maria_pass"';"
-					edited=2
-				else
-					echo "no need to update user name or password in mariadb"
-				fi
-
-				if [[ $edited > 0 ]]; then
-					echo -e "${Yellow}process: restarting epad_mariadb container "
-					echo -e "${Color_Off}"
-					docker restart epad_mariadb
-				fi
-			else
-				echo "could not locate epad_mariadb container"
-				exit 1
-			fi
+			#fi
+			echo "mariadb credential update check :  ${dokcerprocessrsult_formariacredentials[@]}"
+			failvalue=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "FAILED")
+			echo "failed ? : $failvalue"
+			succesvalue=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "SUCCESS")
+			echo "success ? : $succesvalue"
 		}
 
 		delete_epad_data(){
@@ -519,7 +700,7 @@ global_var_container_exist=""
 		#var_tmp_txt=$( awk '/host/{i++}i==1{print; exit}'  "$var_path/$var_epadDistLocation/epad.yml")
 		#var_host=$( echo $var_tmp_txt | cut -d: -f2)
 		var_host=$( find_val_intext "host:" "1")
-
+		echo "var_host: $var_host"
 		var_mode=$( find_val_intext "mode:" "1")
         var_config=$( find_val_intext "config:" "1")
         #var_container_mode==$( find_val_intext "host" "1")
@@ -577,26 +758,50 @@ global_var_container_exist=""
 	} 
 	
 	find_docker_gid(){
-	echo -e "${Yellow}process: finding docker group id"
-	echo -e "${Color_Off}"
+
+		echo -e "${Yellow}process: finding docker group id"
+		echo -e "${Color_Off}"
+
 		var_local_docker_gid=$( cat /etc/group | grep docker | cut -d: -f3)
-		echo "gid : $var_local_docker_gid"
+		if [[ -z $var_local_docker_gid ]]; then
+			echo "docker gid : not found. normal for mac os"
+		else
+			echo "docker gid : $var_local_docker_gid"
+		fi
+		
 	}
 
 	copy_epad_dist (){
-	echo -e "${Yellow}process: copying epad-dist from git.."
-	echo -e "${Color_Off}"
+
+		local backupymlfilename=""
+
+		echo -e "${Yellow}process: copying epad-dist from git.."
+		echo -e "${Color_Off}"
+
 		var_response="n"	
 		
 		if [[ -d "$var_path/$var_epadDistLocation" ]]; then
+			#var_reinstalling="true"
 			load_credentials_tovar
-  			read -p  "epad-dist folder exist already. Do you want to owerwrite ? (y/n) (defult value is n): " var_response
+
+	 		
+			global_var_container_exist="exist"
+			if [[ $var_reinstalling != "true" ]]; then
+  				read -p  "epad-dist folder exist already. Do you want to owerwrite ? (y/n) (defult value is n): " var_response
+  			fi
 		else
 			cd $var_path
   			git clone -b script_merge https://github.com/RubinLab/epad-dist.git
 		fi
 
-		if [[ $var_response == "y" ]]; then
+		if [[ $var_response == "y" ]] || [[ $var_reinstalling == "true" ]]; then
+
+			
+			backupymlfilename=$( date  |  sed -e 's/'" "'/-/g' |  sed -e 's/':'/-/g')
+			echo -e "${Yellow}process: backing up old epad.yml to -> epad.yml_$backupymlfilename"
+			echo -e "${Color_Off}"
+	 		
+			cp $var_path/$var_epadDistLocation/epad.yml $var_path/epad.yml_$backupymlfilename
   			echo "copying epad-dist repo from git"
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
@@ -609,15 +814,19 @@ global_var_container_exist=""
 	echo -e "${Color_Off}"
 		var_response="n"
 				if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+					if [[ $var_reinstalling != "true" ]]; then
                         read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
+                    fi
                 else
 						cd "$var_path/$var_epadDistLocation"
                         ./configure_epad.sh ../$var_epadLiteDistLocation ./epad.yml
 			
                 fi
 
-                if [[ $var_response == "y" ]]; then
-                        echo "creating $var_epadLiteDistLocation folder"
+                if [[ $var_response == "y" ]] || [[ $var_reinstalling == "true" ]]; then
+                        
+                        echo -e "${Yellow}process: creating $var_epadLiteDistLocation folder"
+						echo -e "${Color_Off}"
                         rm -rf "$var_path/$var_epadLiteDistLocation"
 						cd "$var_path/$var_epadDistLocation"
                         ./configure_epad.sh ../$var_epadLiteDistLocation ./epad.yml
@@ -637,8 +846,15 @@ global_var_container_exist=""
 		#done
 
 		#echo $result
-		cd "$var_path/$var_epadLiteDistLocation"
-		docker-compose stop
+		if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+			cd "$var_path/$var_epadLiteDistLocation"
+			docker-compose stop
+		else
+
+			for i in ${!var_array_allEpadContainerNames[@]}; do
+	  				docker stop  ${var_array_allEpadContainerNames[$i]}
+			done
+		fi
 		
 	}
 
@@ -654,8 +870,15 @@ global_var_container_exist=""
 		#done
 
 		#echo $result
-		cd "$var_path/$var_epadLiteDistLocation"
-		docker-compose rm
+		if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+			cd "$var_path/$var_epadLiteDistLocation"
+			docker-compose rm -f
+		else
+
+			for i in ${!var_array_allEpadContainerNames[@]}; do
+	  				docker rm  ${var_array_allEpadContainerNames[$i]}
+			done
+		fi
 		
 	}
 
@@ -704,7 +927,7 @@ global_var_container_exist=""
 	
 	
            		cd "$var_path/$var_epadLiteDistLocation"
-                docker-compose up -d
+                docker-compose up -d > /dev/null
     #             local var_start_st=$(date +%s)
 				# local var_end_st=$(($var_start_st + 300))
 				# #echo "init : $var_start_st "
@@ -795,11 +1018,17 @@ global_var_container_exist=""
                         echo "host name : $var_host"
                 fi
                 
-		read -p "mode (default value : $var_mode) :" var_response
+		read -p "mode (1) lite (2) thick (default value : $var_mode) :" var_response
                 if [[ -n "$var_response" ]]
                 then
                         echo "response = $var_response"
-                        var_mode=$var_response
+                        if [[ $var_response == 1 ]]; then
+                        	var_mode="lite"
+                        elif [[ $var_response == 2 ]]; then
+                        	var_mode="thick"
+                        else
+                        	var_mode="lite"
+                        fi
                         echo "mode : $var_mode"
                 fi
         # branch section
@@ -833,7 +1062,13 @@ global_var_container_exist=""
                 if [[ -n "$var_response" ]]
                 then
                         echo "response = $var_response"
-                        var_config=$var_response
+                        if [[ $var_response == 1 ]]; then
+                        	var_config="environment"
+                    	elif [[ $var_response == 2 ]]; then
+                        	var_config="files"
+                    	else
+                    		var_config="environment"
+                    	fi
                         echo "config : $var_config"
                 fi
 		
@@ -1014,6 +1249,11 @@ global_var_container_exist=""
 	edit_compose_file(){
 		echo -e "${Yellow}process: editing docker-compose file for ARG_EPAD_DOCKER_GID"
 		echo -e "${Color_Off}"
+		if [[ -z $var_local_docker_gid ]]; then
+			echo "docker gid : not found. normal for mac os"
+		else
+			echo "docker gid : $var_local_docker_gid"
+		fi
 		sed -i -e "s/ARG_EPAD_DOCKER_GID:.*/ARG_EPAD_DOCKER_GID: $var_local_docker_gid/g" "$var_path/$var_epadLiteDistLocation/docker-compose.yml"
 	}
 
@@ -1123,8 +1363,12 @@ global_var_container_exist=""
 			
 			echo "test started ----------------------------"
 			#delete_epad_data
-
+			#maria_myvar=$(docker exec -i epad_mariadb  mysqladmin ping)
+			#maria_myvar=$(docker exec  -it  epad_mariadb  mysql -uroot -pahmetadmin -e "use mysql; update user set User = '"$var_maria_user"' where User='"$var_maria_user_old"' ;FLUSH PRIVILEGES;")
+			#maria_myvar=$(docker exec  -it  epad_mariadb  mysql -uroot -pahmetadmin -e "use mysql; select * from user;")
+			#echo "error ? : $maria_myvar"
 			#update_mariadb_usersandpass
+			update_mariadb_usersandpass
 			echo "test ended ----------------------------"
 
 		 fi
@@ -1144,11 +1388,12 @@ global_var_container_exist=""
                 		echo "exiting ePad installation."
                         exit 1
                	else 
-               		cd "$var_path/$var_epadLiteDistLocation"
+               		#cd "$var_path/$var_epadLiteDistLocation"
 					#docker-compose down
 					remove_epad_images
                		#delete_dangling_images
                		echo "installing epad"
+               		var_reinstalling="true"
                	fi
 			fi
 			echo "epad will be installed in : $var_path"
@@ -1169,6 +1414,7 @@ global_var_container_exist=""
 
 			# reset global variables
 			global_var_container_exist=""
+			var_reinstalling="false"
 
 		fi
 
@@ -1223,11 +1469,8 @@ global_var_container_exist=""
 				echo -e "${Yellow}process: updating epad"
 				echo -e "${Color_Off}"
 				export_keycloak
-				stop_containers_all
-				remove_containers_all
 				remove_epad_images
-				#cd "$var_path/$var_epadLiteDistLocation"
-				#docker-compose build --no-cache
+				load_credentials_tovar
 				start_containers_viaCompose_all
 				wait_for_containers_tobehealthy
 				import_keycloak
@@ -1236,8 +1479,8 @@ global_var_container_exist=""
 				echo -e "${Yellow}process: updating epad configuration "
 				echo -e "${Color_Off}"
 				export_keycloak
-				stop_containers_all
-				remove_containers_all
+				#stop_containers_all
+				#remove_containers_all
 				remove_epad_images
 				#cd "$var_path/$var_epadLiteDistLocation"
 				#docker-compose build --no-cache
