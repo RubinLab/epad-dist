@@ -251,6 +251,12 @@ then
     replace_in_files "git clone" "git clone -b $epadjs_branch" "$1/epadjs"
 fi
 
+# image change to ibm 
+if [[ $couchdb_image ==  ibmcom/couchdb3* ]]
+then
+    replace_in_files "apache\/couchdb:" "" $1
+fi
+
 while read -r line 
 do 
     IFS='=' # delimeter

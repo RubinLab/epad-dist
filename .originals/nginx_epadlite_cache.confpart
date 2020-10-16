@@ -11,7 +11,8 @@
                 proxy_cache my_cache;
                 proxy_ignore_headers Cache-Control;
                 proxy_cache_valid any 60m;
-                proxy_cache_bypass $cookie_nocache $arg_nocache;
+                proxy_cache_key $uri$is_args$args;
+                proxy_cache_purge PURGE from all;
                 add_header X-Cache-Status $upstream_cache_status;                                                                                                                                                                                         
                 add_header 'Access-Control-Allow-Origin' '*';                                                                                                                                                                                                              
                 add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';      
