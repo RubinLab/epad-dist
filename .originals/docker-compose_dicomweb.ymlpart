@@ -1,12 +1,15 @@
   mydicomweb:
     image: rubinlab/dicomweb-server:{dicomweb_image}
     container_name: epad_dicomweb
-    # expose:
+    expose:
     #   - "{dicomweb_port}"
-    # ports:
+      - "{dicomweb_dimseport}"
+    ports:
     #   - "{dicomweb_port}:8090"
+      - "{dicomweb_dimseport}:4002"
     volumes:
       - ./production_dicomweb.js:/home/node/app/config/development.js
+      - {dicomweb_dimsetemp}:/home/node/app/dimsetemp
     depends_on:
       - mykeycloak
     healthcheck:

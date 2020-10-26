@@ -1,16 +1,22 @@
   mydicomweb:
     image: rubinlab/dicomweb-server:{dicomweb_image}
     container_name: epad_dicomweb
-    # expose:
+    expose:
     #   - "{dicomweb_port}"
-    # ports:
+      - "{dicomweb_dimseport}"
+    ports:
     #   - "{dicomweb_port}:8090"
+      - "{dicomweb_dimseport}:4002"
+    volumes:
+      - {dicomweb_dimsetemp}:/home/node/app/dimsetemp
     environment:
       DB_SERVER: "http://{couchdb_user}:{couchdb_password}@epad_couchdb"
       DB_NAME: "{dicomweb_dbname}"
       AUTH: "{dicomweb_auth}"
       LOGGER: "{dicomweb_log}"
       PREFIX: "/{dicomweb_loc}"
+      TEMPDIR: "./dimsetemp"
+      AET: "{dicomweb_aet}"
     depends_on:
       - mykeycloak
     healthcheck:
