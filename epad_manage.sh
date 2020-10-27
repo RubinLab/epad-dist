@@ -41,10 +41,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	var_keycloak_user="admin"
 	var_keycloak_pass="admin"
 	var_keycloak_useremail="admin@gmail.com"
+	var_keycloak_port="8899"
 
 	var_maria_user="admin"
 	var_maria_pass="admin"
 	var_maria_rootpass="admin"
+	var_maria_port="3306"
 
 	var_maria_rootpass_old=""
 	var_maria_user_old=""
@@ -59,20 +61,209 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 	var_couchdb_user="admin"
 	var_couchdb_pass="admin"
+	var_couchdb_port="8888"
+
+	var_dicomweb_port="8090"
+
+	var_epadlite_port="8080"
+
+	var_epadjs_port="80"
 
 
 
 # functions
+		parse_yml_sections(){
+			if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+
+				local input="$var_path/$var_epadDistLocation/epad.yml"
+				local section=""
+				local response=""
+				var_array_fromyml_keycloak=()
+				var_array_fromyml_couchdb=()
+				var_array_fromyml_dicomweb=()
+				var_array_fromyml_epadlite=()
+				var_array_fromyml_epadjs=()
+				var_array_fromyml_mariadb=()
+
+				while IFS= read -r line
+				do
+				  response=$(echo $line | grep ":$")
+				  if [ ! -z $response ]; then
+				  	#section=$response
+				  	section=$(echo $response | cut -d":" -f1)
+				  #echo "section : $section "
+				  
+				fi
+				#echo "response : $response"
+				  # echo "first : $response"
+				  if [ -z $response ]; then
+				  	#eachline=$(echo $line | cut -d":" -f1)
+				  	eachline=$(echo $line | sed -e 's/[[:space:]]//g')
+				  	#echo "merge : $section-$eachline"
+						  	case $section in
+
+						  	keycloak)
+						    		#echo -n "keycloak"
+						    		var_array_fromyml_keycloak+=($eachline)
+						    ;;
+
+						  	couchdb)
+						    		#echo -n "couchdb"
+						    		var_array_fromyml_couchdb+=($eachline)
+
+						    ;;
+
+						    dicomweb)
+						    		#echo -n "dicomweb"
+						    		var_array_fromyml_dicomweb+=($eachline)
+
+						    ;;
+
+						    epadlite)
+						    		#echo -n "epadlite"
+						    		var_array_fromyml_epadlite+=($eachline)
+
+						    ;;
+
+						    epadjs)
+						    		#echo -n "epadjs"
+						    		var_array_fromyml_epadjs+=($eachline)
+
+						    ;;
+
+						    mariadb)
+						    		#echo -n "mariadb"
+						    		var_array_fromyml_mariadb+=($eachline)
+						    ;;
+							esac
+
+				  fi
+
+
+				done < "$input"
+
+				  	# echo "*******************"
+				   # 	echo "*******************"
+
+				   #   echo "${var_array_fromyml_keycloak[@]}"
+				   #       echo "*******************"
+				   #   echo "*******************"
+				   #   echo "${var_array_fromyml_couchdb[@]}"
+				   #       echo "*******************"
+				   #   echo "*******************"
+				   #   echo "${var_array_fromyml_dicomweb[@]}"
+				   #            echo "*******************"
+				   #   echo "*******************"
+				   #   echo "${var_array_fromyml_epadlite[@]}"
+				   #       echo "*******************"
+				   #   echo "*******************"
+				   #   echo "${var_array_fromyml_epadjs[@]}"
+				   #       echo "*******************"
+				   #   echo "*******************"
+				   # echo "${var_array_fromyml_mariadb[@]}" 
+			fi
+
+		}
+		find_val_fromsections(){
+			local found=""
+			case $1 in
+
+						  	keycloak)
+						    		#echo  "finding in keycloak"
+						    		#echo "${var_array_fromyml_keycloak[@]}"
+						    		for i in ${!var_array_fromyml_keycloak[@]}; do
+	  									found=$(echo "${var_array_fromyml_keycloak[$i]}" | grep $2)
+	  									if [ ! -z $found ];then
+	  										found=$(echo $found | cut -d":" -f2)
+	  										break
+	  									fi
+									done
+									echo $found
+						    ;;
+
+						  	couchdb)
+						    		#echo "finding in couchdb"
+						    		#echo "${var_array_fromyml_couchdb[@]}"
+						    		for i in ${!var_array_fromyml_couchdb[@]}; do
+	  									found=$(echo "${var_array_fromyml_couchdb[$i]}" | grep $2)
+	  									if [ ! -z $found ];then
+	  										found=$(echo $found | cut -d":" -f2)
+	  										break
+	  									fi
+									done
+									echo $found
+
+						    ;;
+
+						    dicomweb)
+						    		#echo "finding in dicomweb"
+						    		#echo "${var_array_fromyml_dicomweb[@]}"
+						    		for i in ${!var_array_fromyml_dicomweb[@]}; do
+	  									found=$(echo "${var_array_fromyml_dicomweb[$i]}" | grep $2)
+	  									if [ ! -z $found ];then
+	  										found=$(echo $found | cut -d":" -f2)
+	  										break
+	  									fi
+									done
+									echo $found
+
+
+						    ;;
+
+						    epadlite)
+						    		#echo  "finding in epadlite"
+						    		#echo "${var_array_fromyml_epadlite[@]}"
+						    		for i in ${!var_array_fromyml_epadlite[@]}; do
+	  									found=$(echo "${var_array_fromyml_epadlite[$i]}" | grep $2)
+	  									if [ ! -z $found ];then
+	  										found=$(echo $found | cut -d":" -f2)
+	  										break
+	  									fi
+									done
+									echo $found
+
+						    ;;
+
+						    epadjs)
+						    		#echo "finding in epadjs"
+						    		#echo "${var_array_fromyml_epadjs[@]}"
+						    		for i in ${!var_array_fromyml_epadjs[@]}; do
+	  									found=$(echo "${var_array_fromyml_epadjs[$i]}" | grep $2)
+	  									if [ ! -z $found ];then
+	  										found=$(echo $found | cut -d":" -f2)
+	  										break
+	  									fi
+									done
+									echo $found
+
+						    ;;
+
+						    mariadb)
+						    		#echo "finding in mariadb"
+						    		#echo "${var_array_fromyml_mariadb[@]}"
+						    		for i in ${!var_array_fromyml_mariadb[@]}; do
+	  									found=$(echo "${var_array_fromyml_mariadb[$i]}" | grep $2)
+	  									if [ ! -z $found ];then
+	  										found=$(echo $found | cut -d":" -f2)
+	  										break
+	  									fi
+									done
+									echo $found
+						    ;;
+							esac
+
+		}
+
 		rollback_epadyml_formariadb_credentials(){
 				local var_check_failed=""
 				local var_check_success=""
-
+				echo "parameter passed : $1"
 				# needs to check if user credentials failed for mariadb?
 				#check the array if contains fails. 
 				#${dokcerprocessrsult_formariacredentials[@]}
 				var_check_failed=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "FAILED")
 				var_check_success=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "SUCCESS")
-				echo "check failed : $var_check_failed"
+				echo "rollback ? : check failed status: $var_check_failed"
 				if [[ ! -z $var_check_failed ]]; then
 					for i in ${!arrayImages[@]}; do
   						
@@ -114,9 +305,14 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 	
 					# docker restart epad_lite
 					
+				else
+					echo -e "${Yellow}process: check failed status: empty. Nothing to rollback"
+					echo -e "${Color_Off}"
 				fi
 
 				if [[ ! -z $var_check_success ]]; then
+					echo -e "${Yellow}process: restarting epad_mariadb"
+					echo -e "${Color_Off}"
 					docker restart epad_mariadb
 				fi
 
@@ -132,7 +328,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			local result=""
 			local verifyfirst=""
 			local var_sql_socket_ready=""
-
+			
 			echo -e "${Yellow}process: updating  mariadb users and passwords"
 			echo -e "${Color_Off}"
 			echo "old root pass:$var_maria_rootpass_old"
@@ -271,13 +467,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 										# if credentials update fails need to rollback epad.yml for mariadb user credentials .Same for docker-compose.yml
 									fi
 					else
-						echo "user or password is empty for user or root"
+						echo "user or password is empty for user or root. Mariadb credentials left as is."
 						rollback_epadyml_formariadb_credentials
 					fi
 				else
 					echo "could not locate epad_mariadb container"
 					echo "rolling back epad.yml with old mariadb credentials"
-					rollback_epadyml_formariadb_credentials
+					rollback_epadyml_formariadb_credentials "no_container_rollback"
 					
 				fi
 			#fi
@@ -693,9 +889,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	}
 
 	load_credentials_tovar (){
+
 	echo -e "${Yellow}process: loading credentials from epad.yml to variables for a new epad.yml"
 	echo -e "${Color_Off}"
 		echo $var_path
+		parse_yml_sections
 		#var_tmp_txt=""
 		#var_tmp_txt=$( awk '/host/{i++}i==1{print; exit}'  "$var_path/$var_epadDistLocation/epad.yml")
 		#var_host=$( echo $var_tmp_txt | cut -d: -f2)
@@ -709,16 +907,24 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         var_mariadb_location=$( find_val_intext "dblocation:" "2")
         var_mariadb_location=$(echo $var_mariadb_location | sed 's/"//g')
         
-        var_keycloak_user=$( find_val_intext "user:" "1")
-        var_keycloak_pass=$( find_val_intext "password:" "1")
-        var_keycloak_useremail=$( find_val_intext "email:" "1")
+	        #var_keycloak_user=$( find_val_intext "user:" "1")
+	        #var_keycloak_pass=$( find_val_intext "password:" "1")
+	        #var_keycloak_useremail=$( find_val_intext "email:" "1")
+	        var_keycloak_user=$( find_val_fromsections "keycloak" "user")
+        	var_keycloak_pass=$( find_val_fromsections "keycloak" "pass")
+        	var_keycloak_useremail=$( find_val_fromsections "keycloak" "email")
 
-        var_couchdb_user=$( find_val_intext "user:" "2")
-        var_couchdb_pass=$( find_val_intext "password:" "2")
+        	#var_couchdb_user=$( find_val_intext "user:" "2")
+       		#var_couchdb_pass=$( find_val_intext "password:" "2")
+       		var_couchdb_user=$( find_val_fromsections "couchdb" "user")
+        	var_couchdb_pass=$( find_val_fromsections "couchdb" "password")
 
-        var_maria_user=$( find_val_intext "user:" "3")
-        var_maria_pass=$( find_val_intext "password:" "3")
-        var_maria_rootpass=$( find_val_intext "rootpassword:" "1")
+		        #var_maria_user=$( find_val_intext "user:" "3")
+		        #var_maria_pass=$( find_val_intext "password:" "3")
+		        #var_maria_rootpass=$( find_val_intext "rootpassword:" "1")
+		        var_maria_user=$(find_val_fromsections "mariadb" "user")
+		        var_maria_pass=$(find_val_fromsections "mariadb" "pass")
+		        var_maria_rootpass=$(find_val_fromsections "mariadb" "rootpass")
         
         var_maria_rootpass_old=$var_maria_rootpass
 		var_maria_user_old=$var_maria_user
@@ -734,27 +940,49 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         var_branch_epadjs=$( find_val_intext "branch:" "3")
         var_branch_epadjs=$(echo $var_branch_epadjs | sed 's/"//g')
 
-		# echo "loaded variables from epad.yml : ++++++++++++++++ "
-		# echo " var_host :$var_host"
-	 #    echo " var_mode :$var_mode"
-	 #    echo " var_config :$var_config"
-	 #    echo " var_container_mode:$var_container_mode"
-	 #    echo " var_couchdb_location:$var_couchdb_location"
-	 #    echo " var_mariadb_location:$var_mariadb_location"
-	 #    echo " var_branch:$var_branch"
+        #load ports from old yml
+        var_keycloak_port=$(find_val_fromsections "keycloak" "port")
+        var_epadjs_port=$(find_val_fromsections "epadjs" "port")
+        var_epadlite_port=$(find_val_fromsections "epadlite" "port")
+        var_dicomweb_port=$(find_val_fromsections "dicomweb" "port")
+        var_couchdb_port=$(find_val_fromsections "couchdb" "port")
+        var_maria_port=$(find_val_fromsections "mariadb" "port")
+
+		echo "loaded variables from epad.yml : ++++++++++++++++ "
+		echo " var_host :$var_host"
+	    echo " var_mode :$var_mode"
+	    echo " var_config :$var_config"
+	    echo " var_container_mode:$var_container_mode"
+	   
+	   
+	    #echo " var_branch:$var_branch"
 	    
 	            
-	 #    echo " var_keycloak_user:$var_keycloak_user"
-	 #    echo " var_keycloak_pass:$var_keycloak_pass"
-	 #    echo " var_keycloak_useremail:$var_keycloak_useremail"
+	    echo " var_keycloak_user:$var_keycloak_user"
+	    echo " var_keycloak_pass:$var_keycloak_pass"
+	    echo " var_keycloak_useremail:$var_keycloak_useremail"
 
-	 #    echo " var_maria_user:$var_maria_user"
-	 #    echo " var_maria_pass:$var_maria_pass"
-	 #    echo " var_maria_rootpass:$var_maria_rootpass"
+	    echo " var_maria_user:$var_maria_user"
+	    echo " var_maria_pass:$var_maria_pass"
+	    echo " var_maria_rootpass:$var_maria_rootpass"
+	     echo " var_mariadb_location:$var_mariadb_location"
 
-	 #    echo "  dicomweb branch: $var_branch_dicomweb"
-	 #    echo "  epadlite branch: $var_branch_epadlite"
-	 #    echo "  epadjs branch: $var_branch_epadjs"
+	    echo " var_couch_user:$var_couchdb_user"
+	    echo " var_couch_pass:$var_couchdb_pass"
+	     echo " var_couchdb_location:$var_couchdb_location"
+	    
+
+	    echo "  dicomweb branch: $var_branch_dicomweb"
+	    echo "  epadlite branch: $var_branch_epadlite"
+	    echo "  epadjs branch: $var_branch_epadjs"
+
+	    echo "ports : "
+	    echo "keycloak port : $var_keycloak_port"
+	    echo "epadjs port : $var_epadjs_port"
+	    echo "epadlite port : $var_epadlite_port"
+	    echo "dicomweb port : $var_dicomweb_port"
+	    echo "couch port : $var_couchdb_port"
+	    echo "maria port : $var_maria_port"
 	} 
 	
 	find_docker_gid(){
@@ -782,6 +1010,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		
 		if [[ -d "$var_path/$var_epadDistLocation" ]]; then
 			#var_reinstalling="true"
+			parse_yml_sections
 			load_credentials_tovar
 
 	 		
@@ -974,6 +1203,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 local linecount_st=0
                 local counter_st=0
                 local var_waiting_st="starting epad"
+                chmod -R 777 /Users/cavit/epadTestScript_3/couchdbloc
                 while [[ $linecount_st -lt 4 ]] && [[ $var_start_st -lt $var_end_st ]]; do
                 	#echo "loop started "
                 	var_start_st=$(date +%s)
@@ -1244,6 +1474,16 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		        awk -v var_awk="branch: \"$var_branch_epadjs\"" '/branch:.*/{c++; if (c==3) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 		        
         #edit branch part end
+
+        # edit port part
+		        awk -v var_awk="port: \"$var_keycloak_port\"" '/port:.*/{c++; if (c==1) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_couchdb_port\"" '/port:.*/{c++; if (c==2) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_dicomweb_port\"" '/port:.*/{c++; if (c==3) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_epadlite_port\"" '/port:.*/{c++; if (c==4) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_epadjs_port\"" '/port:.*/{c++; if (c==5) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_maria_port\"" '/port:.*/{c++; if (c==6) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        
+        #edit port part end
 	}
 
 	edit_compose_file(){
@@ -1368,7 +1608,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			#maria_myvar=$(docker exec  -it  epad_mariadb  mysql -uroot -pahmetadmin -e "use mysql; select * from user;")
 			#echo "error ? : $maria_myvar"
 			#update_mariadb_usersandpass
-			update_mariadb_usersandpass
+			load_credentials_tovar
 			echo "test ended ----------------------------"
 
 		 fi
@@ -1380,7 +1620,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			check_ifallcontainers_created
 			# echo $global_var_container_exist
 			if [[  $global_var_container_exist == "exist" ]]; then
-				echo -e "ePad installed already.\nReinstalling ePad will erase keycloak users, couchdb data and mariadb data and will remove all images and containers."
+				echo -e "ePad installed already.\nReinstalling ePad will remove all images and containers."
 				read -p "Do you want to reinstall ePad? (y/n : default response is n) :"  var_install_result_r 
 				
 				echo $var_install_result_r
@@ -1390,6 +1630,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                	else 
                		#cd "$var_path/$var_epadLiteDistLocation"
 					#docker-compose down
+					export_keycloak
 					remove_epad_images
                		#delete_dangling_images
                		echo "installing epad"
@@ -1410,6 +1651,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				update_mariadb_usersandpass
 			fi
 			wait_for_containers_tobehealthy
+			import_keycloak
 			check_container_situation
 
 			# reset global variables
@@ -1421,6 +1663,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         if [[ $1 == "start" ]]; then
         	echo -e "${Yellow}process: Starting ePad"
     		echo -e "${Color_Off}"
+
 			load_credentials_tovar
 			#var_host=$( find_val_intext "host:" "1")
 			doublecheck_ipmapping_onstart
@@ -1476,6 +1719,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				import_keycloak
 				check_container_situation
 			elif [[ $2 == "config" ]]; then
+				# only update config updates epad-dist from git 
 				echo -e "${Yellow}process: updating epad configuration "
 				echo -e "${Color_Off}"
 				export_keycloak
@@ -1485,6 +1729,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				#cd "$var_path/$var_epadLiteDistLocation"
 				#docker-compose build --no-cache
 				load_credentials_tovar
+				# added in case epad.yml and .config has changes
+				copy_epad_dist
+				find_host_info
+				find_docker_gid
+				# end added in case epad.yml and .config has changes
                 collect_system_configuration
                 collect_user_credentials
                 edit_epad_yml
