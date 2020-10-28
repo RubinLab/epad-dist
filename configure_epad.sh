@@ -63,19 +63,39 @@ cat ./$1/docker-compose_start.ymlpart > ./$1/docker-compose.yml
 # both cache and compression
 if [[ ! -z $cache_size && ! -z $cache_inactivetime && ! -z $compression_minsize ]] 
 then
-    cat ./$1/nginx_start_compress_cache.confpart > ./$1/nginx.conf
+    if [[ ! -z $https && $https == true && ! -z $certpath && ! -z $certkeypath ]]
+    then 
+        cat ./$1/nginx_start_compress_cache_https.confpart > ./$1/nginx.conf
+    else
+        cat ./$1/nginx_start_compress_cache.confpart > ./$1/nginx.conf
+    fi
 else
     # cache only
     if [[ ! -z $cache_size && ! -z $cache_inactivetime ]] 
     then
-        cat ./$1/nginx_start_cache.confpart > ./$1/nginx.conf
+        if [[ ! -z $https && $https == true && ! -z $certpath && ! -z $certkeypath ]]
+        then 
+            cat ./$1/nginx_start_cache_https.confpart > ./$1/nginx.conf
+        else
+            cat ./$1/nginx_start_cache.confpart > ./$1/nginx.conf
+        fi
     else 
         # compress only
         if [[ ! -z $compression_minsize ]] 
         then
-            cat ./$1/nginx_start_compress.confpart > ./$1/nginx.conf
+            if [[ ! -z $https && $https == true && ! -z $certpath && ! -z $certkeypath ]]
+            then 
+                cat ./$1/nginx_start_compress_https.confpart > ./$1/nginx.conf
+            else
+                cat ./$1/nginx_start_compress.confpart > ./$1/nginx.conf
+            fi
         else
-            cat ./$1/nginx_start.confpart > ./$1/nginx.conf
+            if [[ ! -z $https && $https == true && ! -z $certpath && ! -z $certkeypath ]]
+            then 
+                cat ./$1/nginx_start_https.confpart > ./$1/nginx.conf
+            else
+                cat ./$1/nginx_start.confpart > ./$1/nginx.conf
+            fi
         fi
     fi
 fi

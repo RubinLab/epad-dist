@@ -1,0 +1,20 @@
+#Nginx default.conf                                                                                                                                                                                                                                                           
+#/etc/nginx/conf.d                                                                                                                                                                                                                                                                              
+                                                                                                                                                                                                                                                                              
+server {
+        listen       {epadjs_port} ssl;
+        server_name  localhost;
+        ssl_certificate         {certpath}; 
+        ssl_certificate_key     {certkeypath};
+        
+        # means no limit
+        client_max_body_size 0;
+        proxy_read_timeout 180s;
+        
+        include /etc/nginx/mime.types;
+        
+        location / {
+                root   /usr/share/nginx/html;
+                index  index.html index.htm;
+                try_files $uri $uri/ /index.html;
+        }
