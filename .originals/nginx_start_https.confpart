@@ -4,8 +4,8 @@
 server {
         listen       {epadjs_port} ssl;
         server_name  localhost;
-        ssl_certificate         {certpath}; 
-        ssl_certificate_key     {certkeypath};
+        ssl_certificate         /etc/ssl/certs/{certfile}; 
+        ssl_certificate_key     /etc/ssl/certs/{certkeyfile};
         
         # means no limit
         client_max_body_size 0;

@@ -63,7 +63,7 @@ cat ./$1/docker-compose_start.ymlpart > ./$1/docker-compose.yml
 # both cache and compression
 if [[ ! -z $cache_size && ! -z $cache_inactivetime && ! -z $compression_minsize ]] 
 then
-    if [[ ! -z $https && $https == true && ! -z $certpath && ! -z $certkeypath ]]
+    if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
     then 
         cat ./$1/nginx_start_compress_cache_https.confpart > ./$1/nginx.conf
     else
@@ -73,7 +73,7 @@ else
     # cache only
     if [[ ! -z $cache_size && ! -z $cache_inactivetime ]] 
     then
-        if [[ ! -z $https && $https == true && ! -z $certpath && ! -z $certkeypath ]]
+        if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
         then 
             cat ./$1/nginx_start_cache_https.confpart > ./$1/nginx.conf
         else
@@ -83,14 +83,14 @@ else
         # compress only
         if [[ ! -z $compression_minsize ]] 
         then
-            if [[ ! -z $https && $https == true && ! -z $certpath && ! -z $certkeypath ]]
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
             then 
                 cat ./$1/nginx_start_compress_https.confpart > ./$1/nginx.conf
             else
                 cat ./$1/nginx_start_compress.confpart > ./$1/nginx.conf
             fi
         else
-            if [[ ! -z $https && $https == true && ! -z $certpath && ! -z $certkeypath ]]
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
             then 
                 cat ./$1/nginx_start_https.confpart > ./$1/nginx.conf
             else
@@ -106,16 +106,36 @@ then
     then
         if [[ $config == 'environment' ]]
         then
-            cat ./$1/docker-compose_epadjs_build_env.ymlpart >> ./$1/docker-compose.yml
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/docker-compose_epadjs_build_env_https.ymlpart >> ./$1/docker-compose.yml
+            else
+                cat ./$1/docker-compose_epadjs_build_env.ymlpart >> ./$1/docker-compose.yml
+            fi
         else    
-            cat ./$1/docker-compose_epadjs_build.ymlpart >> ./$1/docker-compose.yml
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/docker-compose_epadjs_build_https.ymlpart >> ./$1/docker-compose.yml
+            else
+                cat ./$1/docker-compose_epadjs_build.ymlpart >> ./$1/docker-compose.yml
+            fi
         fi
     else
         if [[ $config == 'environment' ]]
         then
-            cat ./$1/docker-compose_epadjs_env.ymlpart >> ./$1/docker-compose.yml
-        else      
-            cat ./$1/docker-compose_epadjs.ymlpart >> ./$1/docker-compose.yml
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/docker-compose_epadjs_env_https.ymlpart >> ./$1/docker-compose.yml
+            else
+                cat ./$1/docker-compose_epadjs_env.ymlpart >> ./$1/docker-compose.yml
+            fi
+        else
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/docker-compose_epadjs_https.ymlpart >> ./$1/docker-compose.yml
+            else
+                cat ./$1/docker-compose_epadjs.ymlpart >> ./$1/docker-compose.yml
+            fi
         fi
     fi
 fi
