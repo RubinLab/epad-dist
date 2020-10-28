@@ -16,7 +16,7 @@ keycloak:
   loc: "keycloak"
 couchdb:
   mode: image
-  image: "latest"
+  image: "ibmcom\/couchdb3:latest"
   user: YOUR_COUCH_ADMIN_USER
   password: YOUR_COUCH_ADMIN_PASS
   port: 8888

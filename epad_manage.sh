@@ -1217,10 +1217,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 local var_waiting_st="starting epad"
                 echo -e "${Yellow}process: changing couchdb folder rights : $(remove_backslash_tofolderpath $var_couchdb_location)"
 				echo -e "${Color_Off}" 
-				cd $var_path/$var_epadDistLocation
-				echo $(pwd)
-                chmod -R 777 $(remove_backslash_tofolderpath $var_couchdb_location)
-                chmod -R 777 "../tmp"
+				# in linux needs sudo rights let to the user to edit the folder rights
+				#cd $var_path/$var_epadDistLocation
+				#echo $(pwd)
+                #chmod -R 777 $(remove_backslash_tofolderpath $var_couchdb_location)
+                #chmod -R 777 "../tmp"
                 while [[ $linecount_st -lt 4 ]] && [[ $var_start_st -lt $var_end_st ]]; do
                 	#echo "loop started "
                 	var_start_st=$(date +%s)
