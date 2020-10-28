@@ -41,12 +41,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	var_keycloak_user="admin"
 	var_keycloak_pass="admin"
 	var_keycloak_useremail="admin@gmail.com"
-	var_keycloak_port="8899"
+	var_keycloak_port=8899
 
 	var_maria_user="admin"
 	var_maria_pass="admin"
 	var_maria_rootpass="admin"
-	var_maria_port="3306"
+	var_maria_port=3306
 
 	var_maria_rootpass_old=""
 	var_maria_user_old=""
@@ -61,13 +61,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 	var_couchdb_user="admin"
 	var_couchdb_pass="admin"
-	var_couchdb_port="8888"
+	var_couchdb_port=8888
 
-	var_dicomweb_port="8090"
+	var_dicomweb_port=8090
 
-	var_epadlite_port="8080"
+	var_epadlite_port=8080
 
-	var_epadjs_port="80"
+	var_epadjs_port=80
 
 
 
@@ -942,11 +942,23 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
         #load ports from old yml
         var_keycloak_port=$(find_val_fromsections "keycloak" "port")
+        var_keycloak_port=$(echo $var_keycloak_port | sed 's/"//g')
+
         var_epadjs_port=$(find_val_fromsections "epadjs" "port")
+        var_epadjs_port=$(echo $var_epadjs_port | sed 's/"//g')
+
         var_epadlite_port=$(find_val_fromsections "epadlite" "port")
+        var_epadlite_port=$(echo $var_epadlite_port | sed 's/"//g')
+
+
         var_dicomweb_port=$(find_val_fromsections "dicomweb" "port")
+        var_dicomweb_port=$(echo $var_dicomweb_port | sed 's/"//g')
+
         var_couchdb_port=$(find_val_fromsections "couchdb" "port")
+        var_couchdb_port=$(echo $var_couchdb_port | sed 's/"//g')
+
         var_maria_port=$(find_val_fromsections "mariadb" "port")
+        var_maria_port=$(echo $var_maria_port | sed 's/"//g')
 
 		echo "loaded variables from epad.yml : ++++++++++++++++ "
 		echo " var_host :$var_host"
@@ -1203,7 +1215,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 local linecount_st=0
                 local counter_st=0
                 local var_waiting_st="starting epad"
-                chmod -R 777 /Users/cavit/epadTestScript_3/couchdbloc
+                echo -e "${Yellow}process: changing couchdb folder rights : $(remove_backslash_tofolderpath $var_couchdb_location)"
+				echo -e "${Color_Off}" 
+				cd $var_path/$var_epadDistLocation
+				echo $(pwd)
+                chmod -R 777 $(remove_backslash_tofolderpath $var_couchdb_location)
+                chmod -R 777 "../tmp"
                 while [[ $linecount_st -lt 4 ]] && [[ $var_start_st -lt $var_end_st ]]; do
                 	#echo "loop started "
                 	var_start_st=$(date +%s)
@@ -1648,10 +1665,16 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			edit_compose_file
 			start_containers_viaCompose_all
 			if [[  $global_var_container_exist == "exist" ]]; then
-				update_mariadb_usersandpass
+				if [[ ! -z $var_install_result_r  ||   "$var_install_result_r" == "y" ]]; then
+					update_mariadb_usersandpass
+				fi
 			fi
 			wait_for_containers_tobehealthy
-			import_keycloak
+			if [[  $global_var_container_exist == "exist" ]]; then
+				if [[ ! -z $var_install_result_r  ||   "$var_install_result_r" == "y" ]]; then
+					import_keycloak
+				fi
+			fi
 			check_container_situation
 
 			# reset global variables
@@ -1775,3 +1798,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	else
 		show_instructions
 	fi
+
+
+	# imopertant make tmp folder public
+	# important make couchdb folder public , fix it there is computerrelated folder now 
+	# pluginData public ? 
