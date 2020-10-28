@@ -13,7 +13,8 @@ ARG ARG_EPAD_DOCKER_GID
 # IMPORTANT group names may not match inside and outside but gid in the container must match outside gid. example: group name "docker(gid=999)" outside may have 
 # the group name "ping(gid=999)" in container.  
 
-USER root && RUN if [[ -z "$ARG_EPAD_DOCKER_GID" ]] ; \
+USER root
+RUN if [[ -z "$ARG_EPAD_DOCKER_GID" ]] ; \
         then echo gid is empty ; \
         else echo Argument is $ARG_EPAD_DOCKER_GID ; \
         tempGid=$(cat /etc/group | grep $ARG_EPAD_DOCKER_GID) ; \
@@ -21,7 +22,7 @@ USER root && RUN if [[ -z "$ARG_EPAD_DOCKER_GID" ]] ; \
                 if [[ -z "$tempGid" ]] ; \
                         then  \
                                  echo temp gid is empty ; \
-                                 addgroup -g  $ARG_EPAD_DOCKER_GID docker && adduser node -G docker ; \
+                                 addgroup -g $ARG_EPAD_DOCKER_GID docker && adduser node docker ; \
                         else  \
                                  echo temp gid is not empty ; \
                                 #adduser node ping ; i\
