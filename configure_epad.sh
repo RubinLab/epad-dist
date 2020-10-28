@@ -248,7 +248,7 @@ then
     rm ./$1/production_*.js*
 fi
 
-if [ $epadjs_port != '80' ]
+if [[ $epadjs_port != '80' && $epadjs_port != '443' ]]
 then
     replace_in_files "{host}" "{host}:{epadjs_port}" $1
 fi
@@ -308,6 +308,7 @@ IFS=' '
 
 # support https in hostname
 replace_in_files "http:\/\/https:\/\/" "https:\/\/" $1
+
 # support empty values
 replace_in_files "{epadjs_baseurl}" "" $1
 replace_in_files "{epadjs_authmode}" "" $1
