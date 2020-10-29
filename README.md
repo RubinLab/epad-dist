@@ -106,7 +106,15 @@ epad-dist folder.
 Please change the folder rights to public for tmp and pluginData folders. (to change folder rights you can use: chmod 777 tmp )
 
 # Installation Script:
-Starting from v0.4 version epad-dist folder contains epad_manage.sh script. This script is designed to make ePad installation, update, start, stop, export/import keycloak users easier. IMPORTANT: If your ePad holds crucial patient data don't use epad_manage.sh script to update your ePad since the epad_manage.sh script is still in the experimental phase. You can download the script from epad.stanford.edu webpage under download section.   
+Starting from v0.4 version epad-dist folder contains epad_manage.sh script. This script is designed to make ePad installation, update, start, stop, export/import keycloak users easier. IMPORTANT: If your ePad holds crucial patient data don't use epad_manage.sh script to update your ePad since the epad_manage.sh script is still in the experimental phase. You can download the script from epad.stanford.edu webpage under download section.
+
+- If you will use epad_manage.sh script and if you have it (in epad-dist) with epad-dist folder you need to move epad_manage.sh file out of the epad-dist folder.
+    script usage:
+    ./epad_manage.sh install
+    
+- If you will use epad_manage.sh script you don't need to download ePadlite. The script will download ePadlite and will guide you through the installation.
+
+- Installation script requires git , docker, and docker-compose to be installed on your device.
 
 Notes:
   - DO NOT alter files in the .originals folder
