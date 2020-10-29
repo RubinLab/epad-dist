@@ -27,8 +27,8 @@ for generating the configuration files and docker-compose.yml
     couchdb:
       mode: image
       image: "ibmcom\/couchdb3:latest"      # in v0.4 version default value switched from latest to ibmcom/couchdb3 
-      user: YOUR_COUCH_ADMIN_USER           # added in v0.4 version 
-      password: YOUR_COUCH_ADMIN_PASS       # added in v0.4 version
+      user: YOUR_COUCH_ADMIN_USER           # added in v0.4 version define your couchdb admin username
+      password: YOUR_COUCH_ADMIN_PASS       # added in v0.4 version efine your couchdb admin password
       port: 8888
       dblocation: "..\/couchdbloc"          # define relative location to where you want to put the couchdb files
     dicomweb:
@@ -39,6 +39,7 @@ for generating the configuration files and docker-compose.yml
       log: true
       auth: none
       loc: "pacs"
+      branch: "master"                      # defines the branch which will be pulled from guthub for dicomweb project.
     epadlite:
       mode: build
       dockerfiledir: ".\/epadlite"
@@ -48,10 +49,12 @@ for generating the configuration files and docker-compose.yml
       https: false
       auth: auth
       loc: "api"
+      branch: "master"                      # defines the branch which will be pulled from guthub for epadlite project.
     epadjs:
       mode: build
       dockerfiledir: ".\/epadjs"
       port: 80
+      branch: "master"                      # defines the branch which will be pulled from guthub for epadjs project.
     mariadb:
       mode: image
       image: latest
@@ -106,7 +109,7 @@ epad-dist folder.
 Please change the folder rights to public for tmp and pluginData folders. (to change folder rights you can use: chmod 777 tmp )
 
 # Installation Script:
-Starting from v0.4 version epad-dist folder contains epad_manage.sh script. This script is designed to make ePad installation, update, start, stop, export/import keycloak users easier. IMPORTANT: If your ePad holds crucial patient data don't use epad_manage.sh script to update your ePad since the epad_manage.sh script is still in the experimental phase. You can download the script from epad.stanford.edu webpage under download section.
+Starting from v0.4 version epad-dist folder contains epad_manage.sh script. This script is designed to make ePad installation, update, start, stop, export/import keycloak users easier. IMPORTANT: If your ePad holds crucial patient data don't use epad_manage.sh script to update your ePad since the epad_manage.sh script is still in the experimental phase. You can download the script and the extensive guide from epad.stanford.edu webpage under download section.
 
 - If you will use epad_manage.sh script and if you have it (in epad-dist) with epad-dist folder you need to move epad_manage.sh file out of the epad-dist folder.
     script usage:
