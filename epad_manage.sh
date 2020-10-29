@@ -331,12 +331,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			
 			echo -e "${Yellow}process: updating  mariadb users and passwords"
 			echo -e "${Color_Off}"
-			echo "old root pass:$var_maria_rootpass_old"
-			echo "new root pass:$var_maria_rootpass"
-			echo "old user:$var_maria_user_old"
-			echo "new user:$var_maria_user"
-			echo "old user pass : $var_maria_user_pass_old"
-			echo "new user pass : $var_maria_pass"
+			#echo "old root pass:$var_maria_rootpass_old"
+			#echo "new root pass:$var_maria_rootpass"
+			#echo "old user:$var_maria_user_old"
+			#echo "new user:$var_maria_user"
+			#echo "old user pass : $var_maria_user_pass_old"
+			#echo "new user pass : $var_maria_pass"
 			
 			#if [[ $var_reinstalling == "true" ]]; then
 				maria_container_exist=$(docker ps -a --filter "name=\bepad_mariadb\b" --format "table {{.Status}}" | grep Up)
@@ -358,13 +358,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 										   
 										    var_sql_socket_ready=$(docker exec -it  epad_mariadb  mysql -uroot -p$var_maria_rootpass -e  "use mysql;show databases;")
 										    var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
-										    echo "1 var_sql_socket_ready : $var_sql_socket_ready"
+										    #echo "1 var_sql_socket_ready : $var_sql_socket_ready"
 										    
 
 										    if [[ -z $var_sql_socket_ready ]]; then
 										    	var_sql_socket_ready=$(docker exec -i epad_mariadb  mysql -uroot -p$var_maria_rootpass_old -e "use mysql;show databases;" )
 										    	var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
-										    	 echo "2 in var_sql_socket_ready : $var_sql_socket_ready"
+										    	 #echo "2 in var_sql_socket_ready : $var_sql_socket_ready"
 										    	 #var_sql_socket_ready="socket"
 										    fi
 										    
@@ -380,12 +380,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 										if [[ $verifyfirst == "failed" ]]; then
 											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass_old <<< "use mysql; ALTER USER 'root'@'localhost' IDENTIFIED BY '"$var_maria_rootpass"';FLUSH PRIVILEGES;"  && echo "updaterootpasslocalhostSUCCESS" || echo "updaterootpassLocalhostFAILED") # > result
 											dokcerprocessrsult_formariacredentials+=($result)
-											echo "a1 : $result"
+											#echo "a1 : $result"
 											
 											#result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER 'root'@'%' IDENTIFIED BY '"$var_maria_rootpass"';FLUSH PRIVILEGES;" && echo "updaterootpassSUCCESS" || echo "updaterootpassFAILED") # > result
 											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass_old <<< "use mysql; ALTER USER 'root'@'%' IDENTIFIED BY '"$var_maria_rootpass"';FLUSH PRIVILEGES;" && echo "updaterootpassSUCCESS" || echo "updaterootpassFAILED") # > result
 											dokcerprocessrsult_formariacredentials+=($result)
-											echo "a2 : $result"
+											#echo "a2 : $result"
 											edited=1
 
 										fi
@@ -410,13 +410,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 										   
 										    var_sql_socket_ready=$(docker exec -it  epad_mariadb  -u$var_maria_user -p$var_maria_pass  -e   "use epaddb;show tables;" )
 										    var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
-										    echo "3 var_sql_socket_ready : $var_sql_socket_ready"
+										    #echo "3 var_sql_socket_ready : $var_sql_socket_ready"
 										    
 
 										    if [[ -z $var_sql_socket_ready ]]; then
 										    	var_sql_socket_ready=$(docker exec -i epad_mariadb  mysql -u$var_maria_user_old -p$var_maria_user_pass_old  -e   "use epaddb;show tables;"  )
 										    	var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
-										    	 echo "4 var_sql_socket_ready : $var_sql_socket_ready"
+										    	 #echo "4 var_sql_socket_ready : $var_sql_socket_ready"
 										    	 #var_sql_socket_ready="socket"
 										    fi
 										    
@@ -447,11 +447,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 											#dokcerprocessrsult_formariacredentials+=($())
 											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; update user set User = '"$var_maria_user"' where User='"$var_maria_user_old"' ;FLUSH PRIVILEGES;" && echo "updateuserSUCCESS" || echo "updateuserFAILED")
 											dokcerprocessrsult_formariacredentials+=($result)
-											echo "a3 : $result"
+											#echo "a3 : $result"
 											
 											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER '"$var_maria_user"'@'%' IDENTIFIED BY '"$var_maria_pass"';FLUSH PRIVILEGES;" && echo "updateuserpassSUCCESS" || echo "updateuserpassFAILED")
 											dokcerprocessrsult_formariacredentials+=($result)
-											echo "a4 : $result"
+											#echo "a4 : $result"
 											edited=2
 										
 										fi
@@ -477,11 +477,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 					
 				fi
 			#fi
-			echo "mariadb credential update check :  ${dokcerprocessrsult_formariacredentials[@]}"
+			#echo "mariadb credential update check :  ${dokcerprocessrsult_formariacredentials[@]}"
 			failvalue=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "FAILED")
-			echo "failed ? : $failvalue"
+			#echo "failed ? : $failvalue"
 			succesvalue=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "SUCCESS")
-			echo "success ? : $succesvalue"
+			#echo "success ? : $succesvalue"
 		}
 
 		delete_epad_data(){
@@ -492,13 +492,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 			local var_resp_delete="n"
 			read -p " Your couchdb and mariadb data will be erased. Do you want to proceed (y/n) default answer is (n) : " var_resp_delete
-			if [[ -z $var_resp_delete ]]; then
-				echo "empty"
-				echo "var_resp_delete:$var_resp_delete"
-			else
-				echo "not empty"
-				echo "var_resp_delete:$var_resp_delete"
-			fi
+			# if [[ -z $var_resp_delete ]]; then
+			# 	echo "empty"
+			# 	echo "var_resp_delete:$var_resp_delete"
+			# else
+			# 	echo "not empty"
+			# 	echo "var_resp_delete:$var_resp_delete"
+			# fi
 
 		}
 
@@ -960,41 +960,41 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         var_maria_port=$(find_val_fromsections "mariadb" "port")
         var_maria_port=$(echo $var_maria_port | sed 's/"//g')
 
-		echo "loaded variables from epad.yml : ++++++++++++++++ "
-		echo " var_host :$var_host"
-	    echo " var_mode :$var_mode"
-	    echo " var_config :$var_config"
-	    echo " var_container_mode:$var_container_mode"
+		# echo "loaded variables from epad.yml : ++++++++++++++++ "
+		# echo " var_host :$var_host"
+	 #    echo " var_mode :$var_mode"
+	 #    echo " var_config :$var_config"
+	 #    echo " var_container_mode:$var_container_mode"
 	   
 	   
 	    #echo " var_branch:$var_branch"
 	    
 	            
-	    echo " var_keycloak_user:$var_keycloak_user"
-	    echo " var_keycloak_pass:$var_keycloak_pass"
-	    echo " var_keycloak_useremail:$var_keycloak_useremail"
+	    # echo " var_keycloak_user:$var_keycloak_user"
+	    # echo " var_keycloak_pass:$var_keycloak_pass"
+	    # echo " var_keycloak_useremail:$var_keycloak_useremail"
 
-	    echo " var_maria_user:$var_maria_user"
-	    echo " var_maria_pass:$var_maria_pass"
-	    echo " var_maria_rootpass:$var_maria_rootpass"
-	     echo " var_mariadb_location:$var_mariadb_location"
+	    # echo " var_maria_user:$var_maria_user"
+	    # echo " var_maria_pass:$var_maria_pass"
+	    # echo " var_maria_rootpass:$var_maria_rootpass"
+	    #  echo " var_mariadb_location:$var_mariadb_location"
 
-	    echo " var_couch_user:$var_couchdb_user"
-	    echo " var_couch_pass:$var_couchdb_pass"
-	     echo " var_couchdb_location:$var_couchdb_location"
+	    # echo " var_couch_user:$var_couchdb_user"
+	    # echo " var_couch_pass:$var_couchdb_pass"
+	    #  echo " var_couchdb_location:$var_couchdb_location"
 	    
 
-	    echo "  dicomweb branch: $var_branch_dicomweb"
-	    echo "  epadlite branch: $var_branch_epadlite"
-	    echo "  epadjs branch: $var_branch_epadjs"
+	    # echo "  dicomweb branch: $var_branch_dicomweb"
+	    # echo "  epadlite branch: $var_branch_epadlite"
+	    # echo "  epadjs branch: $var_branch_epadjs"
 
-	    echo "ports : "
-	    echo "keycloak port : $var_keycloak_port"
-	    echo "epadjs port : $var_epadjs_port"
-	    echo "epadlite port : $var_epadlite_port"
-	    echo "dicomweb port : $var_dicomweb_port"
-	    echo "couch port : $var_couchdb_port"
-	    echo "maria port : $var_maria_port"
+	    # echo "ports : "
+	    # echo "keycloak port : $var_keycloak_port"
+	    # echo "epadjs port : $var_epadjs_port"
+	    # echo "epadlite port : $var_epadlite_port"
+	    # echo "dicomweb port : $var_dicomweb_port"
+	    # echo "couch port : $var_couchdb_port"
+	    # echo "maria port : $var_maria_port"
 	} 
 	
 	find_docker_gid(){
@@ -1263,13 +1263,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         echo "response = $var_response"
                         #var_host=$var_response
                         var_host=$var_response
-                        echo "host name : $var_host"
+                        #echo "host name : $var_host"
                 fi
                 
 		read -p "mode (1) lite (2) thick (default value : $var_mode) :" var_response
                 if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         if [[ $var_response == 1 ]]; then
                         	var_mode="lite"
                         elif [[ $var_response == 2 ]]; then
@@ -1277,39 +1277,39 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         else
                         	var_mode="lite"
                         fi
-                        echo "mode : $var_mode"
+                        #echo "mode : $var_mode"
                 fi
         # branch section
 
         		read -p "dicomweb branch: (default value : $var_branch_dicomweb) :" var_response
                 if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_branch_dicomweb=$var_response
-                        echo "dicomweb branch : $var_branch_dicomweb"
+                        #echo "dicomweb branch : $var_branch_dicomweb"
                 fi
         		
         		read -p "epadlite branch: (default value : $var_branch_epadlite) :" var_response
                 if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_branch_epadlite=$var_response
-                        echo "epadlite branch : $var_branch_epadlite"
+                        #echo "epadlite branch : $var_branch_epadlite"
                 fi
         		
         		read -p "epadjs branch: (default value : $var_branch_epadjs) :" var_response
                 if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_branch_epadjs=$var_response
-                        echo "epadjs branch : $var_branch_epadjs"
+                        #echo "epadjs branch : $var_branch_epadjs"
                 fi
         # branch section
                 
 		read -p "configuration (environment (1) or local files (2)) (default value : $var_config) :" var_response
                 if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         if [[ $var_response == 1 ]]; then
                         	var_config="environment"
                     	elif [[ $var_response == 2 ]]; then
@@ -1317,23 +1317,23 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                     	else
                     		var_config="environment"
                     	fi
-                        echo "config : $var_config"
+                        #echo "config : $var_config"
                 fi
 		
 		read -p "maria db location (default value : $( remove_backslash_tofolderpath $var_mariadb_location)) :" var_response
               	if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_mariadb_location=$( add_backslash_tofolderpath $var_response)  
-                        echo "mariadb_location : $( remove_backslash_tofolderpath $var_mariadb_location) "
+                        #echo "mariadb_location : $( remove_backslash_tofolderpath $var_mariadb_location) "
                 fi
 		
 		read -p "couch db location (default value :  $( remove_backslash_tofolderpath $var_couchdb_location)) :" var_response
               	if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_couchdb_location=$( add_backslash_tofolderpath $var_response)
-                        echo "couchdb location :  $( remove_backslash_tofolderpath $var_couchdb_location) "
+                        #echo "couchdb location :  $( remove_backslash_tofolderpath $var_couchdb_location) "
                 fi
 	}
 	
@@ -1348,9 +1348,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		read -p "keycloak user name (default value : $var_keycloak_user) :" var_response
                 if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_keycloak_user=$var_response
-                        echo "var_keycloak_user : $var_keycloak_user"
+                        #echo "var_keycloak_user : $var_keycloak_user"
                 fi
 
         if [[ $var_keycloak_pass == "YOUR_KEYCLOAK_ADMIN_PASS" ]]; then
@@ -1359,9 +1359,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		read -sp "keycloak user password (default value : $var_keycloak_pass) :" var_response
 				if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_keycloak_pass=$var_response
-                        echo "var_keycloak_pass : $var_keycloak_pass"
+                        #echo "var_keycloak_pass : $var_keycloak_pass"
 
                 fi
 		printf '\n'
@@ -1372,9 +1372,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		read -p "keycloak user email (default value : $var_keycloak_useremail) :" var_response
         		if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_keycloak_useremail=$var_response
-                        echo "var_keycloak_useremail : $var_keycloak_useremail"
+                        #echo "var_keycloak_useremail : $var_keycloak_useremail"
 
                 fi
 
@@ -1384,9 +1384,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		read -p "couchdb user name (default value : $var_couchdb_user) :" var_response
                 if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_couchdb_user=$var_response
-                        echo "var_couchdb_user : $var_couchdb_user"
+                        #echo "var_couchdb_user : $var_couchdb_user"
                 fi
 
 		if [[ $var_couchdb_pass == "YOUR_COUCH_ADMIN_PASS" ]]; then
@@ -1395,9 +1395,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		read -sp "couchdb user password (default value : $var_couchdb_pass) :" var_response
 				if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_couchdb_pass=$var_response
-                        echo "var_couchdb_pass : $var_couchdb_pass"
+                        #echo "var_couchdb_pass : $var_couchdb_pass"
 
                 fi
 		printf '\n'
@@ -1409,9 +1409,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		read -p "maria db user name (default value : $var_maria_user) :" var_response
                 if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_maria_user=$var_response
-                        echo "var_maria_user : $var_maria_user"
+                        #echo "var_maria_user : $var_maria_user"
 
                 fi
 
@@ -1421,9 +1421,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		read -sp "maria db user password (default value : $var_maria_pass) :" var_response
                 if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_maria_pass=$var_response
-                        echo "var_maria_pass : $var_maria_pass"
+                        #echo "var_maria_pass : $var_maria_pass"
 
                 fi
 		printf '\n'
@@ -1435,9 +1435,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		read -sp "maria db root password (default value : $var_maria_rootpass) :" var_response
                 if [[ -n "$var_response" ]]
 				then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         var_maria_rootpass=$var_response
-                        echo "var_maria_rootpass : $var_maria_rootpass"
+                        #echo "var_maria_rootpass : $var_maria_rootpass"
 
                 fi
 		printf '\n'
@@ -1620,13 +1620,6 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
          if [[ $1 == "test" ]]; then
 			
 			echo "test started ----------------------------"
-			#delete_epad_data
-			#maria_myvar=$(docker exec -i epad_mariadb  mysqladmin ping)
-			#maria_myvar=$(docker exec  -it  epad_mariadb  mysql -uroot -pahmetadmin -e "use mysql; update user set User = '"$var_maria_user"' where User='"$var_maria_user_old"' ;FLUSH PRIVILEGES;")
-			#maria_myvar=$(docker exec  -it  epad_mariadb  mysql -uroot -pahmetadmin -e "use mysql; select * from user;")
-			#echo "error ? : $maria_myvar"
-			#update_mariadb_usersandpass
-			load_credentials_tovar
 			echo "test ended ----------------------------"
 
 		 fi
@@ -1719,15 +1712,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
     			echo -e "${Yellow}process: fixing your computer ip"
     			echo -e "${Color_Off}"
     			echo "Please use epad_fixmyip.sh script whcih is located in epad-dist folder."
-		    		#stop_containers_all
-					#load_credentials_tovar
-					#find_host_info
-					#find_docker_gid
-					#fix_server_via_hosts
-					#edit_epad_yml
-					#create_epad_lite_dist
-					#edit_compose_file
-					#start_containers_viaCompose_all
+
         fi
 		
 		if [[ $1 == "update" ]]; then
