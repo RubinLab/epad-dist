@@ -10,6 +10,12 @@ for generating the configuration files and docker-compose.yml
 
     host: YOUR_HOSTNAME                     # put your public hostname/ip or local sharing name for macs
     mode: lite
+    config: environment                     # defines if settings will be written in physical files or to environment variables 
+    cache:                                  # cahce section added in v0.4 version
+      size: "10g"
+      inactivetime: "60mb"
+    compression:                            # compression section added in v0.4 version
+      minsize: "20"
     keycloak:
       mode: build                           # possible modes are build, image, external*
       dockerfiledir: ".\/keycloak"
@@ -20,7 +26,9 @@ for generating the configuration files and docker-compose.yml
       loc: "keycloak"                       # defines the nginx location to be served
     couchdb:
       mode: image
-      image: latest
+      image: "ibmcom\/couchdb3:latest"      # in v0.4 version default value switched from latest to ibmcom/couchdb3 
+      user: YOUR_COUCH_ADMIN_USER           # added in v0.4 version 
+      password: YOUR_COUCH_ADMIN_PASS       # added in v0.4 version
       port: 8888
       dblocation: "..\/couchdbloc"          # define relative location to where you want to put the couchdb files
     dicomweb:
@@ -90,6 +98,15 @@ will generate a file structure like following under ../epad_lite_dist
 
 You can then start ePad with `docker-compose up -d in ../epad_lite_dist` directory.
 ePad will be served from the port 80 of the host address specified in epad.yml file
+
+After starting ePad by using docker-compose up -d you will have additional folders for plugins
+and a tmp folder which will be used to export and import keycoak users. These folder can be found in the same folder where you see 
+epad-dist folder.
+
+Please change the folder rights to public for tmp and pluginData folders. (to change folder rights you can use: chmod 777 tmp )
+
+# Installation Script:
+Starting from v0.4 version epad-dist folder contains epad_manage.sh script. This script is designed to make ePad installation, update, start, stop, export/import keycloak users easier. IMPORTANT: If your ePad holds crucial patient data don't use epad_manage.sh script to update your ePad since the epad_manage.sh script is still in the experimental phase. You can download the script from epad.stanford.edu webpage under download section.   
 
 Notes:
   - DO NOT alter files in the .originals folder
