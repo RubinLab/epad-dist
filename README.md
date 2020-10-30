@@ -2,10 +2,17 @@
 
 ePad is designed in a modular structure which runs six sub-modules (docker containers) which can be plugged and unplugged for specific usecases. Each sub-module has its own setting files that can be edited. This tool enables users to use one yml file to populate all configuration files with specific setting for their system.
 
+# System Requirements
+
+    Ram: Min 4gb 
+    git needs to be installed
+    docker needs to be installed
+    docker-compose needs to be installed 
+
 Update the epad.yml file according to your needs and run 
   ./configure_epad.sh PATH YML_PATH
 for generating the configuration files and docker-compose.yml
-
+    
 # epad.yml file
 
     host: YOUR_HOSTNAME                     # put your public hostname/ip or local sharing name for macs
