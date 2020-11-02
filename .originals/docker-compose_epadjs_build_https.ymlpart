@@ -1,0 +1,20 @@
+  myepadjs:
+    build: {epadjs_dockerfiledir}
+    container_name: epad_js
+    expose:
+      - "{epadjs_port}"
+    ports:
+      - "{epadjs_port}:{epadjs_port}"
+    environment:
+      PUBLIC_URL: "http://{host}"
+      REACT_APP_BASE_URL: "{epadjs_baseurl}"
+      REACT_APP_AUTH_MODE: "{epadjs_authmode}"
+    volumes:
+      - ./production_epadjs.json:/usr/share/nginx/html/config.json
+      - ./production_keycloak.json:/usr/share/nginx/html/keycloak.json
+      - ./epadjs/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./epadjs/entrypoint.sh:/usr/local/bin/entrypoint
+    depends_on:
+      - myepadlite
+    networks:
+      - epad-network
