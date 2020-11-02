@@ -5,6 +5,31 @@ RUN apk update && apk upgrade && \
 
 RUN npm install pm2 -g
 
+ARG ARG_EPAD_DOCKER_GID
+#USER root
+
+# check docker gid exist in container.
+# if exists add user "node" to the group which matches the given gid else add reqired gid in the container and add user "node" to the group
+# IMPORTANT group names may not match inside and outside but gid in the container must match outside gid. example: group name "docker(gid=999)" outside may have 
+# the group name "ping(gid=999)" in container.  
+
+USER root
+RUN if [[ -z "$ARG_EPAD_DOCKER_GID" ]] ; \
+        then echo gid is empty ; \
+        else echo Argument is $ARG_EPAD_DOCKER_GID ; \
+        tempGid=$(cat /etc/group | grep $ARG_EPAD_DOCKER_GID) ; \
+        echo $tempGid ; \
+                if [[ -z "$tempGid" ]] ; \
+                        then  \
+                                 echo temp gid is empty ; \
+                                 addgroup -g $ARG_EPAD_DOCKER_GID docker && adduser node docker ; \
+                        else  \
+                                 echo temp gid is not empty ; \
+                                #adduser node ping ; i\
+                                groupName=$(echo "$tempGid" | cut -d: -f1) && echo $groupName && adduser node $groupName ; \
+                fi ; \
+        fi
+
 USER node
 RUN mkdir -p /home/node/app
 WORKDIR /home/node/app

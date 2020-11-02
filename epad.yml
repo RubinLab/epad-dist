@@ -16,11 +16,11 @@ keycloak:
   loc: "keycloak"
 couchdb:
   mode: image
-  image: "latest"
+  image: "ibmcom\/couchdb3:latest"
   user: YOUR_COUCH_ADMIN_USER
   password: YOUR_COUCH_ADMIN_PASS
   port: 8888
-  dblocation: "..\/couchdbloc"
+  dblocation: "..\/couchdbloc" 
 dicomweb:
   mode: build
   dockerfiledir: ".\/dicomweb-server"
@@ -32,6 +32,7 @@ dicomweb:
   dimsetemp: "..\/dimsetemp"
   dimseport: 4002
   aet: "PACS"
+  branch: "master" 
 epadlite:
   mode: build
   dockerfiledir: ".\/epadlite"
@@ -41,10 +42,12 @@ epadlite:
   https: false
   auth: auth
   loc: "api"
+  branch: "master"
 epadjs:
   mode: build
   dockerfiledir: ".\/epadjs"
   port: 80
+  branch: "master"
 mariadb:
   mode: image
   image: latest
@@ -55,4 +58,4 @@ mariadb:
   port: 3306
   log: false
   backuploc: ".\/epaddb_nodata.sql"
-  dblocation: "..\/mariadbloc"
+  dblocation: "..\/mariadbloc" 
