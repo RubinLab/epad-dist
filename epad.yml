@@ -29,6 +29,9 @@ dicomweb:
   log: true
   auth: none
   loc: "pacs"
+  dimsetemp: "..\/dimsetemp"
+  dimseport: 4002
+  aet: "PACS"
   branch: "master" 
 epadlite:
   mode: build

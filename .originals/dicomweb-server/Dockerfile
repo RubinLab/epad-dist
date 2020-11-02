@@ -6,6 +6,12 @@ RUN apk update && apk upgrade && \
 RUN npm install pm2 -g
 
 USER node
+# install dcmtk-node
+RUN mkdir -p /home/node/dcmtk-node
+WORKDIR /home/node/dcmtk-node
+RUN git clone https://github.com/jmhmd/dcmtk-node.git /home/node/dcmtk-node/
+RUN npm install
+
 RUN mkdir -p /home/node/app
 WORKDIR /home/node/app
 
