@@ -1046,7 +1046,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
   			echo "copying epad-dist repo from git"
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
-  			git clone script_merge https://github.com/RubinLab/epad-dist.git
+  			git clone https://github.com/RubinLab/epad-dist.git
 		fi
 	}
 
