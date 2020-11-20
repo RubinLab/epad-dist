@@ -20,7 +20,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 #echo "epad will be installed in : $var_path"
 # sytem configuration variables
 	var_ip=""
-	var_local_docker_gid=0
+	var_local_docker_gid=999
 	var_version="master"
 	var_epadDistLocation="epad-dist"
 	var_epadLiteDistLocation="epad_lite_dist"
@@ -73,94 +73,99 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 # functions
 		parse_yml_sections(){
-			if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+
+						var_array_fromyml_keycloak=()
+						var_array_fromyml_couchdb=()
+						var_array_fromyml_dicomweb=()
+						var_array_fromyml_epadlite=()
+						var_array_fromyml_epadjs=()
+						var_array_fromyml_mariadb=()
+
+			if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
 
 				local input="$var_path/$var_epadDistLocation/epad.yml"
-				local section=""
-				local response=""
-				var_array_fromyml_keycloak=()
-				var_array_fromyml_couchdb=()
-				var_array_fromyml_dicomweb=()
-				var_array_fromyml_epadlite=()
-				var_array_fromyml_epadjs=()
-				var_array_fromyml_mariadb=()
+				if [[ -f "$input" ]]; then
+						local section=""
+						local response=""
+						
 
-				while IFS= read -r line
-				do
-				  response=$(echo $line | grep ":$")
-				  if [ ! -z $response ]; then
-				  	#section=$response
-				  	section=$(echo $response | cut -d":" -f1)
-				  #echo "section : $section "
-				  
+						while IFS= read -r line
+						do
+						  response=$(echo $line | grep ":$")
+						  if [ ! -z $response ]; then
+						  	#section=$response
+						  	section=$(echo $response | cut -d":" -f1)
+						  #echo "section : $section "
+						  
+						fi
+						#echo "response : $response"
+						  # echo "first : $response"
+						  if [[ -z $response ]]; then
+						  	#eachline=$(echo $line | cut -d":" -f1)
+						  	eachline=$(echo $line | sed -e 's/[[:space:]]//g')
+						  	#echo "merge : $section-$eachline"
+								  	case $section in
+
+								  	keycloak)
+								    		#echo -n "keycloak"
+								    		var_array_fromyml_keycloak+=($eachline)
+								    ;;
+
+								  	couchdb)
+								    		#echo -n "couchdb"
+								    		var_array_fromyml_couchdb+=($eachline)
+
+								    ;;
+
+								    dicomweb)
+								    		#echo -n "dicomweb"
+								    		var_array_fromyml_dicomweb+=($eachline)
+
+								    ;;
+
+								    epadlite)
+								    		#echo -n "epadlite"
+								    		var_array_fromyml_epadlite+=($eachline)
+
+								    ;;
+
+								    epadjs)
+								    		#echo -n "epadjs"
+								    		var_array_fromyml_epadjs+=($eachline)
+
+								    ;;
+
+								    mariadb)
+								    		#echo -n "mariadb"
+								    		var_array_fromyml_mariadb+=($eachline)
+								    ;;
+									esac
+
+						  fi
+
+
+						done < "$input"
+
+						  	# echo "*******************"
+						   # 	echo "*******************"
+
+						   #   echo "${var_array_fromyml_keycloak[@]}"
+						   #       echo "*******************"
+						   #   echo "*******************"
+						   #   echo "${var_array_fromyml_couchdb[@]}"
+						   #       echo "*******************"
+						   #   echo "*******************"
+						   #   echo "${var_array_fromyml_dicomweb[@]}"
+						   #            echo "*******************"
+						   #   echo "*******************"
+						   #   echo "${var_array_fromyml_epadlite[@]}"
+						   #       echo "*******************"
+						   #   echo "*******************"
+						   #   echo "${var_array_fromyml_epadjs[@]}"
+						   #       echo "*******************"
+						   #   echo "*******************"
+						   # echo "${var_array_fromyml_mariadb[@]}" 
 				fi
-				#echo "response : $response"
-				  # echo "first : $response"
-				  if [ -z $response ]; then
-				  	#eachline=$(echo $line | cut -d":" -f1)
-				  	eachline=$(echo $line | sed -e 's/[[:space:]]//g')
-				  	#echo "merge : $section-$eachline"
-						  	case $section in
-
-						  	keycloak)
-						    		#echo -n "keycloak"
-						    		var_array_fromyml_keycloak+=($eachline)
-						    ;;
-
-						  	couchdb)
-						    		#echo -n "couchdb"
-						    		var_array_fromyml_couchdb+=($eachline)
-
-						    ;;
-
-						    dicomweb)
-						    		#echo -n "dicomweb"
-						    		var_array_fromyml_dicomweb+=($eachline)
-
-						    ;;
-
-						    epadlite)
-						    		#echo -n "epadlite"
-						    		var_array_fromyml_epadlite+=($eachline)
-
-						    ;;
-
-						    epadjs)
-						    		#echo -n "epadjs"
-						    		var_array_fromyml_epadjs+=($eachline)
-
-						    ;;
-
-						    mariadb)
-						    		#echo -n "mariadb"
-						    		var_array_fromyml_mariadb+=($eachline)
-						    ;;
-							esac
-
-				  fi
-
-
-				done < "$input"
-
-				  	# echo "*******************"
-				   # 	echo "*******************"
-
-				   #   echo "${var_array_fromyml_keycloak[@]}"
-				   #       echo "*******************"
-				   #   echo "*******************"
-				   #   echo "${var_array_fromyml_couchdb[@]}"
-				   #       echo "*******************"
-				   #   echo "*******************"
-				   #   echo "${var_array_fromyml_dicomweb[@]}"
-				   #            echo "*******************"
-				   #   echo "*******************"
-				   #   echo "${var_array_fromyml_epadlite[@]}"
-				   #       echo "*******************"
-				   #   echo "*******************"
-				   #   echo "${var_array_fromyml_epadjs[@]}"
-				   #       echo "*******************"
-				   #   echo "*******************"
-				   # echo "${var_array_fromyml_mariadb[@]}" 
 			fi
 
 		}
@@ -329,14 +334,17 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			local verifyfirst=""
 			local var_sql_socket_ready=""
 			
+			#var_maria_rootpass_old="admin"
+			#var_maria_rootpass="cavit"
+
 			echo -e "${Yellow}process: updating  mariadb users and passwords"
 			echo -e "${Color_Off}"
-			#echo "old root pass:$var_maria_rootpass_old"
-			#echo "new root pass:$var_maria_rootpass"
-			#echo "old user:$var_maria_user_old"
-			#echo "new user:$var_maria_user"
-			#echo "old user pass : $var_maria_user_pass_old"
-			#echo "new user pass : $var_maria_pass"
+			echo "old root pass:$var_maria_rootpass_old"
+			echo "new root pass:$var_maria_rootpass"
+			echo "old user:$var_maria_user_old"
+			echo "new user:$var_maria_user"
+			echo "old user pass : $var_maria_user_pass_old"
+			echo "new user pass : $var_maria_pass"
 			
 			#if [[ $var_reinstalling == "true" ]]; then
 				maria_container_exist=$(docker ps -a --filter "name=\bepad_mariadb\b" --format "table {{.Status}}" | grep Up)
@@ -351,21 +359,21 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 										# we need to wait for the sockek to be ready
 
 										var_sql_socket_ready="socket"
-										while [[ ! -z $var_sql_socket_ready ]]; do
+										while [[ ! -z "$var_sql_socket_ready" ]]; do
 											
 										    echo "waiting for sql socket"
 										    
 										   
 										    var_sql_socket_ready=$(docker exec -it  epad_mariadb  mysql -uroot -p$var_maria_rootpass -e  "use mysql;show databases;")
 										    var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
-										    #echo "1 var_sql_socket_ready : $var_sql_socket_ready"
+										    echo "1 var_sql_socket_ready : $var_sql_socket_ready"
 										    
 
-										    if [[ -z $var_sql_socket_ready ]]; then
+										    if [[ -z "$var_sql_socket_ready" ]]; then
 										    	var_sql_socket_ready=$(docker exec -i epad_mariadb  mysql -uroot -p$var_maria_rootpass_old -e "use mysql;show databases;" )
 										    	var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
-										    	 #echo "2 in var_sql_socket_ready : $var_sql_socket_ready"
-										    	 #var_sql_socket_ready="socket"
+										    	echo "2 in var_sql_socket_ready : $var_sql_socket_ready"
+										    	#var_sql_socket_ready="socket"
 										    fi
 										    
 										     sleep 5
@@ -375,17 +383,18 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 										echo -e "${Yellow}process: mariadb socket ready for the root credentials update..."
 										echo -e "${Color_Off}"
 
-										verifyfirst=$(docker exec  -it  epad_mariadb  mysql -uroot -p$var_maria_rootpass -e "use mysql;show databases;" || echo "failed")
+										verifyfirst="$(docker exec  -it  epad_mariadb  mysql -uroot -p$var_maria_rootpass -e "use mysql;show databases;" || echo "failed")"
 										echo "root user verifyfirst :$verifyfirst"
-										if [[ $verifyfirst == "failed" ]]; then
+										if [[ "$verifyfirst"=="failed" ]]; then
+											echo "new root pass failed so need to update"
 											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass_old <<< "use mysql; ALTER USER 'root'@'localhost' IDENTIFIED BY '"$var_maria_rootpass"';FLUSH PRIVILEGES;"  && echo "updaterootpasslocalhostSUCCESS" || echo "updaterootpassLocalhostFAILED") # > result
 											dokcerprocessrsult_formariacredentials+=($result)
-											#echo "a1 : $result"
+											echo "a1 : $result"
 											
 											#result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER 'root'@'%' IDENTIFIED BY '"$var_maria_rootpass"';FLUSH PRIVILEGES;" && echo "updaterootpassSUCCESS" || echo "updaterootpassFAILED") # > result
-											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass_old <<< "use mysql; ALTER USER 'root'@'%' IDENTIFIED BY '"$var_maria_rootpass"';FLUSH PRIVILEGES;" && echo "updaterootpassSUCCESS" || echo "updaterootpassFAILED") # > result
+											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER 'root'@'%' IDENTIFIED BY '"$var_maria_rootpass"';FLUSH PRIVILEGES;" && echo "updaterootpassSUCCESS" || echo "updaterootpassFAILED") # > result
 											dokcerprocessrsult_formariacredentials+=($result)
-											#echo "a2 : $result"
+											echo "a2 : $result"
 											edited=1
 
 										fi
@@ -410,13 +419,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 										   
 										    var_sql_socket_ready=$(docker exec -it  epad_mariadb  -u$var_maria_user -p$var_maria_pass  -e   "use epaddb;show tables;" )
 										    var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
-										    #echo "3 var_sql_socket_ready : $var_sql_socket_ready"
+										    echo "3 var_sql_socket_ready : $var_sql_socket_ready"
 										    
 
 										    if [[ -z $var_sql_socket_ready ]]; then
 										    	var_sql_socket_ready=$(docker exec -i epad_mariadb  mysql -u$var_maria_user_old -p$var_maria_user_pass_old  -e   "use epaddb;show tables;"  )
 										    	var_sql_socket_ready=$(echo "$var_sql_socket_ready" | grep "socket")
-										    	 #echo "4 var_sql_socket_ready : $var_sql_socket_ready"
+										    	 echo "4 var_sql_socket_ready : $var_sql_socket_ready"
 										    	 #var_sql_socket_ready="socket"
 										    fi
 										    
@@ -441,17 +450,23 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 										echo -e "${Yellow}process: mariadb socket ready for the user credentials update..."
 										echo -e "${Color_Off}"
 
-										verifyfirst=$(docker exec  -it  epad_mariadb  mysql -u$var_maria_user -p$var_maria_pass -e "use epaddb;show tables;" || echo "failed")
+										verifyfirst="$(docker exec  -it  epad_mariadb  mysql -u$var_maria_user -p$var_maria_pass -e "use epaddb;show tables;" || echo "failed")"
 										echo "regular user verifyfirst :$verifyfirst"
-										if [[ $verifyfirst == "failed" ]]; then
+										if [[ "$verifyfirst"=="failed" ]]; then
 											#dokcerprocessrsult_formariacredentials+=($())
 											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; update user set User = '"$var_maria_user"' where User='"$var_maria_user_old"' ;FLUSH PRIVILEGES;" && echo "updateuserSUCCESS" || echo "updateuserFAILED")
 											dokcerprocessrsult_formariacredentials+=($result)
-											#echo "a3 : $result"
+											echo "a3 : $result"
+											if [[ "$result"=="updateuserSUCCESS" ]]; then
+												result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; GRANT ALL ON epaddb.* TO '"$var_maria_user"'@'%'; ;FLUSH PRIVILEGES;" && echo "updateusertableprivillegeSUCCESS" || echo "updateusertableprivillegeFAILED")
+												dokcerprocessrsult_formariacredentials+=($result)
+												echo "aX : $result"
+											fi
 											
+											#GRANT ALL ON epaddb.* TO 'cavit'@'%';
 											result=$(docker exec  -i  epad_mariadb  mysql -uroot -p$var_maria_rootpass <<< "use mysql; ALTER USER '"$var_maria_user"'@'%' IDENTIFIED BY '"$var_maria_pass"';FLUSH PRIVILEGES;" && echo "updateuserpassSUCCESS" || echo "updateuserpassFAILED")
 											dokcerprocessrsult_formariacredentials+=($result)
-											#echo "a4 : $result"
+											echo "a4 : $result"
 											edited=2
 										
 										fi
@@ -744,10 +759,14 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		#echo "finding values"
 		#echo "Parameter #1 is $1"
 		#echo "Parameter #2 is $2"
-		var_tmp_txt=$( awk "/$1/{i++}i==$2{print; exit}"  "$var_path/$var_epadDistLocation/epad.yml")
- 		var_tmp_txt=$( echo $var_tmp_txt | cut -d: -f2)
+		if [[ -f "$var_path/$var_epadDistLocation/epad.yml" ]]; then
+			var_tmp_txt=$( awk "/$1/{i++}i==$2{print; exit}"  "$var_path/$var_epadDistLocation/epad.yml")
+ 			var_tmp_txt=$( echo $var_tmp_txt | cut -d: -f2)
                 #hostname loaded from epad.yml to variable
-		echo $var_tmp_txt
+			echo $var_tmp_txt
+		else
+			echo ""
+		fi
 		#echo "hostname from file :$var_host"
 				
 	}
@@ -804,7 +823,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		echo "your actual ip : $var_ip"
 		#var_local_servername=$( cat /etc/hosts | grep $var_res )
 		var_return=$( cat /etc/hosts | grep $var_server_name )
-		if [ -z "$var_return" ]; then
+		if [[ -z "$var_return" ]]; then
             echo "could not find your hostname : $var_server_name in your /etc/hosts file please fix your ip manually or use epad_fixmyip.sh script which is located in your epad-dist folder"
             exit 1
         else
@@ -839,7 +858,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
  	totalfiles=$(($totalfiles + 1))
  	cp /etc/hosts /etc/hosts_epad_backup_$totalfiles
 		var_res=$(cat /etc/hosts | grep $var_ip)
-        if [ -z "$var_res" ]; then
+        if [[ -z "$var_res" ]]; then
             echo "ip not found"
 			echo "$var_ip $var_host" >> /etc/hosts
         else
@@ -847,7 +866,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			var_res_epadvm=$( echo $var_res | grep epadvm )
 			echo "checking if epadvm is in /etc/hosts "
 			echo $var_res_epadvm
-			if [ -z "$var_res_epadvm" ]; then
+			if [[ -z "$var_res_epadvm" ]]; then
 				echo "$var_res : your ip is mapped to a different name"
 				var_host=$( echo $var_res | cut -d " " -f2)
 				echo "your host name for epad is set to $var_host"
@@ -889,7 +908,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	}
 
 	load_credentials_tovar (){
-
+		local localvar_getresult=""
 	echo -e "${Yellow}process: loading credentials from epad.yml to variables for a new epad.yml"
 	echo -e "${Color_Off}"
 		echo $var_path
@@ -930,36 +949,69 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		var_maria_user_old=$var_maria_user
 		var_maria_user_pass_old=$var_maria_pass
 		
+		localvar_getresult=$( find_val_intext "branch:" "1")
+		if [[ -n $localvar_getresult ]]; then
+        	var_branch_dicomweb=$localvar_getresult
+        	var_branch_dicomweb=$(echo $var_branch_dicomweb | sed 's/"//g')
+        	localvar_getresult=""
+        fi
 
-        var_branch_dicomweb=$( find_val_intext "branch:" "1")
-        var_branch_dicomweb=$(echo $var_branch_dicomweb | sed 's/"//g')
+        localvar_getresult=$( find_val_intext "branch:" "2")
+        if [[ -n $localvar_getresult ]]; then
+        	var_branch_epadlite=$localvar_getresult
+        	var_branch_epadlite=$(echo $var_branch_epadlite | sed 's/"//g')
+        	localvar_getresult=""
+        fi
 
-        var_branch_epadlite=$( find_val_intext "branch:" "2")
-        var_branch_epadlite=$(echo $var_branch_epadlite | sed 's/"//g')
-
-        var_branch_epadjs=$( find_val_intext "branch:" "3")
-        var_branch_epadjs=$(echo $var_branch_epadjs | sed 's/"//g')
+        localvar_getresult=$( find_val_intext "branch:" "3")
+        if [[ -n $localvar_getresult ]]; then
+        	var_branch_epadjs=$localvar_getresult
+        	var_branch_epadjs=$(echo $var_branch_epadjs | sed 's/"//g')
+        	localvar_getresult=""
+        fi
 
         #load ports from old yml
-        var_keycloak_port=$(find_val_fromsections "keycloak" "port")
-        var_keycloak_port=$(echo $var_keycloak_port | sed 's/"//g')
+        localvar_getresult=$(find_val_fromsections "keycloak" "port")
+        if [[ -n $localvar_getresult ]]; then
+        	var_keycloak_port=$localvar_getresult
+        	var_keycloak_port=$(echo $var_keycloak_port | sed 's/"//g')
+        	localvar_getresult=""
+    	fi 
 
-        var_epadjs_port=$(find_val_fromsections "epadjs" "port")
-        var_epadjs_port=$(echo $var_epadjs_port | sed 's/"//g')
+    	localvar_getresult=$(find_val_fromsections "epadjs" "port")
+    	if [[ -n $localvar_getresult ]]; then
+        	var_epadjs_port=$localvar_getresult
+        	var_epadjs_port=$(echo $var_epadjs_port | sed 's/"//g')
+        	localvar_getresult=""
+        fi
 
-        var_epadlite_port=$(find_val_fromsections "epadlite" "port")
-        var_epadlite_port=$(echo $var_epadlite_port | sed 's/"//g')
+        localvar_getresult=$(find_val_fromsections "epadlite" "port")
+        if [[ -n $localvar_getresult ]]; then
+        	var_epadlite_port=$localvar_getresult
+        	var_epadlite_port=$(echo $var_epadlite_port | sed 's/"//g')
+        	localvar_getresult=""
+        fi
 
+        localvar_getresult=$(find_val_fromsections "dicomweb" "port")
+        if [[ -n $localvar_getresult ]]; then
+        	var_dicomweb_port=$localvar_getresult
+        	var_dicomweb_port=$(echo $var_dicomweb_port | sed 's/"//g')
+        	localvar_getresult=""
+        fi
 
-        var_dicomweb_port=$(find_val_fromsections "dicomweb" "port")
-        var_dicomweb_port=$(echo $var_dicomweb_port | sed 's/"//g')
+        localvar_getresult=$(find_val_fromsections "couchdb" "port")
+        if [[ -n $localvar_getresult ]]; then
+        	var_couchdb_port=$localvar_getresult
+        	var_couchdb_port=$(echo $var_couchdb_port | sed 's/"//g')
+        	localvar_getresult=""
+        fi
 
-        var_couchdb_port=$(find_val_fromsections "couchdb" "port")
-        var_couchdb_port=$(echo $var_couchdb_port | sed 's/"//g')
-
-        var_maria_port=$(find_val_fromsections "mariadb" "port")
-        var_maria_port=$(echo $var_maria_port | sed 's/"//g')
-
+        localvar_getresult=$(find_val_fromsections "mariadb" "port")
+        if [[ -n $localvar_getresult ]]; then
+        	var_maria_port=$localvar_getresult
+        	var_maria_port=$(echo $var_maria_port | sed 's/"//g')
+        	localvar_getresult=""
+        fi
 		# echo "loaded variables from epad.yml : ++++++++++++++++ "
 		# echo " var_host :$var_host"
 	 #    echo " var_mode :$var_mode"
@@ -1046,7 +1098,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
   			echo "copying epad-dist repo from git"
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
-  			git clone script_merge https://github.com/RubinLab/epad-dist.git
+  			git clone https://github.com/RubinLab/epad-dist.git
 		fi
 	}
 
@@ -1054,7 +1106,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	echo -e "${Yellow}process: building epad_lite_dist from epad.yml"
 	echo -e "${Color_Off}"
 		var_response="n"
-				if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+				if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
 					if [[ $var_reinstalling != "true" ]]; then
                         read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
                     fi
@@ -1087,7 +1139,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		#done
 
 		#echo $result
-		if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+		if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
 			cd "$var_path/$var_epadLiteDistLocation"
 			docker-compose stop
 		else
@@ -1111,7 +1163,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		#done
 
 		#echo $result
-		if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
+		if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
 			cd "$var_path/$var_epadLiteDistLocation"
 			docker-compose rm -f
 		else
@@ -1215,8 +1267,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 local linecount_st=0
                 local counter_st=0
                 local var_waiting_st="starting epad"
-                echo -e "${Yellow}process: changing couchdb folder rights : $(remove_backslash_tofolderpath $var_couchdb_location)"
-				echo -e "${Color_Off}" 
+                #echo -e "${Yellow}process: changing couchdb folder rights : $(remove_backslash_tofolderpath $var_couchdb_location)"
+				#echo -e "${Color_Off}" 
 				# in linux needs sudo rights let to the user to edit the folder rights
 				#cd $var_path/$var_epadDistLocation
 				#echo $(pwd)
@@ -1356,7 +1408,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         if [[ $var_keycloak_pass == "YOUR_KEYCLOAK_ADMIN_PASS" ]]; then
         	var_keycloak_pass="admin"
         fi
-		read -sp "keycloak user password (default value : $var_keycloak_pass) :" var_response
+		read -p "keycloak user password (default value : $var_keycloak_pass) :" var_response
 				if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1364,7 +1416,6 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "var_keycloak_pass : $var_keycloak_pass"
 
                 fi
-		printf '\n'
 
 		if [[ $var_keycloak_useremail == "YOUR_KEYCLOAK_ADMIN_EMAIL" ]]; then
         	var_keycloak_useremail="admin@gmail.com"
@@ -1377,10 +1428,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "var_keycloak_useremail : $var_keycloak_useremail"
 
                 fi
+        printf '\n'
 
 		if [[ $var_couchdb_user == "YOUR_COUCH_ADMIN_USER" ]]; then
         	var_couchdb_user="admin"
         fi
+        
+
 		read -p "couchdb user name (default value : $var_couchdb_user) :" var_response
                 if [[ -n "$var_response" ]]
                 then
@@ -1392,7 +1446,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		if [[ $var_couchdb_pass == "YOUR_COUCH_ADMIN_PASS" ]]; then
         	var_couchdb_pass="admin"
         fi
-		read -sp "couchdb user password (default value : $var_couchdb_pass) :" var_response
+		read -p "couchdb user password (default value : $var_couchdb_pass) :" var_response
 				if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1400,8 +1454,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "var_couchdb_pass : $var_couchdb_pass"
 
                 fi
-		printf '\n'
-
+        printf '\n'
 
 		if [[ $var_maria_user == "YOUR_DB_USER" ]]; then
         	var_maria_user="admin"
@@ -1418,7 +1471,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		if [[ $var_maria_pass == "YOUR_DB_PASS" ]]; then
         	var_maria_pass="admin"
         fi                
-		read -sp "maria db user password (default value : $var_maria_pass) :" var_response
+		read -p "maria db user password (default value : $var_maria_pass) :" var_response
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1426,13 +1479,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "var_maria_pass : $var_maria_pass"
 
                 fi
-		printf '\n'
-		echo $var_response
+		
 
 		if [[ $var_maria_rootpass == "YOUR_DB_ROOT_PASS" ]]; then
         	var_maria_rootpass="admin"
         fi
-		read -sp "maria db root password (default value : $var_maria_rootpass) :" var_response
+		read -p "maria db root password (default value : $var_maria_rootpass) :" var_response
                 if [[ -n "$var_response" ]]
 				then
                         #echo "response = $var_response"
@@ -1440,7 +1492,6 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "var_maria_rootpass : $var_maria_rootpass"
 
                 fi
-		printf '\n'
 	}
 
 	edit_epad_yml (){
@@ -1521,7 +1572,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		echo -e "${Color_Off}"
 		check_keycloak_container_situation
 		local var_full_keycloak_export_path=$var_path$var_keycloak_exportfolder
-		if [ ! -f "$var_full_keycloak_export_path" ]; then
+		if [[ ! -f "$var_full_keycloak_export_path" ]]; then
 			echo "$var_full_keycloak_export_path does not exist. You need to export keycloak users first."
 			exit 1
 		fi
@@ -1606,7 +1657,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         echo "epad_manage.sh stop"
 
         echo "epad_manage.sh update epad"
+        echo "!!!! update epad: updates hostname, mode, database locations. Does not pull a fresh epad-dist folder from git"
 		echo "epad_manage.sh update config"
+		echo "!!!! update config: updates everything. Pulls the latest verison of epad-dist folder from git"
 		#echo "epad_manage.sh fixip"
 
 		echo "epad_manage.sh export keycloakusers"
@@ -1620,6 +1673,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
          if [[ $1 == "test" ]]; then
 			
 			echo "test started ----------------------------"
+			load_credentials_tovar
+			update_mariadb_usersandpass
 			echo "test ended ----------------------------"
 
 		 fi
@@ -1631,17 +1686,17 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			check_ifallcontainers_created
 			# echo $global_var_container_exist
 			if [[  $global_var_container_exist == "exist" ]]; then
-				echo -e "ePad installed already.\nReinstalling ePad will remove all images and containers."
+				echo -e "ePad installed already.\n Reinstalling ePad will delete all images, containers and keycloak users.\n You need to delete database folders manually \n or You need to make sure to assign previous credentials \n or you need to edit credentials in contaiener manually."
 				read -p "Do you want to reinstall ePad? (y/n : default response is n) :"  var_install_result_r 
 				
-				echo $var_install_result_r
+				# echo $var_install_result_r
 				 if [[ -z $var_install_result_r  ||   "$var_install_result_r" != "y" ]]; then
                 		echo "exiting ePad installation."
                         exit 1
                	else 
                		#cd "$var_path/$var_epadLiteDistLocation"
 					#docker-compose down
-					export_keycloak
+					#export_keycloak
 					remove_epad_images
                		#delete_dangling_images
                		echo "installing epad"
@@ -1658,17 +1713,17 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			create_epad_lite_dist
 			edit_compose_file
 			start_containers_viaCompose_all
-			if [[  $global_var_container_exist == "exist" ]]; then
-				if [[ ! -z $var_install_result_r  ||   "$var_install_result_r" == "y" ]]; then
-					update_mariadb_usersandpass
-				fi
-			fi
+			# if [[  $global_var_container_exist == "exist" ]]; then
+			# 	if [[ ! -z $var_install_result_r  ||   "$var_install_result_r" == "y" ]]; then
+			#		update_mariadb_usersandpass
+			#	fi
+			#fi
 			wait_for_containers_tobehealthy
-			if [[  $global_var_container_exist == "exist" ]]; then
-				if [[ ! -z $var_install_result_r  ||   "$var_install_result_r" == "y" ]]; then
-					import_keycloak
-				fi
-			fi
+			# if [[  $global_var_container_exist == "exist" ]]; then
+			#	if [[ ! -z $var_install_result_r  ||   "$var_install_result_r" == "y" ]]; then
+			#		import_keycloak
+			#	fi
+			#fi
 			check_container_situation
 
 			# reset global variables
@@ -1723,6 +1778,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				export_keycloak
 				remove_epad_images
 				load_credentials_tovar
+				find_host_info
+				find_docker_gid
+				collect_system_configuration
+				edit_epad_yml
+                create_epad_lite_dist
+                edit_compose_file
 				start_containers_viaCompose_all
 				wait_for_containers_tobehealthy
 				import_keycloak
@@ -1784,8 +1845,6 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	else
 		show_instructions
 	fi
-
-
 	# imopertant make tmp folder public
 	# important make couchdb folder public , fix it there is computerrelated folder now 
 	# pluginData public ? 
