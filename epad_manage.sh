@@ -266,9 +266,10 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				# needs to check if user credentials failed for mariadb?
 				#check the array if contains fails. 
 				#${dokcerprocessrsult_formariacredentials[@]}
+				echo "ROOLBACK phase -: verifiying which credential need to be rolled back :  ${dokcerprocessrsult_formariacredentials[@]}"
 				var_check_failed=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "FAILED")
 				var_check_success=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "SUCCESS")
-				echo "rollback ? : check failed status: $var_check_failed"
+				echo "rollback necessary for the following situations : $var_check_failed"
 				if [[ ! -z $var_check_failed ]]; then
 					for i in ${!arrayImages[@]}; do
   						
@@ -295,12 +296,14 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 					done
 					#	updaterootpassLocalhostFAILED updaterootpassFAILED updateuserFAILED updateuserpassFAILED
 			 		
-					echo "ROOLBACK mariadb credential update check :  ${dokcerprocessrsult_formariacredentials[@]}"
+					
 					echo -e "${Yellow}process: Rolling back epad.yml finished. Recreating epad_lite_dist"
 					echo -e "${Color_Off}"
 					create_epad_lite_dist
 					if [ -d "$var_path/$var_epadLiteDistLocation" ]; then
 						cd "$var_path/$var_epadLiteDistLocation"
+						echo -e "${Yellow}process: Restarting ePad containers to reflect the old credentials to the containers"
+						echo -e "${Color_Off}"
 						docker-compose up -d 
 					else
 						echo -e "${Yellow}process: Could not locate epad_lite_dist folder at location : $var_path/$var_epadLiteDistLocation to restart containers with rolled back mariadb credentials"
