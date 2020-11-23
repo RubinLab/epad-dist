@@ -72,99 +72,173 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 
 # functions
-		parse_yml_sections(){
+		check_epadyml_needs_update(){
+			local localvar_actual_yml=""
+			local localvar_latest_yml=""
+			local localvar_counter=0
+			local localvar_result=0
+			if [[ -d "$var_path/$var_epadDistLocation" ]]; then
+				if [[ -f "$var_path/$var_epadDistLocation/epad.yml" ]]; then
+					localvar_actual_yml="$var_path/$var_epadDistLocation/epad.yml"
+					#echo "testing value localvar_actual_yml : $localvar_actual_yml"
+				else
+					echo "error: couldn't find epad.yml file in $var_path/$var_epadDistLocation"
+					exit 1
+				fi
 
-						var_array_fromyml_keycloak=()
-						var_array_fromyml_couchdb=()
-						var_array_fromyml_dicomweb=()
-						var_array_fromyml_epadlite=()
-						var_array_fromyml_epadjs=()
-						var_array_fromyml_mariadb=()
+
+				for i in ${!var_array_fromyml_seections[@]}; do
+						if [[ ${var_array_fromyml_seections[$i]} == "cache" || ${var_array_fromyml_seections[$i]} == "compression" ]]; then
+							localvar_counter=$(($localvar_counter + 1))
+							
+						fi
+				done
+
+				localvar_result=""
+				#echo "result : $localvar_counter"
+				if [[ $localvar_counter == 2 ]]; then
+					localvar_counter=0
+					
+					# checking the latest keys for couchdb is in epad.yml 
+
+					for i in ${!var_array_fromyml_couchdb[@]}; do
+						if [[ $( echo ${var_array_fromyml_couchdb[$i]} | cut -d":" -f1 ) == "user" || $( echo ${var_array_fromyml_couchdb[$i]} | cut -d":" -f1 ) == "password" ]]; then
+							localvar_counter=$(($localvar_counter + 1))
+							
+						fi
+					done
+					#echo "result : $localvar_counter"
+					if [[ $localvar_counter == 2 ]]; then
+						localvar_counter=0
+							# checking the latest keys for mariadb is in epad.yml 
+
+							for i in ${!var_array_fromyml_mariadb[@]}; do
+								if [[ $( echo ${var_array_fromyml_mariadb[$i]} | cut -d":" -f1 ) == "user" || $( echo ${var_array_fromyml_mariadb[$i]} | cut -d":" -f1 ) == "password" || $( echo ${var_array_fromyml_mariadb[$i]} | cut -d":" -f1 ) == "rootpassword" ]]; then
+									localvar_counter=$(($localvar_counter + 1))
+									
+								fi
+							done
+							#echo "result : $localvar_counter"
+							if [[ $localvar_counter == 3 ]]; then
+								localvar_counter=0
+								echo "uptodate"
+							else
+								echo "pull"
+							fi
+					else
+						echo "pull"
+					fi
+				else
+					echo "pull"
+				fi
+
+
+			else
+				echo "error: couldn't find a valid $var_epadDistLocation folder in $var_path"
+				exit 1
+			fi
+
+		}
+
+		parse_yml_sections(){
+			var_array_fromyml_seections=()
+			var_array_fromyml_keycloak=()
+			var_array_fromyml_couchdb=()
+			var_array_fromyml_dicomweb=()
+			var_array_fromyml_epadlite=()
+			var_array_fromyml_epadjs=()
+			var_array_fromyml_mariadb=()
 
 			if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
 
-				local input="$var_path/$var_epadDistLocation/epad.yml"
-				if [[ -f "$input" ]]; then
-						local section=""
-						local response=""
-						
+				if [[ -f "$var_path/$var_epadDistLocation/epad.yml" ]];then
+						local input="$var_path/$var_epadDistLocation/epad.yml"
+						if [[ -f "$input" ]]; then
+								local section=""
+								local response=""
+								
 
-						while IFS= read -r line
-						do
-						  response=$(echo $line | grep ":$")
-						  if [ ! -z $response ]; then
-						  	#section=$response
-						  	section=$(echo $response | cut -d":" -f1)
-						  #echo "section : $section "
-						  
+								while IFS= read -r line
+								do
+								  response=$(echo $line | grep ":$")
+								  if [ ! -z $response ]; then
+								  	#section=$response
+								  	section=$(echo $response | cut -d":" -f1)
+								  	var_array_fromyml_seections+=($section)
+								  #echo "section : $section "
+								  
+								fi
+								#echo "response : $response"
+								  # echo "first : $response"
+								  if [[ -z $response ]]; then
+								  	#eachline=$(echo $line | cut -d":" -f1)
+								  	eachline=$(echo $line | sed -e 's/[[:space:]]//g')
+								  	#echo "merge : $section-$eachline"
+										  	case $section in
+
+										  	keycloak)
+										    		#echo -n "keycloak"
+										    		var_array_fromyml_keycloak+=($eachline)
+										    ;;
+
+										  	couchdb)
+										    		#echo -n "couchdb"
+										    		var_array_fromyml_couchdb+=($eachline)
+
+										    ;;
+
+										    dicomweb)
+										    		#echo -n "dicomweb"
+										    		var_array_fromyml_dicomweb+=($eachline)
+
+										    ;;
+
+										    epadlite)
+										    		#echo -n "epadlite"
+										    		var_array_fromyml_epadlite+=($eachline)
+
+										    ;;
+
+										    epadjs)
+										    		#echo -n "epadjs"
+										    		var_array_fromyml_epadjs+=($eachline)
+
+										    ;;
+
+										    mariadb)
+										    		#echo -n "mariadb"
+										    		var_array_fromyml_mariadb+=($eachline)
+										    ;;
+											esac
+
+								  fi
+
+
+								done < "$input"
+
+								  	# echo "*******************"
+								   # 	echo "*******************"
+
+								   #   echo "${var_array_fromyml_keycloak[@]}"
+								   #       echo "*******************"
+								   #   echo "*******************"
+								   #   echo "${var_array_fromyml_couchdb[@]}"
+								   #       echo "*******************"
+								   #   echo "*******************"
+								   #   echo "${var_array_fromyml_dicomweb[@]}"
+								   #            echo "*******************"
+								   #   echo "*******************"
+								   #   echo "${var_array_fromyml_epadlite[@]}"
+								   #       echo "*******************"
+								   #   echo "*******************"
+								   #   echo "${var_array_fromyml_epadjs[@]}"
+								   #       echo "*******************"
+								   #   echo "*******************"
+								   # echo "${var_array_fromyml_mariadb[@]}" 
 						fi
-						#echo "response : $response"
-						  # echo "first : $response"
-						  if [[ -z $response ]]; then
-						  	#eachline=$(echo $line | cut -d":" -f1)
-						  	eachline=$(echo $line | sed -e 's/[[:space:]]//g')
-						  	#echo "merge : $section-$eachline"
-								  	case $section in
-
-								  	keycloak)
-								    		#echo -n "keycloak"
-								    		var_array_fromyml_keycloak+=($eachline)
-								    ;;
-
-								  	couchdb)
-								    		#echo -n "couchdb"
-								    		var_array_fromyml_couchdb+=($eachline)
-
-								    ;;
-
-								    dicomweb)
-								    		#echo -n "dicomweb"
-								    		var_array_fromyml_dicomweb+=($eachline)
-
-								    ;;
-
-								    epadlite)
-								    		#echo -n "epadlite"
-								    		var_array_fromyml_epadlite+=($eachline)
-
-								    ;;
-
-								    epadjs)
-								    		#echo -n "epadjs"
-								    		var_array_fromyml_epadjs+=($eachline)
-
-								    ;;
-
-								    mariadb)
-								    		#echo -n "mariadb"
-								    		var_array_fromyml_mariadb+=($eachline)
-								    ;;
-									esac
-
-						  fi
-
-
-						done < "$input"
-
-						  	# echo "*******************"
-						   # 	echo "*******************"
-
-						   #   echo "${var_array_fromyml_keycloak[@]}"
-						   #       echo "*******************"
-						   #   echo "*******************"
-						   #   echo "${var_array_fromyml_couchdb[@]}"
-						   #       echo "*******************"
-						   #   echo "*******************"
-						   #   echo "${var_array_fromyml_dicomweb[@]}"
-						   #            echo "*******************"
-						   #   echo "*******************"
-						   #   echo "${var_array_fromyml_epadlite[@]}"
-						   #       echo "*******************"
-						   #   echo "*******************"
-						   #   echo "${var_array_fromyml_epadjs[@]}"
-						   #       echo "*******************"
-						   #   echo "*******************"
-						   # echo "${var_array_fromyml_mariadb[@]}" 
+				else
+					echo "error: couldn't find epad.yml file in $var_path/$var_epadDistLocation"
+					exit 1
 				fi
 			fi
 
@@ -1068,6 +1142,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 	copy_epad_dist (){
 
+		local needymlupdate=""
 		local backupymlfilename=""
 
 		echo -e "${Yellow}process: copying epad-dist from git.."
@@ -1079,7 +1154,6 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			#var_reinstalling="true"
 			parse_yml_sections
 			load_credentials_tovar
-
 	 		
 			global_var_container_exist="exist"
 			if [[ $var_reinstalling != "true" ]]; then
@@ -1102,6 +1176,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
   			git clone https://github.com/RubinLab/epad-dist.git
+		fi
+		needymlupdate=$(check_epadyml_needs_update)
+		if [[ "$needymlupdate" == "pull" ]]; then
+				echo "We detected an old epad.yml. You need to answer yes to owerwrite epad-dist folder. Please retry the process "
+				exit 1
 		fi
 	}
 
@@ -1674,11 +1753,16 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 
          if [[ $1 == "test" ]]; then
-			
+			locrestest=""
 			echo "test started ----------------------------"
-			load_credentials_tovar
-			update_mariadb_usersandpass
-			echo "test ended ----------------------------"
+			parse_yml_sections
+			locrestest=$(check_epadyml_needs_update)
+			if [[ "$locrestest" == "pull" ]]; then
+				echo "pull called"
+			fi
+			if [[ "$locrestest" == "uptodate" ]]; then
+				echo "uptodate called"
+			fi
 
 		 fi
 
@@ -1778,6 +1862,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
             if [[ $2 == "epad" ]]; then
 				echo -e "${Yellow}process: updating epad"
 				echo -e "${Color_Off}"
+				parse_yml_sections
+				var_ymlupdate=$(check_epadyml_needs_update)
+				if [[ "$var_ymlupdate" == "pull" ]]; then
+					echo "We detected an old epad.yml. Please use update config to update ePad. Operation cancelled."
+					exit 1
+				fi
 				export_keycloak
 				remove_epad_images
 				load_credentials_tovar
