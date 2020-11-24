@@ -72,6 +72,54 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 
 # functions
+		create_epad_folders(){
+			local localvar_couchdbloc=""
+		    echo -e "${Yellow}process: creating ePad Folders for couchdb, pluginData, tmp, data"
+			echo -e "${Color_Off}" 
+			# in linux needs sudo rights let to the user to edit the folder rights
+			echo $var_path
+			cd $var_path
+			if [[ ! -d pluginData ]]; then
+				echo "pluginData not found. Creating"
+				mkdir "pluginData"
+				chmod 777 "pluginData"
+
+			else
+				echo "pluginData folder found"
+			fi
+
+			if [[ ! -d tmp ]]; then
+				echo "tmp folder not found. Creating"
+				mkdir "tmp"
+				chmod 777 "tmp"
+
+			else
+				echo "tmp folder found"
+			fi
+
+			if [[ ! -d data ]]; then
+				echo "data folder not found. Creating"
+				mkdir "data"
+				chmod 777 "data"
+
+			else
+				echo "data folder found"
+			fi
+			parse_yml_sections
+			localvar_couchdbloc=$(find_val_fromsections "couchdb" "dblocation" | sed 's/"//g' )
+			localvar_couchdbloca=$( remove_backslash_tofolderpath $localvar_couchdbloc)
+			echo "couch loc: $localvar_couchdbloca"
+			cd "$var_path/$var_epadDistLocation"
+			if [[ ! -d "$localvar_couchdbloca" ]]; then
+				echo "$localvar_couchdbloca folder not found. Creating"
+				mkdir "$localvar_couchdbloca"
+				chmod 777 "$localvar_couchdbloca"
+
+			else
+				echo "$localvar_couchdbloca folder found"
+			fi
+		}
+
 		check_epadyml_needs_update(){
 			local localvar_actual_yml=""
 			local localvar_latest_yml=""
@@ -378,7 +426,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						cd "$var_path/$var_epadLiteDistLocation"
 						echo -e "${Yellow}process: Restarting ePad containers to reflect the old credentials to the containers"
 						echo -e "${Color_Off}"
-						docker-compose up -d 
+						docker-compose up -d > "$var_path/epad_manage.log"
 					else
 						echo -e "${Yellow}process: Could not locate epad_lite_dist folder at location : $var_path/$var_epadLiteDistLocation to restart containers with rolled back mariadb credentials"
 						echo -e "${Color_Off}"
@@ -615,7 +663,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			stop_containers_all
 			remove_containers_all
 			for i in ${!arrayImages[@]}; do
-  				docker rmi  ${arrayImages[$i]}
+  				docker rmi  ${arrayImages[$i]} > "$var_path/epad_manage.log"
 			done
 			# docker rmi $("${arrayImages[@]}") 
 			#docker rmi $(docker ps -a --filter "name=\bepad_js\b" --format "table {{.Image}}" | awk '{ getline; print $0;}')
@@ -790,15 +838,17 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		check_keycloak_container_situation(){
 			local var_container_situation=""
 			var_container_situation=$(docker ps -a --filter "name=\bepad_keycloak\b" --format "table {{.Status}}"  )
-			if [[ "$var_container_situation" == "STATUS" ]]; then
-				echo "container epad_keycloak does not exist. Please start epad first "
-				exit 1
-			else
+			if [[ "$var_container_situation" != "STATUS" ]]; then
+				# echo "container epad_keycloak does not exist. Please start epad first "
+				#exit 1
+
 				var_container_situation=$(docker ps -a --filter "name=\bepad_keycloak\b" --format "table {{.Status}}" | grep Up )
 				if [[  -z $var_container_situation ]]; then
 					echo "container epad_keycloak is not running. Please start epad first "
 					exit 1
 				fi
+			else
+				echo "noop"
 			fi
 		}
 
@@ -1176,11 +1226,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
   			git clone https://github.com/RubinLab/epad-dist.git
-		fi
-		needymlupdate=$(check_epadyml_needs_update)
-		if [[ "$needymlupdate" == "pull" ]]; then
-				echo "We detected an old epad.yml. You need to answer yes to owerwrite epad-dist folder. Please retry the process "
-				exit 1
+		else
+			needymlupdate=$(check_epadyml_needs_update)
+			if [[ "$needymlupdate" == "pull" ]]; then
+					echo "We detected an old epad.yml. You need to answer yes to owerwrite epad-dist folder. Please retry the process "
+					exit 1
+			fi
 		fi
 	}
 
@@ -1302,7 +1353,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	
 	
            		cd "$var_path/$var_epadLiteDistLocation"
-                docker-compose up -d > /dev/null
+                docker-compose up -d > "$var_path/epad_manage.log"
     #             local var_start_st=$(date +%s)
 				# local var_end_st=$(($var_start_st + 300))
 				# #echo "init : $var_start_st "
@@ -1650,84 +1701,87 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 
 	import_keycloak(){
+		local localvar_conres=""
 		echo -e "${Yellow}process: importing keycloak users...."
 		echo -e "${Color_Off}"
-		check_keycloak_container_situation
-		local var_full_keycloak_export_path=$var_path$var_keycloak_exportfolder
-		if [[ ! -f "$var_full_keycloak_export_path" ]]; then
-			echo "$var_full_keycloak_export_path does not exist. You need to export keycloak users first."
-			exit 1
+		localvar_conres=$(check_keycloak_container_situation)
+		if [[ $localvar_conres != "noop" ]]; then
+			local var_full_keycloak_export_path=$var_path$var_keycloak_exportfolder
+			if [[ ! -f "$var_full_keycloak_export_path" ]]; then
+				echo "$var_full_keycloak_export_path does not exist. You need to export keycloak users first."
+				exit 1
+			fi
+			echo $var_full_keycloak_export_path
+			# touch "$var_path/importkeycloak.log"
+			#var_import_process=$(docker container top epad_keycloak | grep "keycloak.migration.action" | cut -d" " -f1)
+			#echo "$var_import_process"
+			#echo "importing keycloak users...."		
+			docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
+			-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=import \
+			-Dkeycloak.migration.provider=$var_provider \
+			-Dkeycloak.migration.realmName=$var_realmName \
+			-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
+			-Dkeycloak.migration.file=$var_keycloak_exportfolder > $var_path/importkeycloak.log &
+			#echo $! > "$var_path/pid.txt"
+	                #echo $!
+	               local result=""
+	               local resultFail=""
+	                while [[ -z $result ]] && [[ -z $resultFail ]]; do
+	                        result=$(cat $var_path/importkeycloak.log | grep "Import finished successfully")
+
+	                        resultFail=$(cat $var_path/importkeycloak.log | grep "Server boot has failed in an unrecoverable manner")
+	                done
+
+	                echo $result
+	                if [[ $resultFail == *"Server boot has failed in an unrecoverable manner"* ]]; then
+	                        echo "$resultFail.  Exiting script...."         
+	                        exit 1
+	                fi
+			echo "restarting keycloak"
+			docker restart epad_keycloak
 		fi
-		echo $var_full_keycloak_export_path
-		# touch "$var_path/importkeycloak.log"
-		#var_import_process=$(docker container top epad_keycloak | grep "keycloak.migration.action" | cut -d" " -f1)
-		#echo "$var_import_process"
-		#echo "importing keycloak users...."		
-		docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
-		-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=import \
-		-Dkeycloak.migration.provider=$var_provider \
-		-Dkeycloak.migration.realmName=$var_realmName \
-		-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
-		-Dkeycloak.migration.file=$var_keycloak_exportfolder > $var_path/importkeycloak.log &
-		#echo $! > "$var_path/pid.txt"
-                #echo $!
-               local result=""
-               local resultFail=""
-                while [[ -z $result ]] && [[ -z $resultFail ]]; do
-                        result=$(cat $var_path/importkeycloak.log | grep "Import finished successfully")
-
-                        resultFail=$(cat $var_path/importkeycloak.log | grep "Server boot has failed in an unrecoverable manner")
-                done
-
-                echo $result
-                if [[ $resultFail == *"Server boot has failed in an unrecoverable manner"* ]]; then
-                        echo "$resultFail.  Exiting script...."         
-                        exit 1
-                fi
-		echo "restarting keycloak"
-		docker restart epad_keycloak
-
 	}
 
 	export_keycloak(){
-	 
+	 	local localvar_conres=""
 		echo -e "${Yellow}process: exporting keycloak users...."
 		echo -e "${Color_Off}"
-		check_keycloak_container_situation
-		docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
-		-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=export \
-		-Dkeycloak.migration.provider=$var_provider \
-		-Dkeycloak.migration.realmName=$var_realmName \
-		-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
-		-Dkeycloak.migration.file=$var_keycloak_exportfolder > exportkeycloak.log  &
-		#echo $! > "$var_path/pid.txt"
-		#echo $!
-                local result=""
-                local resultFail=""
-                local resultOtherErrors=""
-                while [[ -z $result ]] && [[ -z $resultFail ]]; do
-                        result=$(cat $var_path/exportkeycloak.log | grep "Export finished successfully")
+		localvar_conres=$(check_keycloak_container_situation)
+			if [[ $localvar_conres != "noop" ]]; then
+				docker exec -i epad_keycloak /opt/jboss/keycloak/bin/standalone.sh \
+				-Djboss.socket.binding.port-offset=100 -Dkeycloak.migration.action=export \
+				-Dkeycloak.migration.provider=$var_provider \
+				-Dkeycloak.migration.realmName=$var_realmName \
+				-Dkeycloak.migration.usersExportStrategy=REALM_FILE \
+				-Dkeycloak.migration.file=$var_keycloak_exportfolder > exportkeycloak.log  &
+				#echo $! > "$var_path/pid.txt"
+				#echo $!
+		                local result=""
+		                local resultFail=""
+		                local resultOtherErrors=""
+		                while [[ -z $result ]] && [[ -z $resultFail ]]; do
+		                        result=$(cat $var_path/exportkeycloak.log | grep "Export finished successfully")
 
-                        resultFail=$(cat $var_path/exportkeycloak.log | grep "Server boot has failed in an unrecoverable manner")
+		                        resultFail=$(cat $var_path/exportkeycloak.log | grep "Server boot has failed in an unrecoverable manner")
 
-                        # resultOtherErrors=$(cat $var_path/exportkeycloak.log | grep "Error")
-                done
+		                        # resultOtherErrors=$(cat $var_path/exportkeycloak.log | grep "Error")
+		                done
 
-                
-                if [[ $resultFail == *"Server boot has failed in an unrecoverable manner"* ]]; then
-                        echo "$resultFail.  Exiting script...."         
-                        exit 1
-                fi
-                if  [[ $resultOtherErrors == *"Error"* ]]; then
-                	echo "$resultOtherErrors.  Exiting script...."         
-                        exit 1
-                fi
+		                
+		                if [[ $resultFail == *"Server boot has failed in an unrecoverable manner"* ]]; then
+		                        echo "$resultFail.  Exiting script...."         
+		                        exit 1
+		                fi
+		                if  [[ $resultOtherErrors == *"Error"* ]]; then
+		                	echo "$resultOtherErrors.  Exiting script...."         
+		                        exit 1
+		                fi
 
-                echo $result
+		                echo $result
 
-		echo "restarting keycloak"
-                docker restart epad_keycloak
-
+				echo "restarting keycloak"
+		                docker restart epad_keycloak
+			fi
 	}
 		
 	show_instructions(){
@@ -1740,6 +1794,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
         echo "epad_manage.sh update epad"
         echo "!!!! update epad: updates hostname, mode, database locations. Does not pull a fresh epad-dist folder from git"
+        echo "!!!! update epad: if your epad.yml is outdated, it will force you to get a new epad-dist"
 		echo "epad_manage.sh update config"
 		echo "!!!! update config: updates everything. Pulls the latest verison of epad-dist folder from git"
 		#echo "epad_manage.sh fixip"
@@ -1755,14 +1810,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
          if [[ $1 == "test" ]]; then
 			locrestest=""
 			echo "test started ----------------------------"
-			parse_yml_sections
-			locrestest=$(check_epadyml_needs_update)
-			if [[ "$locrestest" == "pull" ]]; then
-				echo "pull called"
-			fi
-			if [[ "$locrestest" == "uptodate" ]]; then
-				echo "uptodate called"
-			fi
+			create_epad_folders
+			echo "test finished ---------------------------"
 
 		 fi
 
@@ -1773,7 +1822,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			check_ifallcontainers_created
 			# echo $global_var_container_exist
 			if [[  $global_var_container_exist == "exist" ]]; then
-				echo -e "ePad installed already.\n Reinstalling ePad will delete all images, containers and keycloak users.\n You need to delete database folders manually \n or You need to make sure to assign previous credentials \n or you need to edit credentials in contaiener manually."
+				echo -e "ePad installed already.\n IMPORTANT!: Reinstalling ePad will delete all images, containers and keycloak users.\n You need to delete database folders manually \n or You need to make sure to assign previous credentials \n or You need to edit credentials in container manually."
 				read -p "Do you want to reinstall ePad? (y/n : default response is n) :"  var_install_result_r 
 				
 				# echo $var_install_result_r
@@ -1938,6 +1987,3 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	else
 		show_instructions
 	fi
-	# imopertant make tmp folder public
-	# important make couchdb folder public , fix it there is computerrelated folder now 
-	# pluginData public ? 
