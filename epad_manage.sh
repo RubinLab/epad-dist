@@ -81,6 +81,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			if [[ $? > $1 ]]; then
 				if [[ -n $3 ]]; then
    					echo $3
+   					echo -e "${Purple}$3"
+					echo -e "${Color_Off}"
    				fi
 
    				if [[ $2 == "exit" ]]; then
@@ -92,58 +94,98 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 		create_epad_folders(){
 			local localvar_couchdbloc=""
+			local localvar_folderrights=""
+			local localvar_errcnt=0
 		    echo -e "${Yellow}process: creating ePad Folders for couchdb, pluginData, tmp, data"
 			echo -e "${Color_Off}" 
-			# in linux needs sudo rights let to the user to edit the folder rights
-			echo $var_path
-			cd $var_path
-			if [[ ! -d pluginData ]]; then
-				echo "pluginData not found. Creating"
-				mkdir "pluginData"
-				handle_errors $? "" "creating pluginData failed. You may need sudo right."
-				chmod 777 "pluginData"
-				handle_errors $? "" "giving public rights(777) to pluginData failed. You may need sudo right."
+			find_os_type
 
+			if [[ "$var_os_type" == "linux" ]]; then
+					# in linux needs sudo rights let to the user to edit the folder rights
+					echo $var_path
+					cd $var_path
+					if [[ ! -d pluginData ]]; then
+						echo "pluginData not found. Creating"
+						mkdir "pluginData"
+						handle_errors $? "" "Creating pluginData folder failed. You may need sudo right."
+						chmod 777 "pluginData"
+						handle_errors $? "" "Giving public rights(777) to pluginData failed. You may need sudo right."
+
+					else
+						echo "pluginData folder found"
+						localvar_folderrights=$(ls -ld "pluginData" | cut -d" " -f1 | cut -c 8,9,10)
+						if [[ $localvar_folderrights != "rwx" ]]; then
+			 
+							echo -e "${Purple}You need to give public rights(777) manually to pluginData folder in $var_path and then retry installing ePad"
+							echo -e "${Color_Off}"
+						fi
+
+					fi
+
+					if [[ ! -d tmp ]]; then
+						echo "tmp folder not found. Creating"
+						mkdir "tmp"
+						handle_errors $? "" "Creating tmp folder failed. You may need sudo right."
+						chmod 777 "tmp"
+						handle_errors $? "" "Giving public rights(777) to tmp folder failed. You may need sudo right."
+
+					else
+						echo "tmp folder found"
+						localvar_folderrights=$(ls -ld "tmp" | cut -d" " -f1 | cut -c 8,9,10)
+						if [[ $localvar_folderrights != "rwx" ]]; then
+							echo -e "${Purple}You need to give public rights(777) manually to tmp folder in $var_path and then retry installing ePad"
+							echo -e "${Color_Off}"
+						fi
+					fi
+
+					if [[ ! -d data ]]; then
+						echo "data folder not found. Creating"
+						mkdir "data"
+						handle_errors $? "" "Creating data folder failed. You may need sudo right."
+						chmod 777 "data"
+						handle_errors $? "" "Giving public rights(777) to data folder failed. You may need sudo right."
+
+					else
+						echo "data folder found"
+						localvar_folderrights=$(ls -ld "data" | cut -d" " -f1 | cut -c 8,9,10)
+						if [[ $localvar_folderrights != "rwx" ]]; then
+							echo -e "${Purple}You need to give public rights(777) manually to data folder in $var_path and then retry installing ePad"
+							echo -e "${Color_Off}"
+						fi
+					fi
+
+					parse_yml_sections
+					localvar_couchdbloc=$(find_val_fromsections "couchdb" "dblocation" | sed 's/"//g' )
+					localvar_couchdbloca=$( remove_backslash_tofolderpath $localvar_couchdbloc)
+					echo "couch loc: $localvar_couchdbloca"
+					cd "$var_path/$var_epadDistLocation"
+					if [[ ! -d "$localvar_couchdbloca" ]]; then
+						echo "$localvar_couchdbloca folder not found. Creating"
+						mkdir "$localvar_couchdbloca"
+						handle_errors $? "" "Creating $localvar_couchdbloca folder failed. You may need sudo right."
+						chmod 777 "$localvar_couchdbloca"
+						handle_errors $? "" "Giving public rights(777) to $localvar_couchdbloca folder failed. You may need sudo right."
+
+					else
+						echo "$localvar_couchdbloca folder found"
+						localvar_folderrights=$(ls -ld "$localvar_couchdbloca" | cut -d" " -f1 | cut -c 8,9,10)
+						if [[ $localvar_folderrights != "rwx" ]]; then
+							echo -e "${Purple}You need to give public rights(777) manually to $localvar_couchdbloca folder and then retry installing ePad"
+							echo -e "${Color_Off}"
+						fi
+					fi
+
+					if [[ $localvar_errcnt > 0 ]]; then
+						echo "exiting operation."
+						exit 1
+					fi
+			elif [[ "$var_os_type" == "mac" ]]; then
+				echo "No need to create folders for macs. Docker will create."
 			else
-				echo "pluginData folder found"
-			fi
+				echo -e "${Purple}Unsupported operating system. Please contact ePad Team if you encounter issues."
+				echo -e "${Color_Off}"
+			fi 
 
-			if [[ ! -d tmp ]]; then
-				echo "tmp folder not found. Creating"
-				mkdir "tmp"
-				echo $?
-				chmod 777 "tmp"
-				echo $?
-
-			else
-				echo "tmp folder found"
-			fi
-
-			if [[ ! -d data ]]; then
-				echo "data folder not found. Creating"
-				mkdir "data"
-				echo $?
-				chmod 777 "data"
-				echo $?
-
-			else
-				echo "data folder found"
-			fi
-			parse_yml_sections
-			localvar_couchdbloc=$(find_val_fromsections "couchdb" "dblocation" | sed 's/"//g' )
-			localvar_couchdbloca=$( remove_backslash_tofolderpath $localvar_couchdbloc)
-			echo "couch loc: $localvar_couchdbloca"
-			cd "$var_path/$var_epadDistLocation"
-			if [[ ! -d "$localvar_couchdbloca" ]]; then
-				echo "$localvar_couchdbloca folder not found. Creating"
-				mkdir "$localvar_couchdbloca"
-				echo $?
-				chmod 777 "$localvar_couchdbloca"
-				echo "$?"
-
-			else
-				echo "$localvar_couchdbloca folder found"
-			fi
 		}
 
 		check_epadyml_needs_update(){
@@ -1834,17 +1876,15 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 
          if [[ $1 == "test" ]]; then
-			locrestest=""
 			echo "test started ----------------------------"
-			create_epad_folders
 			echo "test finished ---------------------------"
-
 		 fi
 
 		if [[ $1 == "install" ]]; then
 			echo -e "${Yellow}process: Installing ePad"
     		echo -e "${Color_Off}"
 			var_install_result_r=""
+			create_epad_folders
 			check_ifallcontainers_created
 			# echo $global_var_container_exist
 			if [[  $global_var_container_exist == "exist" ]]; then
