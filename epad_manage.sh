@@ -72,6 +72,24 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 
 # functions
+		handle_errors(){
+			# taes 3 params $1 $2 $3 
+			# $1 error value ($?) 
+			# $2 script needs exit or not (noexit (""), exit) 
+			# $3 message to how or empty string "" 
+
+			if [[ $? > $1 ]]; then
+				if [[ -n $3 ]]; then
+   					echo $3
+   				fi
+
+   				if [[ $2 == "exit" ]]; then
+   					exit 1
+   				fi
+   				
+			fi
+		}
+
 		create_epad_folders(){
 			local localvar_couchdbloc=""
 		    echo -e "${Yellow}process: creating ePad Folders for couchdb, pluginData, tmp, data"
@@ -82,7 +100,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			if [[ ! -d pluginData ]]; then
 				echo "pluginData not found. Creating"
 				mkdir "pluginData"
+				handle_errors $? "" "creating pluginData failed. You may need sudo right."
 				chmod 777 "pluginData"
+				handle_errors $? "" "giving public rights(777) to pluginData failed. You may need sudo right."
 
 			else
 				echo "pluginData folder found"
@@ -91,7 +111,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			if [[ ! -d tmp ]]; then
 				echo "tmp folder not found. Creating"
 				mkdir "tmp"
+				echo $?
 				chmod 777 "tmp"
+				echo $?
 
 			else
 				echo "tmp folder found"
@@ -100,7 +122,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			if [[ ! -d data ]]; then
 				echo "data folder not found. Creating"
 				mkdir "data"
+				echo $?
 				chmod 777 "data"
+				echo $?
 
 			else
 				echo "data folder found"
@@ -113,7 +137,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			if [[ ! -d "$localvar_couchdbloca" ]]; then
 				echo "$localvar_couchdbloca folder not found. Creating"
 				mkdir "$localvar_couchdbloca"
+				echo $?
 				chmod 777 "$localvar_couchdbloca"
+				echo "$?"
 
 			else
 				echo "$localvar_couchdbloca folder found"
