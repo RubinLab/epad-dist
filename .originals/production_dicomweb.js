@@ -5,5 +5,11 @@ module.exports = {
   dbPort: "5984",
   auth: "{dicomweb_auth}",
   logger: "{dicomweb_log}",
-  prefix: "/{dicomweb_loc}"
+  prefix: "/{dicomweb_loc}",
+  DIMSE: {
+    tempDir: "./dimsetemp",
+    AET: "{dicomweb_aet}",
+    port: "{dicomweb_dimseport}",
+  },
+
 };

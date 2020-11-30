@@ -1,0 +1,21 @@
+  myepadjs:
+    image: rubinlab/epadjs:{epadjs_image}
+    container_name: epad_js
+    expose:
+      - "{epadjs_port}"
+    ports:
+      - "{epadjs_port}:{epadjs_port}"
+    environment:
+      PUBLIC_URL: "http://{host}"
+      REACT_APP_BASE_URL: "{epadjs_baseurl}"
+      REACT_APP_AUTH_MODE: "{epadjs_authmode}"
+    volumes:
+      - ./production_epadjs.json:/app/public/config.json
+      - ./production_keycloak.json:/app/public/keycloak.json
+      - ./epadjs/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./epadjs/entrypoint.sh:/usr/local/bin/entrypoint
+      - {certdir}:/etc/ssl/certs
+    depends_on:
+      - myepadlite
+    networks:
+      - epad-network

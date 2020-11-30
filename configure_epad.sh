@@ -63,19 +63,39 @@ cat ./$1/docker-compose_start.ymlpart > ./$1/docker-compose.yml
 # both cache and compression
 if [[ ! -z $cache_size && ! -z $cache_inactivetime && ! -z $compression_minsize ]] 
 then
-    cat ./$1/nginx_start_compress_cache.confpart > ./$1/nginx.conf
+    if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+    then 
+        cat ./$1/nginx_start_compress_cache_https.confpart > ./$1/nginx.conf
+    else
+        cat ./$1/nginx_start_compress_cache.confpart > ./$1/nginx.conf
+    fi
 else
     # cache only
     if [[ ! -z $cache_size && ! -z $cache_inactivetime ]] 
     then
-        cat ./$1/nginx_start_cache.confpart > ./$1/nginx.conf
+        if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+        then 
+            cat ./$1/nginx_start_cache_https.confpart > ./$1/nginx.conf
+        else
+            cat ./$1/nginx_start_cache.confpart > ./$1/nginx.conf
+        fi
     else 
         # compress only
         if [[ ! -z $compression_minsize ]] 
         then
-            cat ./$1/nginx_start_compress.confpart > ./$1/nginx.conf
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/nginx_start_compress_https.confpart > ./$1/nginx.conf
+            else
+                cat ./$1/nginx_start_compress.confpart > ./$1/nginx.conf
+            fi
         else
-            cat ./$1/nginx_start.confpart > ./$1/nginx.conf
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/nginx_start_https.confpart > ./$1/nginx.conf
+            else
+                cat ./$1/nginx_start.confpart > ./$1/nginx.conf
+            fi
         fi
     fi
 fi
@@ -86,16 +106,36 @@ then
     then
         if [[ $config == 'environment' ]]
         then
-            cat ./$1/docker-compose_epadjs_build_env.ymlpart >> ./$1/docker-compose.yml
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/docker-compose_epadjs_build_env_https.ymlpart >> ./$1/docker-compose.yml
+            else
+                cat ./$1/docker-compose_epadjs_build_env.ymlpart >> ./$1/docker-compose.yml
+            fi
         else    
-            cat ./$1/docker-compose_epadjs_build.ymlpart >> ./$1/docker-compose.yml
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/docker-compose_epadjs_build_https.ymlpart >> ./$1/docker-compose.yml
+            else
+                cat ./$1/docker-compose_epadjs_build.ymlpart >> ./$1/docker-compose.yml
+            fi
         fi
     else
         if [[ $config == 'environment' ]]
         then
-            cat ./$1/docker-compose_epadjs_env.ymlpart >> ./$1/docker-compose.yml
-        else      
-            cat ./$1/docker-compose_epadjs.ymlpart >> ./$1/docker-compose.yml
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/docker-compose_epadjs_env_https.ymlpart >> ./$1/docker-compose.yml
+            else
+                cat ./$1/docker-compose_epadjs_env.ymlpart >> ./$1/docker-compose.yml
+            fi
+        else
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/docker-compose_epadjs_https.ymlpart >> ./$1/docker-compose.yml
+            else
+                cat ./$1/docker-compose_epadjs.ymlpart >> ./$1/docker-compose.yml
+            fi
         fi
     fi
 fi
@@ -208,7 +248,7 @@ then
     rm ./$1/production_*.js*
 fi
 
-if [ $epadjs_port != '80' ]
+if [[ $epadjs_port != '80' && $epadjs_port != '443' ]]
 then
     replace_in_files "{host}" "{host}:{epadjs_port}" $1
 fi
@@ -268,6 +308,7 @@ IFS=' '
 
 # support https in hostname
 replace_in_files "http:\/\/https:\/\/" "https:\/\/" $1
+
 # support empty values
 replace_in_files "{epadjs_baseurl}" "" $1
 replace_in_files "{epadjs_authmode}" "" $1
