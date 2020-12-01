@@ -235,7 +235,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 								fi
 							done
 							#echo "result : $localvar_counter"
-							if [[ $localvar_counter == 3 ]]; then
+							if [[ $localvar_counter != 3 ]]; then
 								localvar_counter=0
 								echo "uptodate"
 							else
@@ -1309,6 +1309,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		var_response="n"
 				if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
 					if [[ $var_reinstalling != "true" ]]; then
+						echo -e "If you updated ePad configuration (user names, passwords, branch names etc.) previously and \n if you want those changes to be reflected to your system, you will need to answer yes \n for the following question"
                         read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
                     fi
                 else
