@@ -367,7 +367,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						    		#echo  "finding in keycloak"
 						    		#echo "${var_array_fromyml_keycloak[@]}"
 						    		for i in ${!var_array_fromyml_keycloak[@]}; do
-	  									found=$(echo "${var_array_fromyml_keycloak[$i]}" | grep $2)
+	  									found=$(echo "${var_array_fromyml_keycloak[$i]}" | grep -w $2)
 	  									if [ ! -z $found ];then
 	  										found=$(echo $found | cut -d":" -f2)
 	  										break
@@ -380,7 +380,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						    		#echo "finding in couchdb"
 						    		#echo "${var_array_fromyml_couchdb[@]}"
 						    		for i in ${!var_array_fromyml_couchdb[@]}; do
-	  									found=$(echo "${var_array_fromyml_couchdb[$i]}" | grep $2)
+	  									found=$(echo "${var_array_fromyml_couchdb[$i]}" | grep -w $2)
 	  									if [ ! -z $found ];then
 	  										found=$(echo $found | cut -d":" -f2)
 	  										break
@@ -394,7 +394,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						    		#echo "finding in dicomweb"
 						    		#echo "${var_array_fromyml_dicomweb[@]}"
 						    		for i in ${!var_array_fromyml_dicomweb[@]}; do
-	  									found=$(echo "${var_array_fromyml_dicomweb[$i]}" | grep $2)
+	  									found=$(echo "${var_array_fromyml_dicomweb[$i]}" | grep -w $2)
 	  									if [ ! -z $found ];then
 	  										found=$(echo $found | cut -d":" -f2)
 	  										break
@@ -409,7 +409,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						    		#echo  "finding in epadlite"
 						    		#echo "${var_array_fromyml_epadlite[@]}"
 						    		for i in ${!var_array_fromyml_epadlite[@]}; do
-	  									found=$(echo "${var_array_fromyml_epadlite[$i]}" | grep $2)
+	  									found=$(echo "${var_array_fromyml_epadlite[$i]}" | grep -w $2)
 	  									if [ ! -z $found ];then
 	  										found=$(echo $found | cut -d":" -f2)
 	  										break
@@ -423,7 +423,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						    		#echo "finding in epadjs"
 						    		#echo "${var_array_fromyml_epadjs[@]}"
 						    		for i in ${!var_array_fromyml_epadjs[@]}; do
-	  									found=$(echo "${var_array_fromyml_epadjs[$i]}" | grep $2)
+	  									found=$(echo "${var_array_fromyml_epadjs[$i]}" | grep -w $2)
 	  									if [ ! -z $found ];then
 	  										found=$(echo $found | cut -d":" -f2)
 	  										break
@@ -437,7 +437,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						    		#echo "finding in mariadb"
 						    		#echo "${var_array_fromyml_mariadb[@]}"
 						    		for i in ${!var_array_fromyml_mariadb[@]}; do
-	  									found=$(echo "${var_array_fromyml_mariadb[$i]}" | grep $2)
+	  									found=$(echo "${var_array_fromyml_mariadb[$i]}" | grep -w $2)
 	  									if [ ! -z $found ];then
 	  										found=$(echo $found | cut -d":" -f2)
 	  										break
