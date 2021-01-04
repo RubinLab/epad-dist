@@ -201,10 +201,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 					echo "error: couldn't find epad.yml file in $var_path/$var_epadDistLocation"
 					exit 1
 				fi
-
-
+				#	${my_array[@]}
+				#echo "sections : ${var_array_fromyml_seections[@]}"
+				#echo "sections : ${var_array_fromyml_couchdb[@]}"
+				#echo "var_array_fromyml_seections[@] : $var_array_fromyml_seections[@]"
 				for i in ${!var_array_fromyml_seections[@]}; do
 						if [[ ${var_array_fromyml_seections[$i]} == "cache" || ${var_array_fromyml_seections[$i]} == "compression" ]]; then
+							#echo ${var_array_fromyml_seections[$i]}
 							localvar_counter=$(($localvar_counter + 1))
 							
 						fi
@@ -235,7 +238,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 								fi
 							done
 							#echo "result : $localvar_counter"
-							if [[ $localvar_counter != 3 ]]; then
+							if [[ $localvar_counter == 3 ]]; then
 								localvar_counter=0
 								echo "uptodate"
 							else
@@ -265,7 +268,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			var_array_fromyml_epadjs=()
 			var_array_fromyml_mariadb=()
 
-			if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
+			if [[ -d "$var_path/$var_epadDistLocation" ]]; then
 
 				if [[ -f "$var_path/$var_epadDistLocation/epad.yml" ]];then
 						local input="$var_path/$var_epadDistLocation/epad.yml"
@@ -421,12 +424,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 						    epadjs)
 						    		#echo "finding in epadjs"
-						    		#echo "${var_array_fromyml_epadjs[@]}"
+						    		echo "${var_array_fromyml_epadjs[@]}"
 						    		for i in ${!var_array_fromyml_epadjs[@]}; do
 	  									found=$(echo "${var_array_fromyml_epadjs[$i]}" | grep -w $2)
 	  									if [ ! -z $found ];then
 	  										found=$(echo $found | cut -d":" -f2)
-	  										break
+	  										echo $found
+											break
 	  									fi
 									done
 									echo $found
@@ -1281,7 +1285,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			cd $var_path
   			git clone https://github.com/RubinLab/epad-dist.git
 		fi
-
+		#echo "var_response :$var_response "
+		#echo "var_reinstalling : $var_reinstalling"
 		if [[ $var_response == "y" ]] || [[ $var_reinstalling == "true" ]]; then
 
 			
@@ -1295,7 +1300,10 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			cd $var_path
   			git clone https://github.com/RubinLab/epad-dist.git
 		else
+			parse_yml_sections
+			#echo "needymlupdate : $needymlupdate"
 			needymlupdate=$(check_epadyml_needs_update)
+			#echo "needymlupdate : $needymlupdate"
 			if [[ "$needymlupdate" == "pull" ]]; then
 					echo "We detected an old epad.yml. You need to answer yes to owerwrite epad-dist folder. Please retry the process "
 					exit 1
@@ -1747,12 +1755,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         #edit branch part end
 
         # edit port part
-		        awk -v var_awk="port: \"$var_keycloak_port\"" '/port:.*/{c++; if (c==1) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_couchdb_port\"" '/port:.*/{c++; if (c==2) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_dicomweb_port\"" '/port:.*/{c++; if (c==3) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_epadlite_port\"" '/port:.*/{c++; if (c==4) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_epadjs_port\"" '/port:.*/{c++; if (c==5) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_maria_port\"" '/port:.*/{c++; if (c==6) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_keycloak_port\"" '/~port:.*/{c++; if (i==1) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_couchdb_port\"" '/~port:.*/{c++; if (c==2) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_dicomweb_port\"" '/~port:.*/{c++; if (c==3) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_epadlite_port\"" '/~port:.*/{c++; if (c==5) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_epadjs_port\"" '/~port:.*/{c++; if (c==6) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: \"$var_maria_port\"" '/~port:.*/{c++; if (c==6) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 		        
         #edit port part end
 	}
@@ -1885,7 +1893,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			echo -e "${Yellow}process: Installing ePad"
     		echo -e "${Color_Off}"
 			var_install_result_r=""
-			create_epad_folders
+			#create_epad_folders
 			check_ifallcontainers_created
 			# echo $global_var_container_exist
 			if [[  $global_var_container_exist == "exist" ]]; then
