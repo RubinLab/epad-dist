@@ -73,10 +73,10 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 # functions
 		handle_errors(){
-			# taes 3 params $1 $2 $3 
+			# takes 3 params $1 $2 $3 
 			# $1 error value ($?) 
 			# $2 script needs exit or not (noexit (""), exit) 
-			# $3 message to how or empty string "" 
+			# $3 message to explain, or instructions to the user or just print empty string "" 
 
 			if [[ $? > $1 ]]; then
 				if [[ -n $3 ]]; then
@@ -335,25 +335,25 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 								done < "$input"
 
-								  	# echo "*******************"
-								   # 	echo "*******************"
+								  	#echo "*******************"
+								    #echo "*******************"
 
-								   #   echo "${var_array_fromyml_keycloak[@]}"
-								   #       echo "*******************"
-								   #   echo "*******************"
-								   #   echo "${var_array_fromyml_couchdb[@]}"
-								   #       echo "*******************"
-								   #   echo "*******************"
-								   #   echo "${var_array_fromyml_dicomweb[@]}"
-								   #            echo "*******************"
-								   #   echo "*******************"
-								   #   echo "${var_array_fromyml_epadlite[@]}"
-								   #       echo "*******************"
-								   #   echo "*******************"
-								   #   echo "${var_array_fromyml_epadjs[@]}"
-								   #       echo "*******************"
-								   #   echo "*******************"
-								   # echo "${var_array_fromyml_mariadb[@]}" 
+								     # echo "${var_array_fromyml_keycloak[@]}"
+								      #echo "*******************"
+								      #echo "*******************"
+								      #echo "${var_array_fromyml_couchdb[@]}"
+								      #    echo "*******************"
+								      #echo "*******************"
+								      #echo "${var_array_fromyml_dicomweb[@]}"
+								      #         echo "*******************"
+								      #echo "*******************"
+								      #echo "${var_array_fromyml_epadlite[@]}"
+								      #    echo "*******************"
+								      #echo "*******************"
+								      #echo "${var_array_fromyml_epadjs[@]}"
+								      #    echo "*******************"
+								      #echo "*******************"
+								      #echo "${var_array_fromyml_mariadb[@]}" 
 						fi
 				else
 					echo "error: couldn't find epad.yml file in $var_path/$var_epadDistLocation"
@@ -424,7 +424,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 						    epadjs)
 						    		#echo "finding in epadjs"
-						    		echo "${var_array_fromyml_epadjs[@]}"
+						    		#echo "${var_array_fromyml_epadjs[@]}"
 						    		for i in ${!var_array_fromyml_epadjs[@]}; do
 	  									found=$(echo "${var_array_fromyml_epadjs[$i]}" | grep -w $2)
 	  									if [ ! -z $found ];then
@@ -460,7 +460,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				# needs to check if user credentials failed for mariadb?
 				#check the array if contains fails. 
 				#${dokcerprocessrsult_formariacredentials[@]}
-				echo "ROOLBACK phase -: verifiying which credential need to be rolled back :  ${dokcerprocessrsult_formariacredentials[@]}"
+				echo "ROOLBACK phase -: verifying which credential need to be rolled back :  ${dokcerprocessrsult_formariacredentials[@]}"
 				var_check_failed=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "FAILED")
 				var_check_success=$(echo "${dokcerprocessrsult_formariacredentials[@]}" | grep "SUCCESS")
 				echo "rollback necessary for the following situations : $var_check_failed"
@@ -1026,7 +1026,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
             echo "could not find your hostname : $var_server_name in your /etc/hosts file please fix your ip manually or use epad_fixmyip.sh script which is located in your epad-dist folder"
             exit 1
         else
-            echo "your hostname : $var_server_name found in /etc/hosts file. verifiying if it has a vlid ip"
+            echo -e "your hostname : $var_server_name found in /etc/hosts file.\nverifying if it has a vlid ip"
 			var_return=$( cat /etc/hosts | grep $var_server_name | awk '{print $1}' )
 			
 			if [[ -z "$var_return" ]]; then
@@ -1037,12 +1037,14 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				#echo "your host name for epad is set to $var_host"
 				
 			else
-				echo "ip collected from /etc/hosts for $var_server_name is : $var_return and needs to match with : $var_ip"
+				echo -e "ip collected from /etc/hosts for $var_server_name is : $var_return and needs to match with : $var_ip\n"
 				if [[ "$var_return" == "$var_ip" ]]; then
 					var_host=$var_server_name
 				else
+					echo -e "${Red}"
 					echo "You have an old ip mapped to $var_server_name. Please update your ip manually in /etc/hhosts file or use epad_fixmyip.sh script which is located in your epad-dist folder to updated your ip automatically."
 					echo "exiting ..."
+					echo -e "${Color_Off}"
 					exit 1
 				fi
 			fi
@@ -1093,7 +1095,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 					echo "hostname : $HOSTNAME is empty checking etc/hosts file to find server name"
 					find_hostname_from_hostsfile
 				else
+					echo -e "${Red}"
 					echo "If you used epad_fixmyip.sh script to fix your server name answer 2 for the following question!"
+					echo -e "${Color_Off}"
 					read -p "You have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp
 	                if [[ $var_resp == 1 ]]; then
 						#var_host=$HOSTNAME
@@ -1108,15 +1112,15 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 	load_credentials_tovar (){
 		local localvar_getresult=""
-	echo -e "${Yellow}process: loading credentials from epad.yml to variables for a new epad.yml"
-	echo -e "${Color_Off}"
-		echo $var_path
+		echo -e "${Yellow}process: loading credentials from epad.yml to variables for a new epad.yml"
+		echo -e "${Color_Off}"
+		#echo $var_path
 		parse_yml_sections
 		#var_tmp_txt=""
 		#var_tmp_txt=$( awk '/host/{i++}i==1{print; exit}'  "$var_path/$var_epadDistLocation/epad.yml")
 		#var_host=$( echo $var_tmp_txt | cut -d: -f2)
 		var_host=$( find_val_intext "host:" "1")
-		echo "var_host: $var_host"
+		#echo "var_host: $var_host"
 		var_mode=$( find_val_intext "mode:" "1")
         var_config=$( find_val_intext "config:" "1")
         #var_container_mode==$( find_val_intext "host" "1")
@@ -1130,6 +1134,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	        #var_keycloak_useremail=$( find_val_intext "email:" "1")
 	        var_keycloak_user=$( find_val_fromsections "keycloak" "user")
         	var_keycloak_pass=$( find_val_fromsections "keycloak" "pass")
+        	if [[  $var_keycloak_pass == "" ]];then
+        		var_keycloak_pass=$( find_val_fromsections "keycloak" "password")
+        	fi
         	var_keycloak_useremail=$( find_val_fromsections "keycloak" "email")
 
         	#var_couchdb_user=$( find_val_intext "user:" "2")
@@ -1142,7 +1149,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		        #var_maria_rootpass=$( find_val_intext "rootpassword:" "1")
 		        var_maria_user=$(find_val_fromsections "mariadb" "user")
 		        var_maria_pass=$(find_val_fromsections "mariadb" "pass")
+		        if [[  $var_maria_pass == "" ]];then
+		        	var_maria_pass=$(find_val_fromsections "mariadb" "password")
+		        fi
 		        var_maria_rootpass=$(find_val_fromsections "mariadb" "rootpass")
+		         if [[  $var_maria_rootpass == "" ]];then
+		         	var_maria_rootpass=$(find_val_fromsections "mariadb" "rootpassword")
+		         fi
         
         var_maria_rootpass_old=$var_maria_rootpass
 		var_maria_user_old=$var_maria_user
@@ -1317,7 +1330,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		var_response="n"
 				if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
 					if [[ $var_reinstalling != "true" ]]; then
-						echo -e "If you updated ePad configuration (user names, passwords, branch names etc.) previously and \n if you want those changes to be reflected to your system, you will need to answer yes \n for the following question"
+						echo -e "${Red}"
+						echo -e "If you updated ePad configuration (user names, passwords, branch names etc.) previously and \nif you want those changes to be reflected to your system, you will need to answer yes \nfor the following question"
+                        echo -e "${Color_Off}"
                         read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
                     fi
                 else
@@ -1543,27 +1558,30 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 fi
         # branch section
 
-        		read -p "dicomweb branch: (default value : $var_branch_dicomweb) :" var_response
+        		read -p "dicomweb branch: (default value : $( remove_backslash_tofolderpath $var_branch_dicomweb)) :" var_response
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
-                        var_branch_dicomweb=$var_response
+                        #var_branch_dicomweb=$var_response
+                        var_branch_dicomweb=$( add_backslash_tofolderpath $var_response) 
                         #echo "dicomweb branch : $var_branch_dicomweb"
                 fi
         		
-        		read -p "epadlite branch: (default value : $var_branch_epadlite) :" var_response
+        		read -p "epadlite branch: (default value :$( remove_backslash_tofolderpath $var_branch_epadlite)) :" var_response
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
-                        var_branch_epadlite=$var_response
-                        #echo "epadlite branch : $var_branch_epadlite"
+                        #var_branch_epadlite=$var_response
+                        var_branch_epadlite=$( add_backslash_tofolderpath $var_response) 
+                        echo "epadlite branch : $var_branch_epadlite"
                 fi
         		
-        		read -p "epadjs branch: (default value : $var_branch_epadjs) :" var_response
+        		read -p "epadjs branch: (default value : $( remove_backslash_tofolderpath $var_branch_epadjs)) :" var_response
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
-                        var_branch_epadjs=$var_response
+                        #var_branch_epadjs=$var_response
+                        var_branch_epadjs=$( add_backslash_tofolderpath $var_response) 
                         #echo "epadjs branch : $var_branch_epadjs"
                 fi
         # branch section
@@ -1626,7 +1644,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "var_keycloak_pass : $var_keycloak_pass"
 
                 fi
-
+        echo "$var_keycloak_useremail : $var_keycloak_useremail"
 		if [[ $var_keycloak_useremail == "YOUR_KEYCLOAK_ADMIN_EMAIL" ]]; then
         	var_keycloak_useremail="admin@gmail.com"
         fi
@@ -1748,9 +1766,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 			
         # edit branch part
-		        awk -v var_awk="branch: \"$var_branch_dicomweb\"" '/branch:.*/{c++; if (c==1) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="branch: \"$var_branch_epadlite\"" '/branch:.*/{c++; if (c==2) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="branch: \"$var_branch_epadjs\"" '/branch:.*/{c++; if (c==3) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+        temp_var_branch_dicomweb=$( add_backslash_tofolderpath $var_branch_dicomweb) 
+        temp_var_branch_epadlite=$( add_backslash_tofolderpath $var_branch_epadlite) 
+        temp_var_branch_epadjs=$( add_backslash_tofolderpath $var_branch_epadjs) 
+		        awk -v var_awk="branch: \"$temp_var_branch_dicomweb\"" '/branch:.*/{c++; if (c==1) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="branch: \"$temp_var_branch_epadlite\"" '/branch:.*/{c++; if (c==2) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="branch: \"$temp_var_branch_epadjs\"" '/branch:.*/{c++; if (c==3) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 		        
         #edit branch part end
 
@@ -1897,8 +1918,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			check_ifallcontainers_created
 			# echo $global_var_container_exist
 			if [[  $global_var_container_exist == "exist" ]]; then
-				echo -e "ePad installed already.\n IMPORTANT!: Reinstalling ePad will delete all images, containers and keycloak users.\n You need to delete database folders manually \n or You need to make sure to assign previous credentials \n or You need to edit credentials in container manually."
+				echo -e "${Red}"
+				echo -e "We detected an existing ePad !!!!.\nIMPORTANT!: Reinstalling ePad will delete all images, containers and keycloak users.\nYou need to delete database folders manually \nor You need to make sure to assign previous credentials \nor You need to edit credentials in container manually.\n"
+				echo -e "${Color_Off}"
 				read -p "Do you want to reinstall ePad? (y/n : default response is n) :"  var_install_result_r 
+
 				
 				# echo $var_install_result_r
 				 if [[ -z $var_install_result_r  ||   "$var_install_result_r" != "y" ]]; then

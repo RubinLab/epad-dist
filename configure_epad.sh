@@ -1,4 +1,11 @@
 # based on https://github.com/jasperes/bash-yaml/blob/master/test/test.sh
+
+add_backslash(){
+		#$1 is the parameter passed to this function
+                #echo "adding backslash"         
+		var_tmp_txt=$(echo $1  |  sed 's-/-\\/-g')
+		echo $var_tmp_txt 
+}
 replace_in_files(){
     for file in ./$3/*
     do
@@ -278,16 +285,19 @@ fi
 
 if [[ ! -z $epadlite_branch && $epadlite_mode == 'build' ]]
 then
+    epadlite_branch=$( add_backslash $epadlite_branch) 
     replace_in_files "git clone" "git clone -b $epadlite_branch" "$1/epadlite"
 fi
 
 if [[ ! -z $dicomweb_branch && $dicomweb_mode == 'build' ]]
 then
+    dicomweb_branch=$( add_backslash $dicomweb_branch)
     replace_in_files "git clone" "git clone -b $dicomweb_branch" "$1/dicomweb-server"
 fi
 
 if [[ ! -z $epadjs_branch && $epadjs_mode == 'build' ]]
 then
+    epadjs_branch=$( add_backslash $epadjs_branch)
     replace_in_files "git clone" "git clone -b $epadjs_branch" "$1/epadjs"
 fi
 
