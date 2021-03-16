@@ -15,6 +15,8 @@ module.exports = {
     port: "3306",
     user: "{mariadb_user}",
     pass: "{mariadb_password}",
-    logger: {mariadb_log}
-  }
+    logger: { mariadb_log },
+  },
+  ontologyName: "{ontologyname}",
+  ontologyApiKey: "{ontologyapikey}",
 };
