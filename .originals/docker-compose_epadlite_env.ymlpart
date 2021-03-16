@@ -22,6 +22,7 @@
       AUTH: "{epadlite_auth}"
       AUTH_USERINFO_URL: "{epadlite_authuserinfourl}"
       ONTOLOGY_NAME: "{ontologyname}"
+      ONTOLOGY_APIKEY: "{ontologyapikey}"
     volumes:
       - ../data:/home/node/app/data
       - ../pluginData:/home/node/app/pluginsDataFolder
