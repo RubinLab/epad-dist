@@ -10,7 +10,7 @@ Purple='\033[0;35m'       # Purple
 Cyan='\033[0;36m'         # Cyan
 White='\033[0;37m'        # White
 Color_Off='\033[0m'
-
+var_global_response=""
 var_path=$(pwd)
 var_os_type=""
 global_var_container_exist=""
@@ -1623,23 +1623,34 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "couchdb location :  $( remove_backslash_tofolderpath $var_couchdb_location) "
                 fi
 	}
+
+	checkInputForChars (){
+		#example for $ char
+		local localvar_checkchar=""
+		localvar_checkchar="$(echo $var_response | grep "\\$1")"
+		if [[  "$localvar_checkchar" == "" ]];then
+			echo "no spec char found"
+			var_global_response="charFound"
+		else
+			echo "special char found : $localvar_checkchar"
+			var_global_response="charNotFound"
+		fi
+
+	}
 	
 	collect_user_credentials (){
-		local localvar_checkchar=""
+		
 		echo -e "${Yellow}process: collecting user credentials"
 		echo -e "${Color_Off}"
 		var_response=""
 		var_responsesec=""
-		
+		local local_var_checkdolar=""
 		 if [[ "$var_keycloak_user" == "YOUR_KEYCLOAK_ADMIN_USER" ]]; then
         	var_keycloak_user="admin"
         fi
 		read -p "keycloak user name (default value : $var_keycloak_user) :" var_response
-		#localvar_checkchar=$(echo $var_response | grep "/$")
-		#if [[  $localvar_checkchar == "" ]];then
-		#	echo "no spec char"
-		#fi
-		#echo "checking spec cahr : $localvar_checkchar"
+		local_var_checkdolar=$( checkInputForChars "$" )
+		echo "result $local_var_checkdolar"
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
