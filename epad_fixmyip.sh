@@ -88,6 +88,7 @@ var_backup=0
 	fix_server_via_hosts(){
 		# echo "process: fixing server hostname via /etc/hosts "
 		var_host="epadvm"
+		find_os_type
 		find_ip	
 		edit_hosts_file
 		# echo "after fixing etc/hosts $var_host"

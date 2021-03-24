@@ -112,12 +112,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						handle_errors $? "" "Giving public rights(777) to pluginData failed. You may need sudo right."
 
 					else
-						echo "pluginData folder found"
+						echo "folder found:pluginData"
 						localvar_folderrights=$(ls -ld "pluginData" | cut -d" " -f1 | cut -c 8,9,10)
 						if [[ $localvar_folderrights != "rwx" ]]; then
 			 
-							echo -e "${Purple}You need to give public rights(777) manually to pluginData folder in $var_path and then retry installing ePad"
+							echo -e "${Red}You need to give public rights(777) manually to pluginData folder in $var_path and then retry installing ePad"
 							echo -e "${Color_Off}"
+							localvar_errcnt=$(($localvar_errcnt + 1))
 						fi
 
 					fi
@@ -130,11 +131,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						handle_errors $? "" "Giving public rights(777) to tmp folder failed. You may need sudo right."
 
 					else
-						echo "tmp folder found"
+						echo "folder found:tmp"
 						localvar_folderrights=$(ls -ld "tmp" | cut -d" " -f1 | cut -c 8,9,10)
 						if [[ $localvar_folderrights != "rwx" ]]; then
-							echo -e "${Purple}You need to give public rights(777) manually to tmp folder in $var_path and then retry installing ePad"
+							echo -e "${Red}You need to give public rights(777) manually to tmp folder in $var_path and then retry installing ePad"
 							echo -e "${Color_Off}"
+							localvar_errcnt=$(($localvar_errcnt + 1))
 						fi
 					fi
 
@@ -146,18 +148,19 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						handle_errors $? "" "Giving public rights(777) to data folder failed. You may need sudo right."
 
 					else
-						echo "data folder found"
+						echo "folder found:data"
 						localvar_folderrights=$(ls -ld "data" | cut -d" " -f1 | cut -c 8,9,10)
 						if [[ $localvar_folderrights != "rwx" ]]; then
-							echo -e "${Purple}You need to give public rights(777) manually to data folder in $var_path and then retry installing ePad"
+							echo -e "${Red}You need to give public rights(777) manually to data folder in $var_path and then retry installing ePad"
 							echo -e "${Color_Off}"
+							localvar_errcnt=$(($localvar_errcnt + 1))
 						fi
 					fi
 
 					parse_yml_sections
 					localvar_couchdbloc=$(find_val_fromsections "couchdb" "dblocation" | sed 's/"//g' )
 					localvar_couchdbloca=$( remove_backslash_tofolderpath $localvar_couchdbloc)
-					echo "couch loc: $localvar_couchdbloca"
+					
 					cd "$var_path/$var_epadDistLocation"
 					if [[ ! -d "$localvar_couchdbloca" ]]; then
 						echo "$localvar_couchdbloca folder not found. Creating"
@@ -167,11 +170,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						handle_errors $? "" "Giving public rights(777) to $localvar_couchdbloca folder failed. You may need sudo right."
 
 					else
-						echo "$localvar_couchdbloca folder found"
+						echo "folder found:$localvar_couchdbloca"
 						localvar_folderrights=$(ls -ld "$localvar_couchdbloca" | cut -d" " -f1 | cut -c 8,9,10)
 						if [[ $localvar_folderrights != "rwx" ]]; then
-							echo -e "${Purple}You need to give public rights(777) manually to $localvar_couchdbloca folder and then retry installing ePad"
+							echo -e "${Red}You need to give public rights(777) manually to $localvar_couchdbloca folder and then retry installing ePad"
 							echo -e "${Color_Off}"
+							localvar_errcnt=$(($localvar_errcnt + 1))
 						fi
 					fi
 
@@ -986,6 +990,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	}
 
 	doublecheck_ipmapping_onstart(){
+		
+		
+		find_os_type
 		local var_hostname_from_epadyml=""
 		local var_ip_frometc=""
 		local var_fresh_ip=""
@@ -1004,7 +1011,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 					echo "you need to refresh the ip in /etc/hosts file. Please run the script epad_fixmyip.sh which is located in epad-dist folder. This operation requires sudo right"
 					exit 1
 				else
-					echo "your ip : $var_ip_frometcis a valid ip."
+					echo "your ip : $var_ip_frometc is a valid ip."
 				fi
 			fi
 		fi
@@ -1914,7 +1921,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			echo -e "${Yellow}process: Installing ePad"
     		echo -e "${Color_Off}"
 			var_install_result_r=""
-			#create_epad_folders
+			create_epad_folders
 			check_ifallcontainers_created
 			# echo $global_var_container_exist
 			if [[  $global_var_container_exist == "exist" ]]; then
