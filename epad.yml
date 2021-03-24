@@ -1,7 +1,9 @@
 host: YOUR_HOSTNAME
 mode: lite
 config: environment
-cache: 
+ontologyname: YOUR_ONTOLOGY_NAME
+ontologyapikey: YOUR_ONTOLOGY_APIKEY
+cache:
   size: "10g"
   inactivetime: "60m"
 compression:
@@ -20,7 +22,7 @@ couchdb:
   user: YOUR_COUCH_ADMIN_USER
   password: YOUR_COUCH_ADMIN_PASS
   port: 8888
-  dblocation: "..\/couchdbloc" 
+  dblocation: "..\/couchdbloc"
 dicomweb:
   mode: build
   dockerfiledir: ".\/dicomweb-server"
@@ -32,7 +34,7 @@ dicomweb:
   dimsetemp: "..\/dimsetemp"
   dimseport: 4002
   aet: "PACS"
-  branch: "master" 
+  branch: "master"
 epadlite:
   mode: build
   dockerfiledir: ".\/epadlite"
@@ -58,4 +60,4 @@ mariadb:
   port: 3306
   log: false
   backuploc: ".\/epaddb_nodata.sql"
-  dblocation: "..\/mariadbloc" 
+  dblocation: "..\/mariadbloc"
