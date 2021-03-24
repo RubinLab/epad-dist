@@ -1629,43 +1629,43 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		echo -e "${Color_Off}"
 		var_response=""
 		
-		 if [[ $var_keycloak_user == "YOUR_KEYCLOAK_ADMIN_USER" ]]; then
+		 if [[ "$var_keycloak_user" == "YOUR_KEYCLOAK_ADMIN_USER" ]]; then
         	var_keycloak_user="admin"
         fi
 		read -p "keycloak user name (default value : $var_keycloak_user) :" var_response
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
-                        var_keycloak_user=$var_response
+                        var_keycloak_user="$var_response"
                         #echo "var_keycloak_user : $var_keycloak_user"
                 fi
 
-        if [[ $var_keycloak_pass == "YOUR_KEYCLOAK_ADMIN_PASS" ]]; then
+        if [[ "$var_keycloak_pass" == "YOUR_KEYCLOAK_ADMIN_PASS" ]]; then
         	var_keycloak_pass="admin"
         fi
 		read -p "keycloak user password (default value : $var_keycloak_pass) :" var_response
 				if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
-                        var_keycloak_pass=$var_response
+                        var_keycloak_pass="$var_response"
                         #echo "var_keycloak_pass : $var_keycloak_pass"
 
                 fi
         echo "$var_keycloak_useremail : $var_keycloak_useremail"
-		if [[ $var_keycloak_useremail == "YOUR_KEYCLOAK_ADMIN_EMAIL" ]]; then
+		if [[ "$var_keycloak_useremail" == "YOUR_KEYCLOAK_ADMIN_EMAIL" ]]; then
         	var_keycloak_useremail="admin@gmail.com"
         fi
 		read -p "keycloak user email (default value : $var_keycloak_useremail) :" var_response
         		if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
-                        var_keycloak_useremail=$var_response
+                        var_keycloak_useremail="$var_response"
                         #echo "var_keycloak_useremail : $var_keycloak_useremail"
 
                 fi
         printf '\n'
 
-		if [[ $var_couchdb_user == "YOUR_COUCH_ADMIN_USER" ]]; then
+		if [[ "$var_couchdb_user" == "YOUR_COUCH_ADMIN_USER" ]]; then
         	var_couchdb_user="admin"
         fi
         
@@ -1674,56 +1674,56 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
-                        var_couchdb_user=$var_response
+                        var_couchdb_user="$var_response"
                         #echo "var_couchdb_user : $var_couchdb_user"
                 fi
 
-		if [[ $var_couchdb_pass == "YOUR_COUCH_ADMIN_PASS" ]]; then
+		if [[ "$var_couchdb_pass" == "YOUR_COUCH_ADMIN_PASS" ]]; then
         	var_couchdb_pass="admin"
         fi
 		read -p "couchdb user password (default value : $var_couchdb_pass) :" var_response
 				if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
-                        var_couchdb_pass=$var_response
+                        var_couchdb_pass="$var_response"
                         #echo "var_couchdb_pass : $var_couchdb_pass"
 
                 fi
         printf '\n'
 
-		if [[ $var_maria_user == "YOUR_DB_USER" ]]; then
+		if [[ "$var_maria_user" == "YOUR_DB_USER" ]]; then
         	var_maria_user="admin"
         fi
 		read -p "maria db user name (default value : $var_maria_user) :" var_response
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
-                        var_maria_user=$var_response
+                        var_maria_user="$var_response"
                         #echo "var_maria_user : $var_maria_user"
 
                 fi
 
-		if [[ $var_maria_pass == "YOUR_DB_PASS" ]]; then
+		if [[ "$var_maria_pass" == "YOUR_DB_PASS" ]]; then
         	var_maria_pass="admin"
         fi                
 		read -p "maria db user password (default value : $var_maria_pass) :" var_response
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
-                        var_maria_pass=$var_response
+                        var_maria_pass="$var_response"
                         #echo "var_maria_pass : $var_maria_pass"
 
                 fi
 		
 
-		if [[ $var_maria_rootpass == "YOUR_DB_ROOT_PASS" ]]; then
+		if [[ "$var_maria_rootpass" == "YOUR_DB_ROOT_PASS" ]]; then
         	var_maria_rootpass="admin"
         fi
 		read -p "maria db root password (default value : $var_maria_rootpass) :" var_response
                 if [[ -n "$var_response" ]]
 				then
                         #echo "response = $var_response"
-                        var_maria_rootpass=$var_response
+                        var_maria_rootpass="$var_response"
                         #echo "var_maria_rootpass : $var_maria_rootpass"
 
                 fi
