@@ -184,7 +184,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						exit 1
 					fi
 			elif [[ "$var_os_type" == "mac" ]]; then
-				echo "No need to create folders for macs. Docker will create."
+				echo "process: folder validation result : No need to create folders for macs. Docker will create."
 			else
 				echo -e "${Purple}Unsupported operating system. Please contact ePad Team if you encounter issues."
 				echo -e "${Color_Off}"
@@ -1625,14 +1625,21 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	}
 	
 	collect_user_credentials (){
+		local localvar_checkchar=""
 		echo -e "${Yellow}process: collecting user credentials"
 		echo -e "${Color_Off}"
 		var_response=""
+		var_responsesec=""
 		
 		 if [[ "$var_keycloak_user" == "YOUR_KEYCLOAK_ADMIN_USER" ]]; then
         	var_keycloak_user="admin"
         fi
 		read -p "keycloak user name (default value : $var_keycloak_user) :" var_response
+		#localvar_checkchar=$(echo $var_response | grep "/$")
+		#if [[  $localvar_checkchar == "" ]];then
+		#	echo "no spec char"
+		#fi
+		#echo "checking spec cahr : $localvar_checkchar"
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1643,15 +1650,30 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         if [[ "$var_keycloak_pass" == "YOUR_KEYCLOAK_ADMIN_PASS" ]]; then
         	var_keycloak_pass="admin"
         fi
-		read -p "keycloak user password (default value : $var_keycloak_pass) :" var_response
-				if [[ -n "$var_response" ]]
-                then
-                        #echo "response = $var_response"
-                        var_keycloak_pass="$var_response"
-                        #echo "var_keycloak_pass : $var_keycloak_pass"
+        var_response="a"
+        var_responsesec="b"
+        while [ $var_response != $var_responsesec ]
+        do 
+			read -s -p "keycloak user password (default value : $var_keycloak_pass) :" var_response
+			 printf '\n'
+			read -s -p "retype keycloak user password (default value : $var_keycloak_pass) :" var_responsesec
+					if [[ -n "$var_response" && -n "$var_responsesec" ]]
+	                then
+	                	if [[ "$var_response" == "$var_responsesec" ]]
+						then
+	                        #echo "response = $var_response"
+	                        var_keycloak_pass="$var_response"
+	                        #echo "var_keycloak_pass : $var_keycloak_pass"
+	                    else
+	                    	echo -e "${Red}\npasword doesn't match. please reenter"
+	                    	echo -e "${Color_Off}"
+	                    fi
 
-                fi
-        echo "$var_keycloak_useremail : $var_keycloak_useremail"
+	                fi
+
+	        printf '\n'
+	    done
+        #echo "var_keycloak_pass : $var_keycloak_pass"
 		if [[ "$var_keycloak_useremail" == "YOUR_KEYCLOAK_ADMIN_EMAIL" ]]; then
         	var_keycloak_useremail="admin@gmail.com"
         fi
@@ -1681,19 +1703,32 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		if [[ "$var_couchdb_pass" == "YOUR_COUCH_ADMIN_PASS" ]]; then
         	var_couchdb_pass="admin"
         fi
-		read -p "couchdb user password (default value : $var_couchdb_pass) :" var_response
-				if [[ -n "$var_response" ]]
-                then
-                        #echo "response = $var_response"
-                        var_couchdb_pass="$var_response"
-                        #echo "var_couchdb_pass : $var_couchdb_pass"
-
-                fi
-        printf '\n'
+        var_response="a"
+        var_responsesec="b"
+        while [ $var_response != $var_responsesec ]
+        do   
+			read -s -p "couchdb user password (default value : $var_couchdb_pass) :" var_response
+			 printf '\n'
+			read -s -p "retype couchdb user password (default value : $var_couchdb_pass) :" var_responsesec
+					if [[ -n "$var_response" && -n "$var_responsesec" ]]
+	                then
+	                	if [[ "$var_response" == "$var_responsesec" ]]
+						then
+	                        #echo "response = $var_response"
+	                        var_couchdb_pass="$var_response"
+	                        #echo "var_couchdb_pass : $var_couchdb_pass"
+	                   	else
+	                    	echo -e "${Red}\npasword doesn't match. please reenter"
+	                    	echo -e "${Color_Off}"
+	                    fi
+	                fi
+	        printf '\n'
+	    done
 
 		if [[ "$var_maria_user" == "YOUR_DB_USER" ]]; then
         	var_maria_user="admin"
         fi
+         printf '\n'
 		read -p "maria db user name (default value : $var_maria_user) :" var_response
                 if [[ -n "$var_response" ]]
                 then
@@ -1705,28 +1740,57 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 		if [[ "$var_maria_pass" == "YOUR_DB_PASS" ]]; then
         	var_maria_pass="admin"
-        fi                
-		read -p "maria db user password (default value : $var_maria_pass) :" var_response
-                if [[ -n "$var_response" ]]
-                then
-                        #echo "response = $var_response"
-                        var_maria_pass="$var_response"
-                        #echo "var_maria_pass : $var_maria_pass"
-
-                fi
-		
+        fi
+        var_response="a"
+        var_responsesec="b"
+        while [ $var_response != $var_responsesec ]
+        do                
+			read -s -p "maria db user password (default value : $var_maria_pass) :" var_response
+			printf '\n'
+			read -s -p "retype maria db user password (default value : $var_maria_pass) :" var_responsesec
+	                 if [[ -n "$var_response" && -n "$var_responsesec" ]]
+	                then
+	                	if [[ "$var_response" == "$var_responsesec" ]]
+						then
+	                        #echo "response = $var_response"
+	                        var_maria_pass="$var_response"
+	                        #echo "var_maria_pass : $var_maria_pass"
+	                    else
+	                    	echo -e "${Red}\npasword doesn't match. please reenter"
+	                    	echo -e "${Color_Off}"
+	                    fi
+	                fi
+			
+	        printf '\n'
+	    done
 
 		if [[ "$var_maria_rootpass" == "YOUR_DB_ROOT_PASS" ]]; then
         	var_maria_rootpass="admin"
         fi
-		read -p "maria db root password (default value : $var_maria_rootpass) :" var_response
-                if [[ -n "$var_response" ]]
-				then
-                        #echo "response = $var_response"
-                        var_maria_rootpass="$var_response"
-                        #echo "var_maria_rootpass : $var_maria_rootpass"
+         printf '\n'
+        var_response="a"
+        var_responsesec="b"
+        while [ $var_response != $var_responsesec ]
+        do
+			read -s -p "maria db root password (default value : $var_maria_rootpass) :" var_response
+			 printf '\n'
+			read -s -p "retype maria db root password (default value : $var_maria_rootpass) :" var_responsesec
+	                if [[ -n "$var_response" && -n "$var_responsesec" ]]
+					then
+						if [[ "$var_response" == "$var_responsesec" ]]
+						then
+	                        #echo "response = $var_response"
+	                        var_maria_rootpass="$var_response"
+	                        #echo "var_maria_rootpass : $var_maria_rootpass"
+	                    else
+	                    	echo -e "${Red}\npasword doesn't match. please reenter"
+	                    	echo -e "${Color_Off}"
+	                    fi
 
-                fi
+	                fi
+
+	        printf '\n'
+    	done
 	}
 
 	edit_epad_yml (){
