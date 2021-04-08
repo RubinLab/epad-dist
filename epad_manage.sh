@@ -1371,15 +1371,16 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		#done
 
 		#echo $result
-		if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
-			cd "$var_path/$var_epadLiteDistLocation"
-			docker-compose stop
-		else
+		
+		#if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
+		#	cd "$var_path/$var_epadLiteDistLocation"
+		#	docker-compose stop
+		#else
 
 			for i in ${!var_array_allEpadContainerNames[@]}; do
 	  				docker stop  ${var_array_allEpadContainerNames[$i]}
 			done
-		fi
+		#fi
 		
 	}
 
@@ -1395,15 +1396,16 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		#done
 
 		#echo $result
-		if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
-			cd "$var_path/$var_epadLiteDistLocation"
-			docker-compose rm -f
-		else
+		
+		#if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
+		#	cd "$var_path/$var_epadLiteDistLocation"
+		#	docker-compose rm -f
+		#else
 
 			for i in ${!var_array_allEpadContainerNames[@]}; do
 	  				docker rm  ${var_array_allEpadContainerNames[$i]}
 			done
-		fi
+		#fi
 		
 	}
 
