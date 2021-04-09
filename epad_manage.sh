@@ -1106,7 +1106,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 					echo -e "${Purple}"
 					echo "If you used epad_fixmyip.sh script to fix your server name answer 2 for the following question!"
 					echo -e "${Color_Off}"
-					read -p "You have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp
+					#read -p "You have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp
+					askInputLoop "You have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp "" "1-2"
 	                if [[ $var_resp == 1 ]]; then
 						#var_host=$HOSTNAME
 						var_host=$(echo "$HOSTNAME" | tr '[:upper:]' '[:lower:]')
@@ -1300,7 +1301,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	 		
 			global_var_container_exist="exist"
 			if [[ $var_reinstalling != "true" ]]; then
-  				read -p  "epad-dist folder exist already. Do you want to owerwrite ? (y/n) (defult value is n): " var_response
+  				#read -p  "epad-dist folder exist already. Do you want to owerwrite ? (y/n) (defult value is n): " var_response
+  				askInputLoop  "epad-dist folder exist already. Do you want to owerwrite ? (y/n) (defult value is n): " var_response "" "y|n"
+
   			fi
 		else
 			cd $var_path
@@ -1341,7 +1344,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						echo -e "${Purple}"
 						echo -e "If you updated ePad configuration (user names, passwords, branch names etc.) previously and \nif you want those changes to be reflected to your system, you will need to answer yes \nfor the following question"
                         echo -e "${Color_Off}"
-                        read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
+                        #read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
+                        askInputLoop  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response "" "y|n"
                     fi
                 else
 						cd "$var_path/$var_epadDistLocation"
@@ -1544,7 +1548,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		echo -e "${Color_Off}"
 		var_response=""
 		
-		read -p "hostname (default value : $var_host) :" var_response
+		#read -p "hostname (default value : $var_host) :" var_response
+		askInputLoop "hostname (default value : $var_host) :" var_response ""
                 if [[ -n "$var_response" ]]
                 then
                         echo "response = $var_response"
@@ -1553,7 +1558,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "host name : $var_host"
                 fi
                 
-		read -p "mode (1) lite (2) thick (default value : $var_mode) :" var_response
+		#read -p "mode (1) lite (2) thick (default value : $var_mode) :" var_response
+		askInputLoop  "mode (1) lite (2) thick (default value : $var_mode) :" var_response "" "1-2"
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1568,7 +1574,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 fi
         # branch section
 
-        		read -p "dicomweb branch: (default value : $( remove_backslash_tofolderpath $var_branch_dicomweb)) :" var_response
+        		#read -p "dicomweb branch: (default value : $( remove_backslash_tofolderpath $var_branch_dicomweb)) :" var_response
+        		askInputLoop  "dicomweb branch: (default value : $( remove_backslash_tofolderpath $var_branch_dicomweb)) :" var_response ""
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1577,7 +1584,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "dicomweb branch : $var_branch_dicomweb"
                 fi
         		
-        		read -p "epadlite branch: (default value :$( remove_backslash_tofolderpath $var_branch_epadlite)) :" var_response
+        		#read -p "epadlite branch: (default value :$( remove_backslash_tofolderpath $var_branch_epadlite)) :" var_response
+        		askInputLoop  "epadlite branch: (default value :$( remove_backslash_tofolderpath $var_branch_epadlite)) :" var_response ""
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1586,7 +1594,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "epadlite branch : $var_branch_epadlite"
                 fi
         		
-        		read -p "epadjs branch: (default value : $( remove_backslash_tofolderpath $var_branch_epadjs)) :" var_response
+        		#read -p "epadjs branch: (default value : $( remove_backslash_tofolderpath $var_branch_epadjs)) :" var_response
+        		askInputLoop "epadjs branch: (default value : $( remove_backslash_tofolderpath $var_branch_epadjs)) :" var_response ""
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1596,7 +1605,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 fi
         # branch section
                 
-		read -p "configuration (environment (1) or local files (2)) (default value : $var_config) :" var_response
+		#read -p "configuration (environment (1) or local files (2)) (default value : $var_config) :" var_response
+		askInputLoop  "configuration (environment (1) or local files (2)) (default value : $var_config) :" var_response "" "1-2"
+		
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1610,7 +1621,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "config : $var_config"
                 fi
 		
-		read -p "maria db location (default value : $( remove_backslash_tofolderpath $var_mariadb_location)) :" var_response
+		#read -p "maria db location (default value : $( remove_backslash_tofolderpath $var_mariadb_location)) :" var_response
+		askInputLoop "maria db location (default value : $( remove_backslash_tofolderpath $var_mariadb_location)) :" var_response ""
               	if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1618,7 +1630,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "mariadb_location : $( remove_backslash_tofolderpath $var_mariadb_location) "
                 fi
 		
-		read -p "couch db location (default value :  $( remove_backslash_tofolderpath $var_couchdb_location)) :" var_response
+		#read -p "couch db location (default value :  $( remove_backslash_tofolderpath $var_couchdb_location)) :" var_response
+		askInputLoop "couch db location (default value :  $( remove_backslash_tofolderpath $var_couchdb_location)) :" var_response ""
               	if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1631,6 +1644,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		#example for $ char
 		# param $1 is for the char that we are looking
 		# param $2 is the variable that we will search the special char in
+		var_global_specialchar_flag=""
 		local localvar_checkchar=""
 		localvar_checkchar="$(echo $2 | grep "\\$1")"
 		if [[  "$localvar_checkchar" == "" ]];then
@@ -1643,11 +1657,31 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		fi
 
 	}
+	checkAcceptedChars (){
+		#example for $ char
+		# param $1 is for the chars that we are accpeting
+		# param $2 is the variable that we will search the special char in
+		var_global_specialchar_flag=""
+		#echo "check accepted chars : $1"
+		local localvar_checkchar=""
+		localvar_checkchar="$(echo $2 | grep "$1")"
+		if [[ "$2" =~ ^[$1]$ ]] ; then
+			#echo "no spec char found"
+			var_global_specialchar_flag=""
+			
+		else
+			var_global_specialchar_flag="set"
+			echo -e "\n${Purple}!!! you need to provide following options as an answer $1"
+			echo -e "${Color_Off}"
+			#var_global_specialchar_flag=""
+		fi
+
+	}
 	askInputLoop(){
 		# $1 the text
 		# $2 the var to return the value if valid
 		# $3 the value can be pass. to hide output or to show user 
-
+		# $4 required only chars
 		#echo "1: $1 , 2:$2, 3:$3" 
 		if [[ "$3" == "pass" ]]; then
 			read -s -p "$1" $2
@@ -1658,7 +1692,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		temp=$2
 		#echo ${!temp}
 		#echo "var_response: $var_response"
-		checkInputForChars "$" ${!temp}
+		if [[ -z $4 ]];then
+			checkInputForChars "$" ${!temp}
+		else
+			checkAcceptedChars  "$4" ${!temp}
+		fi
 		while [[ "$var_global_specialchar_flag" == "set" ]]; do
 			if [[ "$3" == "pass" ]]; then
 				read -s -p "$1" $2
@@ -1666,7 +1704,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				read -p "$1" $2
 			fi
 			temp=$2
-			checkInputForChars "$" ${!temp}
+			if [[ -z $4 ]];then
+				checkInputForChars "$" ${!temp}
+			else
+				checkAcceptedChars  "$4" ${!temp}
+			fi
 			#echo "$var_response"
 		done
 	}
@@ -2076,12 +2118,14 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			collect_system_configuration
 			collect_user_credentials
 			var_refilltheform="n"
-			read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
+			#read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
+			askInputLoop  "Do you want to change your answer ? (y/n : default response is n) :" var_refilltheform "" "y|n"
 			echo "var_refilltheform : $var_refilltheform"
 			 while [[ "$var_refilltheform" == "y" ]]; do
 			 		collect_system_configuration
 					collect_user_credentials
-					read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
+					#read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
+					askInputLoop  "Do you want to change your answer ? (y/n : default response is n) :" var_refilltheform "" "y|n"
 			 done
 			edit_epad_yml
 			create_epad_lite_dist
