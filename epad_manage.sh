@@ -117,7 +117,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						localvar_folderrights=$(ls -ld "pluginData" | cut -d" " -f1 | cut -c 8,9,10)
 						if [[ $localvar_folderrights != "rwx" ]]; then
 			 
-							echo -e "${Red}You need to give public rights(777) manually to pluginData folder in $var_path and then retry installing ePad"
+							echo -e "${Purple}You need to give public rights(777) manually to pluginData folder in $var_path and then retry installing ePad"
 							echo -e "${Color_Off}"
 							localvar_errcnt=$(($localvar_errcnt + 1))
 						fi
@@ -135,7 +135,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						echo "folder found:tmp"
 						localvar_folderrights=$(ls -ld "tmp" | cut -d" " -f1 | cut -c 8,9,10)
 						if [[ $localvar_folderrights != "rwx" ]]; then
-							echo -e "${Red}You need to give public rights(777) manually to tmp folder in $var_path and then retry installing ePad"
+							echo -e "${Purple}You need to give public rights(777) manually to tmp folder in $var_path and then retry installing ePad"
 							echo -e "${Color_Off}"
 							localvar_errcnt=$(($localvar_errcnt + 1))
 						fi
@@ -152,7 +152,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						echo "folder found:data"
 						localvar_folderrights=$(ls -ld "data" | cut -d" " -f1 | cut -c 8,9,10)
 						if [[ $localvar_folderrights != "rwx" ]]; then
-							echo -e "${Red}You need to give public rights(777) manually to data folder in $var_path and then retry installing ePad"
+							echo -e "${Purple}You need to give public rights(777) manually to data folder in $var_path and then retry installing ePad"
 							echo -e "${Color_Off}"
 							localvar_errcnt=$(($localvar_errcnt + 1))
 						fi
@@ -174,7 +174,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 						echo "folder found:$localvar_couchdbloca"
 						localvar_folderrights=$(ls -ld "$localvar_couchdbloca" | cut -d" " -f1 | cut -c 8,9,10)
 						if [[ $localvar_folderrights != "rwx" ]]; then
-							echo -e "${Red}You need to give public rights(777) manually to $localvar_couchdbloca folder and then retry installing ePad"
+							echo -e "${Purple}You need to give public rights(777) manually to $localvar_couchdbloca folder and then retry installing ePad"
 							echo -e "${Color_Off}"
 							localvar_errcnt=$(($localvar_errcnt + 1))
 						fi
@@ -1049,7 +1049,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				if [[ "$var_return" == "$var_ip" ]]; then
 					var_host=$var_server_name
 				else
-					echo -e "${Red}"
+					echo -e "${Purple}"
 					echo "You have an old ip mapped to $var_server_name. Please update your ip manually in /etc/hhosts file or use epad_fixmyip.sh script which is located in your epad-dist folder to updated your ip automatically."
 					echo "exiting ..."
 					echo -e "${Color_Off}"
@@ -1103,7 +1103,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 					echo "hostname : $HOSTNAME is empty checking etc/hosts file to find server name"
 					find_hostname_from_hostsfile
 				else
-					echo -e "${Red}"
+					echo -e "${Purple}"
 					echo "If you used epad_fixmyip.sh script to fix your server name answer 2 for the following question!"
 					echo -e "${Color_Off}"
 					read -p "You have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp
@@ -1338,7 +1338,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		var_response="n"
 				if [[ -d "$var_path/$var_epadLiteDistLocation" ]]; then
 					if [[ $var_reinstalling != "true" ]]; then
-						echo -e "${Red}"
+						echo -e "${Purple}"
 						echo -e "If you updated ePad configuration (user names, passwords, branch names etc.) previously and \nif you want those changes to be reflected to your system, you will need to answer yes \nfor the following question"
                         echo -e "${Color_Off}"
                         read -p  "epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): " var_response
@@ -1634,20 +1634,48 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		local localvar_checkchar=""
 		localvar_checkchar="$(echo $2 | grep "\\$1")"
 		if [[  "$localvar_checkchar" == "" ]];then
-			echo "no spec char found"
+			#echo "no spec char found"
 			var_global_specialchar_flag=""
 		else
-			echo "special char found : $localvar_checkchar"
+			echo -e "\n${Purple}!!! unwanted charachter $1 found please remove or use different charachter"
+			echo -e "${Color_Off}"
 			var_global_specialchar_flag="set"
 		fi
 
+	}
+	askInputLoop(){
+		# $1 the text
+		# $2 the var to return the value if valid
+		# $3 the value can be pass. to hide output or to show user 
+
+		#echo "1: $1 , 2:$2, 3:$3" 
+		if [[ "$3" == "pass" ]]; then
+			read -s -p "$1" $2
+		else
+			read -p "$1" $2
+		fi
+		
+		temp=$2
+		#echo ${!temp}
+		#echo "var_response: $var_response"
+		checkInputForChars "$" ${!temp}
+		while [[ "$var_global_specialchar_flag" == "set" ]]; do
+			if [[ "$3" == "pass" ]]; then
+				read -s -p "$1" $2
+			else
+				read -p "$1" $2
+			fi
+			temp=$2
+			checkInputForChars "$" ${!temp}
+			#echo "$var_response"
+		done
 	}
 	
 	collect_user_credentials (){
 		
 		echo -e "${Yellow}process: collecting user credentials"
 		echo -e "${Color_Off}"
-		echo -e "${Red}!!! IMPORTANT '$' CHARACHTER IS NOT ALLOWED FOR THE USER NAME AND FOR THE PASSSWORD FIELDS !!!"
+		echo -e "${Purple}!!! IMPORTANT '$' CHARACHTER IS NOT ALLOWED FOR THE INPUT FIELDS !!!"
 		echo -e "${Color_Off}"
 		var_response=""
 		var_responsesec=""
@@ -1655,9 +1683,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		 if [[ "$var_keycloak_user" == "YOUR_KEYCLOAK_ADMIN_USER" ]]; then
         	var_keycloak_user="admin"
         fi
-		read -p "keycloak user name (default value : $var_keycloak_user) :" var_response
-		checkInputForChars "$" $var_response
-		echo "result : $var_global_specialchar_flag"
+        askInputLoop "keycloak user name (default value : $var_keycloak_user) :" var_response ""
+        #echo "askInputLoop returning value for var_response : $var_response"
+		#read -p "keycloak user name (default value : $var_keycloak_user) :" var_response
+		 
+		#checkInputForChars "$" $var_response
+		#echo "result : $var_global_specialchar_flag"
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1672,9 +1703,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         var_responsesec="b"
         while [ $var_response != $var_responsesec ]
         do 
-			read -s -p "keycloak user password :" var_response
+			#read -s -p "keycloak user password :" var_response
+			askInputLoop "keycloak user password :" var_response "pass"
 			 printf '\n'
-			read -s -p "retype keycloak user password :" var_responsesec
+			#read -s -p "retype keycloak user password :" var_responsesec
+			askInputLoop "retype keycloak user password :" var_responsesec "pass"
 					if [[ -n "$var_response" && -n "$var_responsesec" ]]
 	                then
 	                	if [[ "$var_response" == "$var_responsesec" ]]
@@ -1683,7 +1716,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	                        var_keycloak_pass="$var_response"
 	                        #echo "var_keycloak_pass : $var_keycloak_pass"
 	                    else
-	                    	echo -e "${Red}\npasword doesn't match. please reenter"
+	                    	echo -e "${Purple}\npasword doesn't match. please reenter"
 	                    	echo -e "${Color_Off}"
 	                    fi
 
@@ -1695,7 +1728,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		if [[ "$var_keycloak_useremail" == "YOUR_KEYCLOAK_ADMIN_EMAIL" ]]; then
         	var_keycloak_useremail="admin@gmail.com"
         fi
-		read -p "keycloak user email (default value : $var_keycloak_useremail) :" var_response
+		#read -p "keycloak user email (default value : $var_keycloak_useremail) :" var_response
+		askInputLoop "keycloak user email (default value : $var_keycloak_useremail) :" var_response ""
         		if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1710,7 +1744,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         fi
         
 
-		read -p "couchdb user name (default value : $var_couchdb_user) :" var_response
+		#read -p "couchdb user name (default value : $var_couchdb_user) :" var_response
+		askInputLoop "couchdb user name (default value : $var_couchdb_user) :" var_response ""
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1725,9 +1760,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         var_responsesec="b"
         while [ $var_response != $var_responsesec ]
         do   
-			read -s -p "couchdb user password :" var_response
+			#read -s -p "couchdb user password :" var_response
+			askInputLoop "couchdb user password :" var_response "pass"
 			 printf '\n'
-			read -s -p "retype couchdb user password :" var_responsesec
+			#read -s -p "retype couchdb user password :" var_responsesec
+			askInputLoop "retype couchdb user password :" var_responsesec "pass"
 					if [[ -n "$var_response" && -n "$var_responsesec" ]]
 	                then
 	                	if [[ "$var_response" == "$var_responsesec" ]]
@@ -1736,7 +1773,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	                        var_couchdb_pass="$var_response"
 	                        #echo "var_couchdb_pass : $var_couchdb_pass"
 	                   	else
-	                    	echo -e "${Red}\npasword doesn't match. please reenter"
+	                    	echo -e "${Purple}\npasword doesn't match. please reenter"
 	                    	echo -e "${Color_Off}"
 	                    fi
 	                fi
@@ -1747,7 +1784,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         	var_maria_user="admin"
         fi
          printf '\n'
-		read -p "maria db user name (default value : $var_maria_user) :" var_response
+		#read -p "maria db user name (default value : $var_maria_user) :" var_response
+		askInputLoop "maria db user name (default value : $var_maria_user) :" var_response ""
                 if [[ -n "$var_response" ]]
                 then
                         #echo "response = $var_response"
@@ -1763,9 +1801,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         var_responsesec="b"
         while [[ "$var_response" != "$var_responsesec" ]]
         do                
-			read -s -p "maria db user password :" var_response
+			#read -s -p "maria db user password :" var_response
+			askInputLoop "maria db user password :" var_response "pass"
 			printf '\n'
-			read -s -p "retype maria db user password :" var_responsesec
+			#read -s -p "retype maria db user password :" var_responsesec
+			askInputLoop "retype maria db user password :" var_responsesec "pass"
 	                 if [[ -n "$var_response" && -n "$var_responsesec" ]]
 	                then
 	                	if [[ "$var_response" == "$var_responsesec" ]]
@@ -1774,7 +1814,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	                        var_maria_pass="$var_response"
 	                        #echo "var_maria_pass : $var_maria_pass"
 	                    else
-	                    	echo -e "${Red}\npasword doesn't match. please reenter"
+	                    	echo -e "${Purple}\npasword doesn't match. please reenter"
 	                    	echo -e "${Color_Off}"
 	                    fi
 	                fi
@@ -1790,9 +1830,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         var_responsesec="b"
         while [ $var_response != $var_responsesec ]
         do
-			read -s -p "maria db root password :" var_response
+			#read -s -p "maria db root password :" var_response
+			askInputLoop "maria db root password :" var_response "pass"
 			 printf '\n'
-			read -s -p "retype maria db root password :" var_responsesec
+			#read -s -p "retype maria db root password :" var_responsesec
+			askInputLoop "retype maria db root password :" var_responsesec "pass"
 	                if [[ -n "$var_response" && -n "$var_responsesec" ]]
 					then
 						if [[ "$var_response" == "$var_responsesec" ]]
@@ -1801,7 +1843,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	                        var_maria_rootpass="$var_response"
 	                        #echo "var_maria_rootpass : $var_maria_rootpass"
 	                    else
-	                    	echo -e "${Red}\npasword doesn't match. please reenter"
+	                    	echo -e "${Purple}\npasword doesn't match. please reenter"
 	                    	echo -e "${Color_Off}"
 	                    fi
 
@@ -2007,7 +2049,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			check_ifallcontainers_created
 			# echo $global_var_container_exist
 			if [[  $global_var_container_exist == "exist" ]]; then
-				echo -e "${Red}"
+				echo -e "${Purple}"
 				echo -e "We detected an existing ePad !!!!.\nIMPORTANT!: Reinstalling ePad will delete all images, containers and keycloak users.\nYou need to delete database folders manually \nor You need to make sure to assign previous credentials \nor You need to edit credentials in container manually.\n"
 				echo -e "${Color_Off}"
 				read -p "Do you want to reinstall ePad? (y/n : default response is n) :"  var_install_result_r 
