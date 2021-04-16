@@ -2122,7 +2122,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			var_refilltheform="n"
 			#read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
 			askInputLoop  "Do you want to change your answer ? (y/n : default response is n) :" var_refilltheform "" "y|n"
-			echo "var_refilltheform : $var_refilltheform"
+			#echo "var_refilltheform : $var_refilltheform"
 			 while [[ "$var_refilltheform" == "y" ]]; do
 			 		collect_system_configuration
 					collect_user_credentials
