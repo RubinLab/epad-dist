@@ -1546,6 +1546,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	collect_system_configuration(){
 		echo -e "${Yellow}process: collecting system configuration info"
 		echo -e "${Color_Off}"
+		echo -e "${Purple}!!! IMPORTANT '$' CHARACHTER IS NOT ALLOWED FOR THE INPUT FIELDS !!!"
+		echo -e "${Color_Off}"
 		var_response=""
 		
 		#read -p "hostname (default value : $var_host) :" var_response
