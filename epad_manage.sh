@@ -2120,14 +2120,14 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			collect_system_configuration
 			collect_user_credentials
 			var_refilltheform="n"
-			#read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
-			askInputLoop  "Do you want to change your answer ? (y/n : default response is n) :" var_refilltheform "" "y|n"
+			#read -p "Do you want to change your answers ? (y/n) :"  var_refilltheform 
+			askInputLoop  "Do you want to change your answers ? (y/n) :" var_refilltheform "" "y|n"
 			#echo "var_refilltheform : $var_refilltheform"
 			 while [[ "$var_refilltheform" == "y" ]]; do
 			 		collect_system_configuration
 					collect_user_credentials
-					#read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
-					askInputLoop  "Do you want to change your answer ? (y/n : default response is n) :" var_refilltheform "" "y|n"
+					#read -p "Do you want to change your answers ? (y/n) :"  var_refilltheform 
+					askInputLoop  "Do you want to change your answers ? (y/n) :" var_refilltheform "" "y|n"
 			 done
 			edit_epad_yml
 			create_epad_folders
@@ -2209,11 +2209,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				find_docker_gid
 				collect_system_configuration
 					var_refilltheform="n"
-					read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
+					read -p "Do you want to change your answers ? (y/n) :"  var_refilltheform 
 					echo "var_refilltheform : $var_refilltheform"
 					 while [[ "$var_refilltheform" == "y" ]]; do
 					 		collect_system_configuration
-							read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
+							read -p "Do you want to change your answers ? (y/n) :"  var_refilltheform 
 					 done
 				edit_epad_yml
                 create_epad_lite_dist
@@ -2241,12 +2241,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 collect_system_configuration
                 collect_user_credentials
                 	var_refilltheform="n"
-					read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
+					read -p "Do you want to change your answer ? (y/n) :"  var_refilltheform 
 					echo "var_refilltheform : $var_refilltheform"
 					 while [[ "$var_refilltheform" == "y" ]]; do
 					 		collect_system_configuration
 					 		collect_user_credentials
-							read -p "Do you want to change your answer ? (y/n : default response is n) :"  var_refilltheform 
+							read -p "Do you want to change your answer ? (y/n) :"  var_refilltheform 
 					 done
                 edit_epad_yml
                 create_epad_lite_dist
