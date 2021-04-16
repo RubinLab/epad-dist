@@ -2087,7 +2087,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			echo -e "${Yellow}process: Installing ePad"
     		echo -e "${Color_Off}"
 			var_install_result_r=""
-			create_epad_folders
+			#create_epad_folders
 			check_ifallcontainers_created
 			# echo $global_var_container_exist
 			if [[  $global_var_container_exist == "exist" ]]; then
@@ -2128,6 +2128,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 					askInputLoop  "Do you want to change your answer ? (y/n : default response is n) :" var_refilltheform "" "y|n"
 			 done
 			edit_epad_yml
+			create_epad_folders
 			create_epad_lite_dist
 			edit_compose_file
 			start_containers_viaCompose_all
