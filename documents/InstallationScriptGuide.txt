@@ -1,0 +1,93 @@
+ePadlite Installation Script Guide 
+
+Script
+	epad_manage.sh
+		There is another script epad_fixmyip.sh which is independent from epad_manage.sh script but it may be addressed in certain sections while using installtion script.
+		epad_fixmyip.sh script will be in your epad-dist folder after the installation. 
+
+System Requirements: 
+	Ram : min 4gb
+	git needs to be installed
+	docker needs to be installed 
+	docker-compose needs to be installed
+
+IMORTANT:
+	- installation script is still in experimantal phase. If you have crucial data in your ePad instance please don't use installation script while it is in the experimental phase.
+	- installation script epad_manage.sh depends on epad-dist folder, epad_lite_dist folder and the epad.yml file which is in epad-dist folder.
+	- If you will use installation script do not add or edit files and folders manually. 
+	- ePad doesn't delete your couchdb and your mariadb data. If you are doing an installation and if you have the mariadb data from the previous ePad installation, it will be your responsibility 
+		to delete mariadb data folder content or you need to use same users and passwords for the new Installation so that ePad can access your old mariadb data. 
+
+		Note: 
+		Actually ePad tries to fix your mariadb credentials when you are passing from a previous ePad installation but this operation depends on epad.yml file and it is still in the experimental phase.
+		The main issue here if you don't have an epad-dist folder from your previous ePad installation or if your epad.yml does not contain correct passwords (means if you edited passwords in between installations)
+		from your prevoius installation. 
+
+	- if you would like to use epad plugins
+		for macos :
+			you will need to give public rights to your /var/run/docker.sock file which is a symbolic link
+			to do that : sudo chmod -h 777 docker.sock
+		for linux : you need to have docker group (docker group is created when you install docker. Please check docker post installation documentation) and installation script takes care of the rest 
+	
+Functionnalities:
+	- install
+		command : ./epad_manage.sh install
+			installation will get latest epad-dist folder from github. It will edit epad.yml file. It will build epad_lite_dist folder and will start containers.
+
+		-for linux : 
+			after the installation tmp, pluginData, and couchdb data folder needs to be given public rights. 
+			to do that: chmod -R 777 pluginData , this may require sudo right. In the case sudo right is needed the command 
+			will be : sudo chmod -R 777 pluginData (if the folder is empty -R flag is not rewuired)
+			do the same for tmp and couchdb data folder. (by default couchdb data folder is ../couchdbloc)
+		-for macos : 
+			we didn't encounter any folder right issue yet. If you do please let us know : https://groups.google.com/g/epad-users
+
+	- start
+		command : ./epad_manage.sh start
+
+	- stop
+		command : ./epad_manage.sh stop
+
+	- update 
+		command : ./epad_manage.sh update epad
+		update epad updates only the version of the ePad. If there are changes in the epad-dist file (follow epad release notes to know about. Later versions of installation script will check it automatically), 
+		update config needs to be used. 
+
+		command : ./epad_manage.sh update config
+		update config updates all. This means it will download a new epad-dist, will update credentials and will update ePad version
+		This operation will try to replace your mariadb credentials in case that you are changing them during the update. Still in experimental phase.
+
+		during the update ePad will automatically export (backup) keycloak users and after the installation will import(insert back) the keycloak users automatically.
+
+	- import/export keycloak users
+		In a case that you need to export or import keycloak users, you can use below commands. Make sure that you have a tmp folder with public rights. 
+		To use import you need to have a file with the name epad_realm.json in the tmp folder. If you do the export first you will have it in the tmp folder. 
+		command : ./epad_manage.sh export keycloakusers
+		command : ./epad_manage.sh import 
+
+During the installation and updating, ePad will guide you with questions.
+
+- For macos if your network name is not accessible you will find epad_fixmyip.sh in the epad-dist folder after the installation. 
+	Please use fixmyip script to have a host name which will be mapped to your ip address in the etc/hosts file. 
+- For linux we didn't encounter any issue with the hostname. Please let us know (https://groups.google.com/g/epad-users) if you encounter any network issue during the installation.
+- If you downloaded epad-dist folder and if you want to use epad_manage.sh script, you need to move epad_manage.sh script out of the epad-dist folder.
+- If you installed ePad manually and if you want to use epad_manage.sh script later, it is still possible but you should have epad-dist folder or rename the folder name to epad-dist 
+	in case you used different folder name during the manual installation. 
+
+Some Questions meaning that you may encounter during the installation:
+
+	- during the ./epad_manage.sh install
+		- epad-dist folder exist already. Do you want to owerwrite ? (y/n) (defult value is n)
+			this question accepts y or n as an answer. If you answer y ePad will get a fresh copy of epad-dist from github. 
+			If you answer n it will use the epad-dist folder which has been found in the system.
+
+		- epad_lite_dist folder exist already do you want to owerwrite ? (y/n) (defult value is n): 
+			this question accepts y or n as an answer. If you answer y ePad will use the credential that you have given and will build a new epad_lite_dist folder.
+			If you answer n it will use the epad_lite_dist folder which has been found in the system and the crdentials that you have given will be ignored 
+
+
+
+
+
+
+
