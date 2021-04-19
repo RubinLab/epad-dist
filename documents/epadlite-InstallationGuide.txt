@@ -1,0 +1,162 @@
+ePadlite Installation Guide
+For more information please visit https://github.com/RubinLab/epad-dist
+
+IMPORTANT:
+1) For some locations you will see X in the text. The letter X means a variable. 
+This variable will be different when you install a new version of ePad
+Example : epad-dist-0.X.zip the X will be 2, 3, 4 ... depending on the version of ePad.
+
+2) Starting from version v0.4 coucdb image updated to ibmcom/couchdb3:latest this causes folder right/ownership issues with the older default image
+which was apache/couchdb:latest. If you are installing ePad and you have the old data from apache/cocuhdb for now point a different couchdb data location
+during the installation. We are working on a fix to solve the folder rights/ownership issues
+
+3) For linux users: 
+After the installation you will need to give public folder rights (777) for the folders listed below. After changing the folder rights you will need to restart ePad.
+	-pluginData
+	-Couchdb data folder. By default it is couchdbloc
+	-tmp
+All the folder listed above will be in your installation folder. (Not in epad-dist and not in epad_lite_dist) In the same folder where you see epad-dist folder listed.
+
+4) If you want to use plugin functionality:
+	Mac users :
+		- You will need to give public rights to your docker.sock
+			to do : sudo chmod -h 777 /var/run/docker.sock
+	Linux users:
+		-You will need to edit docker-compose.yml file in your epad_lite_dist folder. You will need to give correct docker group id to ARG_EPAD_DOCKER_GID variable. 
+			to do :  
+			1) locate and edit your docker-compose.yml
+			2) under myepadlite section locate " args: " section 
+			3) ARG_EPAD_DOCKER_GID: 999 -> replace 999 with the correct docker group id collected from your server.
+				- to see docker group id use the command ->  cat /etc/group | grep docker 
+				- for example in my machine the command above gives : 
+					docker:x:981:cavit,epad
+				- In this case docker group id for me will be 981. The names that we see after 981 are the users belongs to docker group. 
+
+			4) if you started ePad earlier stop epad_lite container (docker stop epad_lite)
+			5) remove epad_lite container (docker rm epad_lite)
+			6) remove your epad_lite image 
+				- docker images (will list all your images)
+				- collect image id for epadlitedist_myepadlite 
+				- docker rmi imageid (delete the image)
+			7) Restart ePad to activate plugins
+				- Switch to epad_lite_dist
+				- docker-compose up -d (this will recreate a new image with plugins activated. It will create a new epad_lite container and it will start it)
+				
+				
+
+System Requirements:
+	Ram : min 4gb
+
+ - Install Docker from the link below
+	
+	https://docs.docker.com/get-docker/ 
+
+- Install Docker-compose  from the link below
+
+	https://docs.docker.com/compose/install/
+
+- epadlite Installation 
+
+	commands : these commands are for linux and Mac
+
+	1) Once you download ePadlite you will have epad-dist-0.X.zip
+ 	2)create a directory where you will extract the zip file 
+ 		(for my case i am creating epadtest directory and the path in my case is /Users/cavit/)
+		(command below :)
+		 mkdir epadtest
+
+
+	3) Switch to the directory that you just created 
+		(command below: )
+		cd epadtest
+		(after the command in my case i am in /Users/cavit/epadtest/)
+
+	4)copy the zip file into the directory where you will extract the zip file 
+		in my case from downloads to epadtest
+		(command below: )
+		cp  /Users/cavit/Downloads/epad-dist-0.X.zip  /Users/cavit/epadtest/epad-dist-0.X.zip
+
+	5)Switch to the folder where you copied epad-dist-0.X.zip and extract it
+		(for the example case)
+		(commands below:)
+		cd /Users/cavit/epadtest/
+		unzip epad-dist-0.X.zip
+
+	6)After  unzipping you will have regular epad-dist-0.X folder. Switch to this folder
+		(command below:)
+		cd epad-dist-0.X
+		(after the command in my case i am in /Users/cavit/epadtest/epad-dist-0.X)
+
+	7)In the folder edit epad.yml file and save
+		The sections that you need to edit start with YOUR_ 
+		put hostname , usernames , passwords and emails. Host name can be an IP address or host name . Make sure that you collect the correct host name.
+		Sometimes host names are not mapped to the ips. In such case you will need to use ip instead of the host name .PLEASE DON'T USE localhost for the host
+		(for example in my computer I edited the sections below. Don’t delete the parts that you don’t see below from the epad.yml file)
+		host: c02s30xdg8wl.local/
+		keycloak:
+		   	user: admin
+		   	password: admin
+  		   	email: admin@gmail.com
+		
+		couchdb:
+			user: admin
+			password: admin
+
+		mariadb:
+  			user: admin
+  			password: admin
+  			rootpassword: admin
+
+	   8) In the same directory (we should be in the directory epad-dist-0.X where you see epad.yml and configure_epad.sh files) run the command below.
+			(in my case I am in this path /Users/cavit/epadtest/epad-dist-0.X)
+			(command below will create epad_lite_dist folder outside of epad-dist-0.X)
+			./configure_epad.sh ../epad_lite_dist ./epad.yml
+			
+	  9) Switch to one upper level folder 
+			(command below:) 
+			cd ..
+			(in my case after running the command above I am in /Users/cavit/epadtest )
+
+	10) Switch to the folder epad_lite_dist
+			(command below:)
+			cd epad_lite_dist
+			(after the command i am in /Users/cavit/epadtest/epad_lite_dist)	
+
+	11) Make sure that you see the docker-compose.yml file and start epad
+			(command below:)
+			docker-compose up -d
+			(after this command you will see 6 containers epad_js,epad_lite,epad_dicomweb,epad_keycloak,epad_couchdb,epad_mariadb.    
+			when all the containers are running (this means status Up. To check the status use the command: docker ps -a) you can browse ePad. In my case I browse c02s30xdg8wl.local/)
+			Note: Only these 4 containers epad_lite, epad_dicomweb, epad_couchdb, epad_mariadb, status will be healty. 
+
+	12) To stop epad and to remove containers (you need to see docker-compose.yml file) IMPORTANT : If you use the comand below, it will delete your containers. Deleting epad_keycloak container will result deleting 
+		your keycloak users. If you would like to backup your keycloak users please use ePad installation script (epad_manage.sh see documantation at epad.stanford.edu)
+			docker-compose down
+
+		in the case that you want to keep keycloak users and want to stop ePad use the command below
+			docker stop epad_js epad_lite epad_dicomweb epad_keycloak epad_couchdb epad_mariadb
+
+Some useful docker commands
+	*) list all containers (it will list names also and the status of the containers . Running,healty ,exited etc. )
+		docker ps -a
+	
+	*) to start only one specific container
+		docker start containername
+	
+	*)to stop only one specific container
+		docker stop containername
+			
+	*) See log file for a container
+		docker logs container name
+
+	*) see the log file in tun time 
+		docker logs -f  containername
+
+				
+			
+
+		
+		
+	
+	
+	
