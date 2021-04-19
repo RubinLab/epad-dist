@@ -541,12 +541,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 			echo -e "${Yellow}process: updating  mariadb users and passwords"
 			echo -e "${Color_Off}"
-			echo "old root pass:$var_maria_rootpass_old"
-			echo "new root pass:$var_maria_rootpass"
-			echo "old user:$var_maria_user_old"
-			echo "new user:$var_maria_user"
-			echo "old user pass : $var_maria_user_pass_old"
-			echo "new user pass : $var_maria_pass"
+			#echo "old root pass:$var_maria_rootpass_old"
+			#echo "new root pass:$var_maria_rootpass"
+			#echo "old user:$var_maria_user_old"
+			#echo "new user:$var_maria_user"
+			#echo "old user pass : $var_maria_user_pass_old"
+			#echo "new user pass : $var_maria_pass"
 			
 			#if [[ $var_reinstalling == "true" ]]; then
 				maria_container_exist=$(docker ps -a --filter "name=\bepad_mariadb\b" --format "table {{.Status}}" | grep Up)
