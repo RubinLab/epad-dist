@@ -1,5 +1,5 @@
 host: YOUR_HOSTNAME
-mode: lite
+mode: thick
 config: environment
 ontologyname: YOUR_ONTOLOGY_NAME
 ontologyapikey: YOUR_ONTOLOGY_APIKEY
