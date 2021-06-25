@@ -1451,13 +1451,16 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         fi
 	
 	}
+	build_images_via_nocache (){
+		echo -e "${Yellow}process: building ePad containers using docker-compose build --no-cache"
+		echo -e "${Color_Off}"
+           	cd "$var_path/$var_epadLiteDistLocation"
+            docker-compose build --no-cache > "$var_path/epad_manage.log"
+	}
 
 	start_containers_viaCompose_all (){
 		echo -e "${Yellow}process: starting ePad containers using docker-compose up -d"
 		echo -e "${Color_Off}"
-
-	
-	
            		cd "$var_path/$var_epadLiteDistLocation"
                 docker-compose up -d > "$var_path/epad_manage.log"
     #             local var_start_st=$(date +%s)
@@ -1496,7 +1499,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
     #             	echo "epad is ready to browse: http://$var_host"
     #             fi
 
-        }
+    }
 
     wait_for_containers_tobehealthy(){
     	        local var_start_st=$(date +%s)
@@ -2218,6 +2221,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				edit_epad_yml
                 create_epad_lite_dist
                 edit_compose_file
+				build_images_via_nocache
 				start_containers_viaCompose_all
 				wait_for_containers_tobehealthy
 				import_keycloak
@@ -2251,6 +2255,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 edit_epad_yml
                 create_epad_lite_dist
 				edit_compose_file
+				build_images_via_nocache
 				start_containers_viaCompose_all
 				update_mariadb_usersandpass
 				wait_for_containers_tobehealthy
