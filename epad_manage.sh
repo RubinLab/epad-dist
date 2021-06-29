@@ -1107,10 +1107,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 					echo "If you used epad_fixmyip.sh script to fix your server name answer 2 for the following question!"
 					echo -e "${Color_Off}"
 					#read -p "You have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp
-					askInputLoop "You have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to grap hostname by using /etc/hosts (2) ? ( 1 or 2 ) : " var_resp "" "1-2"
+					askInputLoop "You have a valid hostname env variable $HOSTNAME.Do you want to use this (1) or do you want to get the hostname from /etc/hosts (2) or do you want to use previous value/manual setup (3)  ? ( 1 , 2 or 3 ) : " var_resp "" "1-3"
 	                if [[ $var_resp == 1 ]]; then
 						#var_host=$HOSTNAME
 						var_host=$(echo "$HOSTNAME" | tr '[:upper:]' '[:lower:]')
+					elif [[ $var_resp == 3 ]]; then
+					    var_host=$( find_val_intext "host:" "1")
 					else
 						find_hostname_from_hostsfile
 					fi
@@ -1451,13 +1453,16 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         fi
 	
 	}
+	build_images_via_nocache (){
+		echo -e "${Yellow}process: building ePad containers using docker-compose build --no-cache"
+		echo -e "${Color_Off}"
+           	cd "$var_path/$var_epadLiteDistLocation"
+            docker-compose build --no-cache > "$var_path/epad_manage.log"
+	}
 
 	start_containers_viaCompose_all (){
 		echo -e "${Yellow}process: starting ePad containers using docker-compose up -d"
 		echo -e "${Color_Off}"
-
-	
-	
            		cd "$var_path/$var_epadLiteDistLocation"
                 docker-compose up -d > "$var_path/epad_manage.log"
     #             local var_start_st=$(date +%s)
@@ -1496,7 +1501,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
     #             	echo "epad is ready to browse: http://$var_host"
     #             fi
 
-        }
+    }
 
     wait_for_containers_tobehealthy(){
     	        local var_start_st=$(date +%s)
@@ -1554,7 +1559,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		askInputLoop "hostname (default value : $var_host) :" var_response ""
                 if [[ -n "$var_response" ]]
                 then
-                        echo "response = $var_response"
+                        #echo "response = $var_response"
                         #var_host=$var_response
                         var_host=$var_response
                         #echo "host name : $var_host"
@@ -2218,6 +2223,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				edit_epad_yml
                 create_epad_lite_dist
                 edit_compose_file
+				build_images_via_nocache
 				start_containers_viaCompose_all
 				wait_for_containers_tobehealthy
 				import_keycloak
@@ -2251,6 +2257,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                 edit_epad_yml
                 create_epad_lite_dist
 				edit_compose_file
+				build_images_via_nocache
 				start_containers_viaCompose_all
 				update_mariadb_usersandpass
 				wait_for_containers_tobehealthy
