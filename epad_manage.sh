@@ -2090,6 +2090,27 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			echo "test finished ---------------------------"
 		 fi
 
+		if [[ $1 == "mapdata" ]]; then
+			echo -e "${Yellow}process: mapping your folder:$2 to dicomweb"
+			echo -e "${Color_Off}"
+			awkresult=$(awk '/mydicomweb:/ {flag = 1 } flag && /volumes:/ {nexta = 1} nexta && /-/ { print NR, $0; cevap = 1} cevap && /environment:/ {flag = 0 ; nexta = 0} ' "$var_path/$var_epadLiteDistLocation/docker-compose.yml")
+			awkresultlineno=$(awk '/mydicomweb:/ {flag = 1 } flag && /volumes:/ {nexta = 1} nexta && /-/ { print NR; exit;cevap = 1} cevap && /environment:/ {flag = 0 ; nexta = 0} ' "$var_path/$var_epadLiteDistLocation/docker-compose.yml")
+			echo $awkresultlineno
+			grepresult=$(echo $awkresult | grep "/home/node/app/dicoms")
+			if [[ -z $grepresult ]];then
+					echo "mapping user data to dicomweb"
+					awk -v var_mappath="$2" -v var_mapline=$awkresultlineno  'NR==var_mapline{print "      -",var_mappath":/home/node/app/dicoms"}1' "$var_path/$var_epadLiteDistLocation/docker-compose.yml" > "$var_path/$var_epadLiteDistLocation/tempdocker-compose.yml" && mv "$var_path/$var_epadLiteDistLocation/tempdocker-compose.yml" "$var_path/$var_epadLiteDistLocation/docker-compose.yml"
+					cd $var_path/$var_epadLiteDistLocation
+					docker-compose restart mydicomweb
+					docker exec -it --user root epad_dicomweb apk add curl
+					docker exec -it --user root epad_dicomweb curl -X POST http://localhost:8090/pacs/linkFolder?path=/home/node/app/dicoms
+			else
+				echo -e "${Purple}another folder is already mapped to dicomweb"
+				echo -e "${Color_Off}"
+			fi
+         fi
+
+
 		if [[ $1 == "install" ]]; then
 			echo -e "${Yellow}process: Installing ePad"
     		echo -e "${Color_Off}"
