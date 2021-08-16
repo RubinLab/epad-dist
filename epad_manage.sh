@@ -59,17 +59,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	var_realmName="ePad"
 	var_provider="singleFile"
 
-
 	var_couchdb_user="admin"
 	var_couchdb_pass="admin"
 	var_couchdb_port=8888
 
 	var_dicomweb_port=8090
-
 	var_epadlite_port=8080
-
 	var_epadjs_port=80
-
 
 	var_specialchar_flag=""
 # functions
@@ -1554,7 +1550,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		echo -e "${Purple}!!! IMPORTANT '$' CHARACHTER IS NOT ALLOWED FOR THE INPUT FIELDS !!!"
 		echo -e "${Color_Off}"
 		var_response=""
-		
+		check_loopback_ip
 		#read -p "hostname (default value : $var_host) :" var_response
 		askInputLoop "hostname (default value : $var_host) :" var_response ""
                 if [[ -n "$var_response" ]]
@@ -2081,12 +2077,27 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		echo "epad_manage.sh import keycloakusers"
 	}
 
+	check_loopback_ip(){
+		echo -e "${Yellow}process: checking hostname mapped ip"
+		echo -e "${Color_Off}"
+		local hostnameip=$(hostname -i)
+		local nonvalidip="127.0.0.1"
+		if [[ $hostnameip == $nonvalidip ]]; then
+			echo -e "${Purple}epad doesn't work on $nonvalidip please use manually collected ip or exit and run fix_myip.sh script "
+			echo -e "${Color_Off}"
+		else
+			echo -e "${Yellow}Hostname has valid ip : $hostnameip "
+			echo -e "${Color_Off}"
+		fi
+	}
+
 # main 
 	if [ "$#" -gt 0 ]; then
 
 
          if [[ $1 == "test" ]]; then
 			echo "test started ----------------------------"
+			check_loopback_ip
 			echo "test finished ---------------------------"
 		 fi
 
