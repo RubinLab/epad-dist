@@ -1,0 +1,39 @@
+ePadlite Installation Guide
+For more information please visit https://github.com/RubinLab/epad-dist
+FOR LINUX AND MACS
+System Requirements:
+        Ram : min 4gb
+
+ - Install Docker from the link below
+
+        https://docs.docker.com/get-docker/
+
+- Install Docker-compose  from the link below
+
+        https://docs.docker.com/compose/install/
+
+- Use Eepad_manage.sh and its guidelines after this point.
+FOR WINDOWS
+System Requirements:
+        Ram : min 4gb
+
+ePadlite installation on Windows
+
+1. install docker desktop for windows  
+   https://docs.docker.com/docker-for-windows/install/
+2.Install linux subsystem for windows
+   https://docs.microsoft.com/en-us/windows/wsl/install-win10
+   This guide is prepared by following  the manual installation steps from 1 to 6
+   This guide is prepared by using ubuntu 20.04 as linux subsystem.
+   
+3. Add your linux subsytem to the docker desktop
+   -open docker desktop
+   -go to the settings
+   -select resources
+   -select wsl integration
+   -your linux subsytem version will be listed. Activate your version of linux subsytem
+
+ 
+ !!!After this point we will use linuxsubsystem terminal to execute the commands except to collect your ip.!!!
+4. Use  Eepad_manage.sh and its guidelines after this point.
+
