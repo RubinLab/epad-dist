@@ -1,0 +1,13 @@
+ePadlite Installation Guide
+For more information please visit https://github.com/RubinLab/epad-dist
+System Requirements:
+        Ram : min 4gb
+
+ - Install Docker from the link below
+
+        https://docs.docker.com/get-docker/
+
+- Install Docker-compose  from the link below
+
+        https://docs.docker.com/compose/install/
+
