@@ -59,17 +59,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	var_realmName="ePad"
 	var_provider="singleFile"
 
-
 	var_couchdb_user="admin"
 	var_couchdb_pass="admin"
 	var_couchdb_port=8888
 
 	var_dicomweb_port=8090
-
 	var_epadlite_port=8080
-
 	var_epadjs_port=80
-
 
 	var_specialchar_flag=""
 # functions
@@ -1554,7 +1550,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		echo -e "${Purple}!!! IMPORTANT '$' CHARACHTER IS NOT ALLOWED FOR THE INPUT FIELDS !!!"
 		echo -e "${Color_Off}"
 		var_response=""
-		
+		check_loopback_ip
 		#read -p "hostname (default value : $var_host) :" var_response
 		askInputLoop "hostname (default value : $var_host) :" var_response ""
                 if [[ -n "$var_response" ]]
@@ -2081,14 +2077,50 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		echo "epad_manage.sh import keycloakusers"
 	}
 
+	check_loopback_ip(){
+		echo -e "${Yellow}process: checking hostname mapped ip"
+		echo -e "${Color_Off}"
+		local hostnameip=$(hostname -i)
+		local nonvalidip="127.0.0.1"
+		if [[ $hostnameip == $nonvalidip ]]; then
+			echo -e "${Purple}epad doesn't work on $nonvalidip please use manually collected ip or exit and run fix_myip.sh script "
+			echo -e "${Color_Off}"
+		else
+			echo -e "${Yellow}Hostname has valid ip : $hostnameip "
+			echo -e "${Color_Off}"
+		fi
+	}
+
 # main 
 	if [ "$#" -gt 0 ]; then
 
 
          if [[ $1 == "test" ]]; then
 			echo "test started ----------------------------"
+			check_loopback_ip
 			echo "test finished ---------------------------"
 		 fi
+
+		if [[ $1 == "mapdata" ]]; then
+			echo -e "${Yellow}process: mapping your folder:$2 to dicomweb"
+			echo -e "${Color_Off}"
+			awkresult=$(awk '/mydicomweb:/ {flag = 1 } flag && /volumes:/ {nexta = 1} nexta && /-/ { print NR, $0; cevap = 1} cevap && /environment:/ {flag = 0 ; nexta = 0} ' "$var_path/$var_epadLiteDistLocation/docker-compose.yml")
+			awkresultlineno=$(awk '/mydicomweb:/ {flag = 1 } flag && /volumes:/ {nexta = 1} nexta && /-/ { print NR; exit;cevap = 1} cevap && /environment:/ {flag = 0 ; nexta = 0} ' "$var_path/$var_epadLiteDistLocation/docker-compose.yml")
+			echo $awkresultlineno
+			grepresult=$(echo $awkresult | grep "/home/node/app/dicoms")
+			if [[ -z $grepresult ]];then
+					echo "mapping user data to dicomweb"
+					awk -v var_mappath="$2" -v var_mapline=$awkresultlineno  'NR==var_mapline{print "      -",var_mappath":/home/node/app/dicoms"}1' "$var_path/$var_epadLiteDistLocation/docker-compose.yml" > "$var_path/$var_epadLiteDistLocation/tempdocker-compose.yml" && mv "$var_path/$var_epadLiteDistLocation/tempdocker-compose.yml" "$var_path/$var_epadLiteDistLocation/docker-compose.yml"
+					cd $var_path/$var_epadLiteDistLocation
+					docker-compose restart mydicomweb
+					docker exec -it --user root epad_dicomweb apk add curl
+					docker exec -it --user root epad_dicomweb curl -X POST http://localhost:8090/pacs/linkFolder?path=/home/node/app/dicoms
+			else
+				echo -e "${Purple}another folder is already mapped to dicomweb"
+				echo -e "${Color_Off}"
+			fi
+         fi
+
 
 		if [[ $1 == "install" ]]; then
 			echo -e "${Yellow}process: Installing ePad"
