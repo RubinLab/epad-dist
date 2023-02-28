@@ -1292,7 +1292,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			echo -e "${Yellow}process: copying epad_build.yml to epad.yml"
 			cp $var_path/$var_epadDistLocation/epad_build.yml $var_path/$var_epadDistLocation/epad.yml
 		else 
-			echo -e "${Yellow}process: copying epad_build.yml to epad.yml"
+			echo -e "${Yellow}process: copying epad_images.yml to epad.yml"
 		    cp $var_path/$var_epadDistLocation/epad_images.yml $var_path/$var_epadDistLocation/epad.yml
 		fi
 		
