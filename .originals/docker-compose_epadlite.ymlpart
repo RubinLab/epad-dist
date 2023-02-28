@@ -12,6 +12,8 @@
       - ../data:/home/node/app/data
       - ../pluginData:/home/node/app/pluginsDataFolder
       -  /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      ARG_EPAD_DOCKER_GID: 999
     depends_on:
       - mydicomweb
     healthcheck:
