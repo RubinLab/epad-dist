@@ -1,6 +1,6 @@
 #!/bin/bash
 # $1 expected install, start, stop, update
-# $2 expected a version master,latest,v0.1, v0.2 
+# $2 expected a version branch,latest,v0.1, v0.2 
 Black='\033[0;30m'        # Black
 Red='\033[0;31m'          # Red
 Green='\033[0;32m'        # Green
@@ -1286,6 +1286,18 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		
 	}
 
+	copy_epad_yml (){
+
+		if [[ $1 == "branch" ]]; then
+			echo -e "${Yellow}process: copying epad_build.yml to epad.yml"
+			cp $var_path/$var_epadDistLocation/epad_build.yml $var_path/$var_epadDistLocation/epad.yml
+		else 
+			echo -e "${Yellow}process: copying epad_build.yml to epad.yml"
+		    cp $var_path/$var_epadDistLocation/epad_images.yml $var_path/$var_epadDistLocation/epad.yml
+		fi
+		
+	}
+
 	copy_epad_dist (){
 
 		local needymlupdate=""
@@ -1297,6 +1309,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		var_response="n"	
 		
 		if [[ -d "$var_path/$var_epadDistLocation" ]]; then
+			if [[ -f "$var_path/$var_epadDistLocation/epad.yml" ]]; then
+			    echo -e "${Yellow}epad.yml exists already"
+			else
+				copy_epad_yml $1
+			fi
 			#var_reinstalling="true"
 			parse_yml_sections
 			load_credentials_tovar
@@ -1310,6 +1327,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		else
 			cd $var_path
   			git clone https://github.com/RubinLab/epad-dist.git
+			copy_epad_yml $1
 		fi
 		#echo "var_response :$var_response "
 		#echo "var_reinstalling : $var_reinstalling"
@@ -1325,6 +1343,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
   			git clone https://github.com/RubinLab/epad-dist.git
+			copy_epad_yml $1
 		else
 			parse_yml_sections
 			#echo "needymlupdate : $needymlupdate"
@@ -1580,7 +1599,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         #echo "mode : $var_mode"
                 fi
         # branch section
-
+	    if [[ $1 == "branch" ]]; then
         		#read -p "dicomweb branch: (default value : $( remove_backslash_tofolderpath $var_branch_dicomweb)) :" var_response
         		askInputLoop  "dicomweb branch: (default value : $( remove_backslash_tofolderpath $var_branch_dicomweb)) :" var_response ""
                 if [[ -n "$var_response" ]]
@@ -1610,6 +1629,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                         var_branch_epadjs=$( add_backslash_tofolderpath $var_response) 
                         #echo "epadjs branch : $var_branch_epadjs"
                 fi
+		fi
         # branch section
                 
 		#read -p "configuration (environment (1) or local files (2)) (default value : $var_config) :" var_response
@@ -1946,13 +1966,15 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 
 			
         # edit branch part
-        temp_var_branch_dicomweb=$( add_backslash_tofolderpath $var_branch_dicomweb) 
-        temp_var_branch_epadlite=$( add_backslash_tofolderpath $var_branch_epadlite) 
-        temp_var_branch_epadjs=$( add_backslash_tofolderpath $var_branch_epadjs) 
+		if [[ $1 == "branch" ]]; then
+				temp_var_branch_dicomweb=$( add_backslash_tofolderpath $var_branch_dicomweb) 
+				temp_var_branch_epadlite=$( add_backslash_tofolderpath $var_branch_epadlite) 
+				temp_var_branch_epadjs=$( add_backslash_tofolderpath $var_branch_epadjs) 
 		        awk -v var_awk="branch: \"$temp_var_branch_dicomweb\"" '/branch:.*/{c++; if (c==1) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 		        awk -v var_awk="branch: \"$temp_var_branch_epadlite\"" '/branch:.*/{c++; if (c==2) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 		        awk -v var_awk="branch: \"$temp_var_branch_epadjs\"" '/branch:.*/{c++; if (c==3) { sub("branch:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        
+			
+   		fi        
         #edit branch part end
 
         # edit port part
@@ -2081,6 +2103,10 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		echo "epad_manage.sh import keycloakusers"
 	}
 
+	add_docker_group_to_container () {
+		docker exec -i --user root epad_lite bash < add_docker_group.sh
+	}
+
 # main 
 	if [ "$#" -gt 0 ]; then
 
@@ -2119,22 +2145,22 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
                	fi
 			fi
 			echo "epad will be installed in : $var_path"
-			copy_epad_dist
+			copy_epad_dist $2
 			find_host_info
 			find_docker_gid
-			collect_system_configuration
+			collect_system_configuration $2
 			collect_user_credentials
 			var_refilltheform="n"
 			#read -p "Do you want to change your answers ? (y/n) :"  var_refilltheform 
 			askInputLoop  "Do you want to change your answers ? (y/n) :" var_refilltheform "" "y|n"
 			#echo "var_refilltheform : $var_refilltheform"
 			 while [[ "$var_refilltheform" == "y" ]]; do
-			 		collect_system_configuration
+			 		collect_system_configuration $2
 					collect_user_credentials
 					#read -p "Do you want to change your answers ? (y/n) :"  var_refilltheform 
 					askInputLoop  "Do you want to change your answers ? (y/n) :" var_refilltheform "" "y|n"
 			 done
-			edit_epad_yml
+			edit_epad_yml $2
 			create_epad_folders
 			create_epad_lite_dist
 			edit_compose_file
@@ -2172,6 +2198,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			fi
 			start_containers_all
 			check_container_situation
+			echo -e "${Yellow} fix the container docker group"
+			add_docker_group_to_container
+			echo -e "${Color_Off}"
 			# reset global variables
 			global_var_container_exist=""
         fi
@@ -2212,15 +2241,15 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				load_credentials_tovar
 				find_host_info
 				find_docker_gid
-				collect_system_configuration
+				collect_system_configuration $2
 					var_refilltheform="n"
 					read -p "Do you want to change your answers ? (y/n) :"  var_refilltheform 
 					echo "var_refilltheform : $var_refilltheform"
 					 while [[ "$var_refilltheform" == "y" ]]; do
-					 		collect_system_configuration
+					 		collect_system_configuration $2
 							read -p "Do you want to change your answers ? (y/n) :"  var_refilltheform 
 					 done
-				edit_epad_yml
+				edit_epad_yml $2
                 create_epad_lite_dist
                 edit_compose_file
 				build_images_via_nocache
@@ -2240,21 +2269,21 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				#docker-compose build --no-cache
 				load_credentials_tovar
 				# added in case epad.yml and .config has changes
-				copy_epad_dist
+				copy_epad_dist $2
 				find_host_info
 				find_docker_gid
 				# end added in case epad.yml and .config has changes
-                collect_system_configuration
+                collect_system_configuration $2
                 collect_user_credentials
                 	var_refilltheform="n"
 					read -p "Do you want to change your answer ? (y/n) :"  var_refilltheform 
 					echo "var_refilltheform : $var_refilltheform"
 					 while [[ "$var_refilltheform" == "y" ]]; do
-					 		collect_system_configuration
+					 		collect_system_configuration $2
 					 		collect_user_credentials
 							read -p "Do you want to change your answer ? (y/n) :"  var_refilltheform 
 					 done
-                edit_epad_yml
+                edit_epad_yml $2
                 create_epad_lite_dist
 				edit_compose_file
 				build_images_via_nocache
@@ -2290,6 +2319,13 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         fi
 # epxport import keycloak part end
 
+		if [[ $1 == "fixdockergroup" ]]; then
+    			echo -e "${Yellow}process: fixing container docker group"
+    			echo -e "${Color_Off}"
+				add_docker_group_to_container
+    			echo "Finished fixing container docker group"
+
+        fi
 
 	else
 		show_instructions
