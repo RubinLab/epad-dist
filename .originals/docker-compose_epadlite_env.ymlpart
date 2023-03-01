@@ -24,6 +24,7 @@
       ONTOLOGY_NAME: "{ontologyname}"
       ONTOLOGY_APIKEY: "{ontologyapikey}"
       ARG_EPAD_DOCKER_GID: 999
+      LEGACY_ENDPOINT: "true"
     volumes:
       - ../data:/home/node/app/data
       - ../pluginData:/home/node/app/pluginsDataFolder

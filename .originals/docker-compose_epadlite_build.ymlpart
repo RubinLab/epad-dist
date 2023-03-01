@@ -16,6 +16,8 @@
       - ../data:/home/node/app/data
       - ../pluginData:/home/node/app/pluginsDataFolder
       -  /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      LEGACY_ENDPOINT: "true"
     depends_on:
       - mydicomweb
     healthcheck:
