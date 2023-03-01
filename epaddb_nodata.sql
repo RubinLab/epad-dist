@@ -878,7 +878,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 LOCK TABLES `user` WRITE;
 /*!40000 ALTER TABLE `user` DISABLE KEYS */;
 -- INSERT INTO `user` VALUES (1,'admin','Epad','Admin','epad@epad-build.stanford.edu','$2a$10$5k1FZJvBatiydTBCPWKkaOMEJIl5z1MOImHHTK0zxNwnqDaxqwYze','',1,1,0,'2015-03-09','2015-06-23 21:23:16','admin','2015-03-09 21:00:13','2015-03-09 21:00:20','admin',NULL),(2,'guest','XNAT','Guest','epad@epad-build.stanford.edu','$2a$10$muFZcWbJdi.Z8WBTWJ3/setviKawaVGRlrmzBI5sfI9YcS49PLdDu','CreateProject',1,0,0,NULL,'2015-06-23 21:23:16','admin','2015-03-09 21:00:20','2015-03-09 21:00:20',NULL,NULL);
-INSERT IGNORE INTO user(`username`, `email`, `enabled`, `creator`, `createdtime`, `admin`) VALUES ('{keycloak_user}', '{keycloak_email}', true,'admin', CURRENT_DATE( ), true);
+INSERT IGNORE INTO user(`username`, `firstname`, `lastname`, `email`, `enabled`, `creator`, `createdtime`, `admin`) VALUES ('{keycloak_user}', 'Admin', 'User', '{keycloak_email}', true,'admin', CURRENT_DATE( ), true);
 /*!40000 ALTER TABLE `user` ENABLE KEYS */;
 UNLOCK TABLES;
 
