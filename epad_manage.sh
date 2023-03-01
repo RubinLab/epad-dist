@@ -2178,7 +2178,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			#	fi
 			#fi
 			check_container_situation
-			echo -e "${Yellow} fix the container docker group"
+			echo -e "${Yellow}process: Fix the container docker group"
 			add_docker_group_to_container
 			echo -e "${Color_Off}"	
 			# reset global variables

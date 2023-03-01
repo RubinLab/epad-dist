@@ -7,10 +7,10 @@ if [[ -z "$tempGid" ]] ;
         dockerGid=$(cat /etc/group | grep docker) ; 
         if [[ -z "$dockerGid" ]] ; then
             addgroup -g $ARG_EPAD_DOCKER_GID docker && adduser node docker ; 
-            echo added docker group
+            echo Added docker group
         else
             addgroup -g $ARG_EPAD_DOCKER_GID dockerEpad && adduser node dockerEpad ; 
-            echo added dockerEpad group
+            echo Added dockerEpad group
         fi
     else  
         echo Host docker group id $ARG_EPAD_DOCKER_GID exists ; 
