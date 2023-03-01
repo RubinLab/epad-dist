@@ -2202,7 +2202,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			start_containers_all
 			check_container_situation
 			# it might be a overkill to do it on every start but just to be safe and avoid troubleshooting for the user on older installations
-			echo -e "${Yellow} fix the container docker group"
+			echo -e "${Yellow}process: Fix the container docker group"
 			add_docker_group_to_container
 			echo -e "${Color_Off}"
 			# reset global variables
