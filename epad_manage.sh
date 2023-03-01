@@ -2179,7 +2179,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			#fi
 			check_container_situation
 			if [[ $2 != "branch" ]]; then
-				echo -e "${Yellow}process: Fix the container docker group"
+				echo -e "${Yellow}process: fixing the container docker group"
 				add_docker_group_to_container
 				echo -e "${Color_Off}"	
 			fi
