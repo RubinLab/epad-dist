@@ -2178,9 +2178,11 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			#	fi
 			#fi
 			check_container_situation
-			echo -e "${Yellow}process: Fix the container docker group"
-			add_docker_group_to_container
-			echo -e "${Color_Off}"	
+			if [[ $2 != "branch" ]]; then
+				echo -e "${Yellow}process: Fix the container docker group"
+				add_docker_group_to_container
+				echo -e "${Color_Off}"	
+			fi
 			# reset global variables
 			global_var_container_exist=""
 			var_reinstalling="false"
@@ -2201,10 +2203,6 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			fi
 			start_containers_all
 			check_container_situation
-			# it might be a overkill to do it on every start but just to be safe and avoid troubleshooting for the user on older installations
-			echo -e "${Yellow}process: Fix the container docker group"
-			add_docker_group_to_container
-			echo -e "${Color_Off}"
 			# reset global variables
 			global_var_container_exist=""
         fi
