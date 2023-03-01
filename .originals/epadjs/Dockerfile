@@ -13,7 +13,7 @@ RUN sed -i 's/react-scripts build/react-scripts --max_old_space_size=4096 build/
 
 # Install app dependencies
 ENV NPM_CONFIG_LOGLEVEL warn
-ENV NODE_OPTIONS "--max-old-space-size=4096"
+ENV NODE_OPTIONS "--max-old-space-size=4096 --openssl-legacy-provider"
 RUN npm install 
 RUN npm run build 
 
