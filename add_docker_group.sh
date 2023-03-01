@@ -15,5 +15,5 @@ if [[ -z "$tempGid" ]] ;
     else  
         echo Host docker group id $ARG_EPAD_DOCKER_GID exists ; 
         groupName=$(echo "$tempGid" | cut -d: -f1) && echo $groupName && adduser node $groupName ; 
-        echo Added $groupName group instead
+        echo Added to $groupName group instead
 fi ; 

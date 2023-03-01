@@ -2104,6 +2104,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	}
 
 	add_docker_group_to_container () {
+		cd "$var_path/$var_epadDistLocation"
 		docker exec -i --user root epad_lite bash < add_docker_group.sh
 	}
 
