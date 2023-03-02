@@ -1939,6 +1939,10 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		if [[ "$var_https_result_r" == "y" ]]; then
 			echo "adding https settings"
 			sed -i -e "s/config: $var_config/config: $var_config\nhttps: true\ncertdir: \"$var_certs_location\"\ncertfile: \"$var_cert_filename\"\ncertkeyfile: \"$var_key_filename\"/g" "$var_path/$var_epadDistLocation/epad.yml"
+			temp_var_certs_location=$( add_backslash_tofolderpath $var_certs_location)
+		                
+		    awk -v var_awk="ncertdir: \"$temp_var_certs_location\" " '/ncertdir:.*/{c++; if (c==1) { sub("ncertdir:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+
 		fi
 
 		#https part end
@@ -2136,24 +2140,24 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				askInputLoop "Folder where the certificate and key resides (default value : $( remove_backslash_tofolderpath $var_certs_location)) :" var_response ""
 					if [[ -n "$var_response" ]]
 					then
-							echo "response = $var_response"
+							# echo "response = $var_response"
 							var_certs_location=$( add_backslash_tofolderpath $var_response)  
-							echo "certs_location : $( remove_backslash_tofolderpath $var_certs_location) "
+							# echo "certs_location : $( remove_backslash_tofolderpath $var_certs_location) "
 					fi
 				askInputLoop "Name of the key file (default value : $var_key_filename) :" var_response ""
 					if [[ -n "$var_response" ]]
 					then
-							echo "response = $var_response"
+							# echo "response = $var_response"
 							var_key_filename=$var_response  
-							echo "key_file : $( remove_backslash_tofolderpath $var_key_filename) "
+							# echo "key_file : $( remove_backslash_tofolderpath $var_key_filename) "
 					fi
 
 				askInputLoop "Name of the certificate bundle file (default value : $var_cert_filename)) :" var_response ""
 					if [[ -n "$var_response" ]]
 					then
-							echo "response = $var_response"
+							# echo "response = $var_response"
 							var_cert_filename=$var_response 
-							echo "key_file : $( remove_backslash_tofolderpath $var_cert_filename) "
+							# echo "key_file : $( remove_backslash_tofolderpath $var_cert_filename) "
 					fi
 			fi
 		fi
