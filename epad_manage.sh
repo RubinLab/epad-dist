@@ -1329,7 +1329,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
   			fi
 		else
 			cd $var_path
-  			git clone https://github.com/RubinLab/epad-dist.git
+  			git clone -b impr/https https://github.com/RubinLab/epad-dist.git
 			copy_epad_yml $1
 		fi
 		#echo "var_response :$var_response "
@@ -1345,7 +1345,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
   			echo "copying epad-dist repo from git"
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
-  			git clone https://github.com/RubinLab/epad-dist.git
+  			git clone -b impr/https https://github.com/RubinLab/epad-dist.git
 			copy_epad_yml $1
 		else
 			parse_yml_sections
@@ -1938,10 +1938,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		#https part
 		if [[ "$var_https_result_r" == "y" ]]; then
 			echo "adding https settings"
-			sed -i -e "s/config: $var_config/config: $var_config\nhttps: true\ncertdir: \"$var_certs_location\"\ncertfile: \"$var_cert_filename\"\ncertkeyfile: \"$var_key_filename\"/g" "$var_path/$var_epadDistLocation/epad.yml"
 			temp_var_certs_location=$( add_backslash_tofolderpath $var_certs_location)
-		                
-		    awk -v var_awk="ncertdir: \"$temp_var_certs_location\" " '/ncertdir:.*/{c++; if (c==1) { sub("ncertdir:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+			sed -i -e "s/config: $var_config/config: $var_config\nhttps: true\ncertdir: \"$var_certs_location\"\ncertfile: \"$var_cert_filename\"\ncertkeyfile: \"$var_key_filename\"/g" "$var_path/$var_epadDistLocation/epad.yml"
+			awk -v var_awk="certdir: \"$temp_var_certs_location\" " '/certdir:.*/{c++; if (c==1) { sub("certdir:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 
 		fi
 
