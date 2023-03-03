@@ -2136,6 +2136,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				echo "Exiting installation. Start it again when you have the certs folder ready"
 				exit 1
 			else 
+				var_epadjs_port = "443"
 				askInputLoop "Folder where the certificate and key resides (default value : $( remove_backslash_tofolderpath $var_certs_location)) :" var_response ""
 					if [[ -n "$var_response" ]]
 					then
