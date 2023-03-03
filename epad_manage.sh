@@ -1992,12 +1992,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         #edit branch part end
 
         # edit port part
-		        awk -v var_awk="port: \"$var_keycloak_port\"" '/~port:.*/{c++; if (i==1) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_couchdb_port\"" '/~port:.*/{c++; if (c==2) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_dicomweb_port\"" '/~port:.*/{c++; if (c==3) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_epadlite_port\"" '/~port:.*/{c++; if (c==5) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_epadjs_port\"" '/~port:.*/{c++; if (c==6) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_maria_port\"" '/~port:.*/{c++; if (c==6) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_keycloak_port" '/ port:.*/{c++; if (c==1) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_couchdb_port" '/ port:.*/{c++; if (c==2) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_dicomweb_port" '/ port:.*/{c++; if (c==3) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_epadlite_port" '/ port:.*/{c++; if (c==4) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_epadjs_port" '/ port:.*/{c++; if (c==5) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_maria_port" '/ port:.*/{c++; if (c==6) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 		        
         #edit port part end
 	}
@@ -2136,7 +2136,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 				echo "Exiting installation. Start it again when you have the certs folder ready"
 				exit 1
 			else 
-				var_epadjs_port = "443"
+				var_epadjs_port=443
 				askInputLoop "Folder where the certificate and key resides (default value : $( remove_backslash_tofolderpath $var_certs_location)) :" var_response ""
 					if [[ -n "$var_response" ]]
 					then
