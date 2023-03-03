@@ -1928,7 +1928,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	edit_epad_yml (){
 		echo -e "${Yellow}process: editing epad.yml file"
 		echo -e "${Color_Off}"
-		sed -i -e "s/host:.*/host: $var_host/g" "$var_path/$var_epadDistLocation/epad.yml"
+		
 		#sed -i -e "s/mode:.*/mode: $var_mode/g" "$var_path/$var_epadDistLocation/epad.yml"
 		awk -v var_awk="mode: $var_mode" '/mode:.*/{c++; if (c==1) { sub("mode:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 
@@ -1941,11 +1941,16 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			temp_var_certs_location=$( add_backslash_tofolderpath $var_certs_location)
 			sed -i -e "s/config: $var_config/config: $var_config\nhttps: true\ncertdir: \"$var_certs_location\"\ncertfile: \"$var_cert_filename\"\ncertkeyfile: \"$var_key_filename\"/g" "$var_path/$var_epadDistLocation/epad.yml"
 			awk -v var_awk="certdir: \"$temp_var_certs_location\" " '/certdir:.*/{c++; if (c==1) { sub("certdir:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+			var_host="https:\/\/$var_host"
+			var_host=$( add_backslash_tofolderpath $var_host)
 
 		fi
 
 		#https part end
 
+		# set the host after checking for https. sed doesn't work with escaping (\)
+		awk -v var_awk="host: \"$var_host\"" '/host:.*/{c++; if (c==1) { sub("host:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		
 	    # keycloak 
 
 			    awk -v var_awk="user: $var_keycloak_user" '/user:.*/{c++; if (c==1) { sub("user:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
