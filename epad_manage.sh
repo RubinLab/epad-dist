@@ -1329,7 +1329,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
   			fi
 		else
 			cd $var_path
-  			git clone -b impr/https https://github.com/RubinLab/epad-dist.git
+  			git clone https://github.com/RubinLab/epad-dist.git
 			# delete epad_manage.sh to avoid having multiple nested folders
 			rm "$var_path/$var_epadDistLocation/epad_manage.sh"
 			copy_epad_yml $1
@@ -1347,7 +1347,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
   			echo "copying epad-dist repo from git"
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
-  			git clone -b impr/https https://github.com/RubinLab/epad-dist.git
+  			git clone https://github.com/RubinLab/epad-dist.git
 			# delete epad_manage.sh to avoid having multiple nested folders
 			rm "$var_path/$var_epadDistLocation/epad_manage.sh"
 			copy_epad_yml $1
