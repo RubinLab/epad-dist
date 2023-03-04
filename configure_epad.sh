@@ -152,9 +152,19 @@ then
     then 
         if [ $epadjs_port != '80' ]
         then
-            cat ./$1/nginx_keycloak_port.confpart >> ./$1/nginx.conf
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/nginx_keycloak_port_https.confpart >> ./$1/nginx.conf
+            else
+                cat ./$1/nginx_keycloak_port.confpart >> ./$1/nginx.conf
+            fi
         else
-            cat ./$1/nginx_keycloak.confpart >> ./$1/nginx.conf
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/nginx_keycloak_https.confpart >> ./$1/nginx.conf
+            else
+                cat ./$1/nginx_keycloak.confpart >> ./$1/nginx.conf
+            fi
         fi
     fi
     if [[ ! -z $keycloak_dockerfiledir ]]
@@ -168,7 +178,12 @@ if [ $couchdb_mode != 'external' ]
 then
     if [[ ! -z $couchdb_loc ]]
     then 
-        cat ./$1/nginx_couchdb.confpart >> ./$1/nginx.conf
+        if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+        then 
+            cat ./$1/nginx_couchdb_https.confpart >> ./$1/nginx.conf
+        else
+            cat ./$1/nginx_couchdb.confpart >> ./$1/nginx.conf
+        fi
     fi
     if [[ ! -z $couchdb_user && ! -z $couchdb_password ]]
     then
@@ -184,7 +199,12 @@ if [ $mariadb_mode != 'external' ]
 then
     if [[ ! -z $mariadb_loc ]]
     then 
-        cat ./$1/nginx_mariadb.confpart >> ./$1/nginx.conf
+        if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+        then 
+            cat ./$1/nginx_mariadb_https.confpart >> ./$1/nginx.conf
+        else
+            cat ./$1/nginx_mariadb.confpart >> ./$1/nginx.conf
+        fi
     fi
     if [[ ! -z $mariadb_dockerfiledir ]]
     then
@@ -197,7 +217,12 @@ if [ $dicomweb_mode != 'external' ]
 then
     if [[ ! -z $dicomweb_loc ]]
     then 
-        cat ./$1/nginx_dicomweb.confpart >> ./$1/nginx.conf
+        if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+        then 
+            cat ./$1/nginx_dicomweb_https.confpart >> ./$1/nginx.conf
+        else
+            cat ./$1/nginx_dicomweb.confpart >> ./$1/nginx.conf
+        fi
     fi
     if [[ ! -z $dicomweb_dockerfiledir ]]
     then
@@ -222,9 +247,19 @@ then
     then 
         if [[ ! -z $cache_size && ! -z $cache_inactivetime ]] 
         then
-            cat ./$1/nginx_epadlite_cache.confpart >> ./$1/nginx.conf
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/nginx_epadlite_cache_https.confpart >> ./$1/nginx.conf
+            else
+                cat ./$1/nginx_epadlite_cache.confpart >> ./$1/nginx.conf
+            fi
         else
-            cat ./$1/nginx_epadlite.confpart >> ./$1/nginx.conf
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then 
+                cat ./$1/nginx_epadlite_https.confpart >> ./$1/nginx.conf
+            else
+                cat ./$1/nginx_epadlite.confpart >> ./$1/nginx.conf
+            fi
         fi
     fi
     if [[ ! -z $epadlite_dockerfiledir ]]
