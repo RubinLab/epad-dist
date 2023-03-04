@@ -1330,6 +1330,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		else
 			cd $var_path
   			git clone -b impr/https https://github.com/RubinLab/epad-dist.git
+			# delete epad_manage.sh to avoid having multiple nested folders
+			rm "$var_path/$var_epadDistLocation/epad_manage.sh"
 			copy_epad_yml $1
 		fi
 		#echo "var_response :$var_response "
@@ -1346,6 +1348,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
   			git clone -b impr/https https://github.com/RubinLab/epad-dist.git
+			# delete epad_manage.sh to avoid having multiple nested folders
+			rm "$var_path/$var_epadDistLocation/epad_manage.sh"
 			copy_epad_yml $1
 		else
 			parse_yml_sections
