@@ -6,6 +6,8 @@ server {
         server_name  localhost;
         ssl_certificate         /etc/ssl/certs/{certfile}; 
         ssl_certificate_key     /etc/ssl/certs/{certkeyfile};
+        ssl_protocols TLSv1.2;
+        add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
         
         # means no limit
         client_max_body_size 0;

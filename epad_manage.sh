@@ -32,6 +32,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	var_container_mode="image" # or build
 	var_couchdb_location="..\/couchdbloc"
 	var_mariadb_location="..\/mariadbloc"
+	var_certs_location="..\/certs"
+	var_key_filename="cert.key"
+	var_cert_filename="cert_bundle.cer"
 	var_branch="master" # used for epad_lite and epad_js containers
 
 	var_branch_dicomweb="master" #new
@@ -1327,6 +1330,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		else
 			cd $var_path
   			git clone https://github.com/RubinLab/epad-dist.git
+			# delete epad_manage.sh to avoid having multiple nested folders
+			rm "$var_path/$var_epadDistLocation/epad_manage.sh"
 			copy_epad_yml $1
 		fi
 		#echo "var_response :$var_response "
@@ -1343,6 +1348,8 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			rm -rf "$var_path/$var_epadDistLocation"
 			cd $var_path
   			git clone https://github.com/RubinLab/epad-dist.git
+			# delete epad_manage.sh to avoid having multiple nested folders
+			rm "$var_path/$var_epadDistLocation/epad_manage.sh"
 			copy_epad_yml $1
 		else
 			parse_yml_sections
@@ -1925,13 +1932,29 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 	edit_epad_yml (){
 		echo -e "${Yellow}process: editing epad.yml file"
 		echo -e "${Color_Off}"
-		sed -i -e "s/host:.*/host: $var_host/g" "$var_path/$var_epadDistLocation/epad.yml"
+		
 		#sed -i -e "s/mode:.*/mode: $var_mode/g" "$var_path/$var_epadDistLocation/epad.yml"
 		awk -v var_awk="mode: $var_mode" '/mode:.*/{c++; if (c==1) { sub("mode:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 
 		sed -i -e "s/config:.*/config: $var_config/g" "$var_path/$var_epadDistLocation/epad.yml"
 		#sed -i -e "s/user:.*/user: $var_keycloak_user/g" "$var_path/$var_epadDistLocation/epad.yml"
-	    
+
+		#https part
+		if [[ "$var_https_result_r" == "y" ]]; then
+			echo "adding https settings"
+			temp_var_certs_location=$( add_backslash_tofolderpath $var_certs_location)
+			sed -i -e "s/config: $var_config/config: $var_config\nhttps: true\ncertdir: \"$var_certs_location\"\ncertfile: \"$var_cert_filename\"\ncertkeyfile: \"$var_key_filename\"/g" "$var_path/$var_epadDistLocation/epad.yml"
+			awk -v var_awk="certdir: \"$temp_var_certs_location\" " '/certdir:.*/{c++; if (c==1) { sub("certdir:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+			var_host="https:\/\/$var_host"
+			var_host=$( add_backslash_tofolderpath $var_host)
+
+		fi
+
+		#https part end
+
+		# set the host after checking for https. sed doesn't work with escaping (\)
+		awk -v var_awk="host: \"$var_host\"" '/host:.*/{c++; if (c==1) { sub("host:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		
 	    # keycloak 
 
 			    awk -v var_awk="user: $var_keycloak_user" '/user:.*/{c++; if (c==1) { sub("user:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
@@ -1978,12 +2001,12 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
         #edit branch part end
 
         # edit port part
-		        awk -v var_awk="port: \"$var_keycloak_port\"" '/~port:.*/{c++; if (i==1) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_couchdb_port\"" '/~port:.*/{c++; if (c==2) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_dicomweb_port\"" '/~port:.*/{c++; if (c==3) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_epadlite_port\"" '/~port:.*/{c++; if (c==5) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_epadjs_port\"" '/~port:.*/{c++; if (c==6) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
-		        awk -v var_awk="port: \"$var_maria_port\"" '/~port:.*/{c++; if (c==6) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_keycloak_port" '/ port:.*/{c++; if (c==1) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_couchdb_port" '/ port:.*/{c++; if (c==2) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_dicomweb_port" '/ port:.*/{c++; if (c==3) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_epadlite_port" '/ port:.*/{c++; if (c==4) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_epadjs_port" '/ port:.*/{c++; if (c==5) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
+		        awk -v var_awk="port: $var_maria_port" '/ port:.*/{c++; if (c==6) { sub("port:.*",var_awk) } }1'  "$var_path/$var_epadDistLocation/epad.yml" > "$var_path/$var_epadDistLocation/tempEpad.yml" && mv "$var_path/$var_epadDistLocation/tempEpad.yml"  "$var_path/$var_epadDistLocation/epad.yml"
 		        
         #edit port part end
 	}
@@ -2108,6 +2131,48 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 		docker exec -i --user root epad_lite bash < add_docker_group.sh
 	}
 
+	collect_https_info() {
+		read -p "Do you want to configure https? (y/n : default response is n) :"  var_https_result_r 
+		if [[ -z $var_https_result_r  ||   "$var_https_result_r" != "y" ]]; then
+			var_https_result_r="n"
+			echo "Using http"
+		else 
+		    echo "You need to create a certs directory in the current/installation folder first and put the key file and the certificate file which has both the root and interim certificates (append the two if necessary) in that folder"
+
+			read -p "Is your certs folder ready? (y/n : default response is n) :"  var_https_result_r 
+			if [[ -z $var_https_result_r  ||   "$var_https_result_r" != "y" ]]; then
+				var_https_result_r="n"
+				echo "Exiting installation. Start it again when you have the certs folder ready"
+				exit 1
+			else 
+				var_epadjs_port=443
+				askInputLoop "Folder where the certificate and key resides (default value : $( remove_backslash_tofolderpath $var_certs_location)) :" var_response ""
+					if [[ -n "$var_response" ]]
+					then
+							# echo "response = $var_response"
+							var_certs_location=$( add_backslash_tofolderpath $var_response)  
+							# echo "certs_location : $( remove_backslash_tofolderpath $var_certs_location) "
+					fi
+				askInputLoop "Name of the key file (default value : $var_key_filename) :" var_response ""
+					if [[ -n "$var_response" ]]
+					then
+							# echo "response = $var_response"
+							var_key_filename=$var_response  
+							# echo "key_file : $( remove_backslash_tofolderpath $var_key_filename) "
+					fi
+
+				askInputLoop "Name of the certificate bundle file (default value : $var_cert_filename)) :" var_response ""
+					if [[ -n "$var_response" ]]
+					then
+							# echo "response = $var_response"
+							var_cert_filename=$var_response 
+							# echo "key_file : $( remove_backslash_tofolderpath $var_cert_filename) "
+					fi
+			fi
+		fi
+		
+	}
+
 # main 
 	if [ "$#" -gt 0 ]; then
 
@@ -2121,6 +2186,9 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			echo -e "${Yellow}process: Installing ePad"
     		echo -e "${Color_Off}"
 			var_install_result_r=""
+			var_https_result_r=""
+			# check and get https info first so that we can exit if the certs folder is not ready and they don't have to fill in everything first
+			collect_https_info
 			#create_epad_folders
 			check_ifallcontainers_created
 			# echo $global_var_container_exist
@@ -2156,6 +2224,7 @@ var_array_allEpadContainerNames=(epad_lite epad_js epad_dicomweb epad_keycloak e
 			askInputLoop  "Do you want to change your answers ? (y/n) :" var_refilltheform "" "y|n"
 			#echo "var_refilltheform : $var_refilltheform"
 			 while [[ "$var_refilltheform" == "y" ]]; do
+					collect_https_info
 			 		collect_system_configuration $2
 					collect_user_credentials
 					#read -p "Do you want to change your answers ? (y/n) :"  var_refilltheform 
