@@ -1,0 +1,60 @@
+host: YOUR_HOSTNAME
+mode: thick
+config: environment
+ontologyname: YOUR_ONTOLOGY_NAME
+ontologyapikey: YOUR_ONTOLOGY_APIKEY
+cache:
+  size: "10g"
+  inactivetime: "60m"
+compression:
+  minsize: "20"
+keycloak:
+  mode: build
+  dockerfiledir: ".\/keycloak"
+  user: YOUR_KEYCLOAK_ADMIN_USER
+  password: YOUR_KEYCLOAK_ADMIN_PASS
+  email: YOUR_KEYCLOAK_ADMIN_EMAIL
+  port: 8899
+  loc: "keycloak"
+couchdb:
+  mode: image
+  image: "ibmcom\/couchdb3:latest"
+  user: YOUR_COUCH_ADMIN_USER
+  password: YOUR_COUCH_ADMIN_PASS
+  port: 8888
+  dblocation: "..\/couchdbloc"
+dicomweb:
+  mode: image
+  image: latest
+  port: 8090
+  dbname: chronicle
+  log: true
+  auth: none
+  loc: "pacs"
+  dimsetemp: "..\/dimsetemp"
+  dimseport: 4002
+  aet: "PACS"
+epadlite:
+  mode: image
+  image: latest
+  port: 8080
+  dbname: epadlite
+  log: true
+  https: false
+  auth: auth
+  loc: "api"
+epadjs:
+  mode: image
+  image: latest
+  port: 80
+mariadb:
+  mode: image
+  image: latest
+  dbname: epaddb
+  user: YOUR_DB_USER
+  password: YOUR_DB_PASS
+  rootpassword: YOUR_DB_ROOT_PASS
+  port: 3306
+  log: false
+  backuploc: ".\/epaddb_nodata.sql"
+  dblocation: "..\/mariadbloc"
