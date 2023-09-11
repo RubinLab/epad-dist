@@ -15,6 +15,7 @@
     environment:
       ARG_EPAD_DOCKER_GID: 999
       LEGACY_ENDPOINT: "true"
+      WADO_TYPE: "RS"
     depends_on:
       - mydicomweb
     healthcheck:

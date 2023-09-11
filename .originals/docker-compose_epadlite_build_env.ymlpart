@@ -28,6 +28,7 @@
       ONTOLOGY_NAME: "{ontologyname}"
       ONTOLOGY_APIKEY: "{ontologyapikey}"
       LEGACY_ENDPOINT: "true"
+      WADO_TYPE: "RS"
     volumes:
       - ../data:/home/node/app/data
       - ../pluginData:/home/node/app/pluginsDataFolder
