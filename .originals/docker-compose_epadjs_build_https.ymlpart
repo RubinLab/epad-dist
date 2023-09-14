@@ -14,7 +14,6 @@
       - ./production_epadjs.json:/usr/share/nginx/html/config.json
       - ./production_keycloak.json:/usr/share/nginx/html/keycloak.json
       - ./epadjs/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./epadjs/entrypoint.sh:/usr/local/bin/entrypoint
       - {certdir}:/etc/ssl/certs
     depends_on:
       - myepadlite
