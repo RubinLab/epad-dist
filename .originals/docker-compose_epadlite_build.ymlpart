@@ -18,6 +18,7 @@
       -  /var/run/docker.sock:/var/run/docker.sock
     environment:
       LEGACY_ENDPOINT: "true"
+      WADO_TYPE: "RS"
     depends_on:
       - mydicomweb
     healthcheck:

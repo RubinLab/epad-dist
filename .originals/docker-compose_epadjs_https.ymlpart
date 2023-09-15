@@ -9,6 +9,7 @@
       PUBLIC_URL: "http://{host}"
       REACT_APP_BASE_URL: "{epadjs_baseurl}"
       REACT_APP_AUTH_MODE: "{epadjs_authmode}"
+      REACT_APP_WADO_URL: "wadors:https://{host}/{epadlite_loc}/wadors"
     volumes:
       - ./production_epadjs.json:/app/public/config.json
       - ./production_keycloak.json:/app/public/keycloak.json
