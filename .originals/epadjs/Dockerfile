@@ -15,13 +15,17 @@ RUN sed -i 's/react-scripts build/react-scripts --max_old_space_size=4096 build/
 ENV NPM_CONFIG_LOGLEVEL warn
 ENV NODE_OPTIONS "--max-old-space-size=4096"
 RUN npm install
+
+#teaching only
+# COPY rh-sso-7.6-js-adapter/keycloak* /home/node/app/node_modules/keycloak-js/dist/
+# COPY rh-sso-7.6-js-adapter/docs/licenses-rh-sso-adapter/* /home/node/app/node_modules/keycloak-js/dist/ 
 RUN npm run build 
 
-FROM nginx:1.15
+FROM nginx:1.24.0
 
 # ngx_cache_purge build is based on https://hub.docker.com/r/procraft/nginx-purge/dockerfile on newer nginx
 
-ENV NGX_CACHE_PURGE_VERSION=2.5.1
+ENV NGX_CACHE_PURGE_VERSION=2.5.3
 
 # Install basic packages and build tools
 RUN apt-get update && \

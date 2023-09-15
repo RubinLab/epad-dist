@@ -2,13 +2,13 @@
 # generate a object in the format npm build does with the environment variables
 get_react_environment_vars() {
     ALL_ENV=$(env | sed -e 's/=.*//g')
-    NEW_OBJ='{NODE_ENV:"production"';
+    NEW_OBJ='Object({NODE_ENV:"production"';
     for var in $ALL_ENV
     do
         # we just want environment variables related to react
         if [[ $var == 'NODE_ENV' || $var == 'PUBLIC_URL' || $var == REACT_APP* ]]
         then
-            if [[ NEW_OBJ != '{NODE_ENV:"production"' ]]
+            if [[ NEW_OBJ != 'Object({NODE_ENV:"production"' ]]
             then 
                 NEW_OBJ+=','
             fi
@@ -35,7 +35,7 @@ fi
 # make a copy of the mainjs so we can always go back to original
 cp "$MAIN_JS" "$MAIN_JS".original
 
-OLD_OBJ="{NODE_ENV:\"production\",PUBLIC_URL:\"\""
+OLD_OBJ="Object({NODE_ENV:\"production\",PUBLIC_URL:\"\""
 sed -i -e "s/$OLD_OBJ/$NEW_OBJ/g" "$MAIN_JS"
 echo "Replaced main.js file environment $OLD_OBJ with $NEW_OBJ"
 
@@ -50,7 +50,7 @@ fi
 # make a copy of the mainjs so we can always go back to original
 cp "$MAIN_JS" "$MAIN_JS".original
 
-OLD_OBJ="{NODE_ENV:\"production\",PUBLIC_URL:\"\""
+OLD_OBJ="Object({NODE_ENV:\"production\",PUBLIC_URL:\"\""
 sed -i -e "s/$OLD_OBJ/$NEW_OBJ/g" "$MAIN_JS"
 echo "Replaced 2.js file environment $OLD_OBJ with $NEW_OBJ"
 
