@@ -245,10 +245,18 @@ if [ $epadlite_mode != 'external' ]
 then
     if [[ ! -z $epadlite_loc ]]
     then 
-        if [[ ! -z $cache_size && ! -z $cache_inactivetime ]] 
+        if [[ ! -z $cache_size && ! -z $cache_inactivetime && ! -z $compression_minsize ]]
         then
             if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
-            then 
+            then
+                cat ./$1/nginx_epadlite_compress_cache_https.confpart >> ./$1/nginx.conf
+            else
+                cat ./$1/nginx_epadlite_compress_cache.confpart >> ./$1/nginx.conf
+            fi
+        elif [[ ! -z $cache_size && ! -z $cache_inactivetime ]]
+        then
+            if [[ ! -z $https && $https == true && ! -z $certdir && ! -z $certfile && ! -z $certkeyfile ]]
+            then
                 cat ./$1/nginx_epadlite_cache_https.confpart >> ./$1/nginx.conf
             else
                 cat ./$1/nginx_epadlite_cache.confpart >> ./$1/nginx.conf
