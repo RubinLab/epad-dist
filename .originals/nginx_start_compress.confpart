@@ -8,7 +8,12 @@ server {
         client_max_body_size 0;
         proxy_read_timeout 180s;
         gzip on;
-        gzip_types      application/dicom;
+        # Frames reach nginx proxied from epadlite. Without gzip_proxied nginx never
+        # compresses a proxied response. The frame Content-Type ("multipart/related;
+        # type=...; boundary=...") includes parameters, and nginx compares the whole
+        # string, so no gzip_types entry matches it. Only "*" does.
+        gzip_proxied any;
+        gzip_types      *;
         gzip_min_length {compression_minsize};
         proxy_buffer_size          128k;
         proxy_buffers              4 256k;
